@@ -42,7 +42,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  return (
+    <>
+      <div id='header'>
+        <h1>Healix</h1>
+      </div>
+      <nav id="nav-bar">
+        <Outlet />
+      </nav>
+    </>
+  )
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
