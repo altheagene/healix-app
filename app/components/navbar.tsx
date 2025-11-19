@@ -1,15 +1,42 @@
 import { NavLink } from "react-router";
 
 export default function Navbar(){
+    const navbarObj = [
+        {
+            route: "/",
+            text: 'Home'
+        },
+        {
+            route: "/patients",
+            text: 'Patients' 
+        },
+        {
+            route: "/appointments",
+            text: 'Appointments' 
+        },
+        {
+            route: "/inventory",
+            text: 'Inventory' 
+        },
+        {
+            route: "/staff",
+            text: 'Staff' 
+        },
+        {
+            route: "/reports",
+            text: 'Reports' 
+        }
+    ]
+
+    const navListComponents = navbarObj.map((obj) => {
+        return(
+            <li> <NavLink to={obj.route}>{obj.text}</NavLink></li>
+        )
+    })
     return(
         <nav id="navbar">
             <ul>
-                <li> <NavLink to={"/"}>Home</NavLink></li>
-                <li> <NavLink to={"/patients"}>Patients</NavLink></li>
-                <li> <NavLink to={"/appointments"}>Appointments</NavLink></li>
-                <li> <NavLink to={"/inventory"}>Inventory</NavLink> </li>
-                <li> <NavLink to={"/staff"}>Staff</NavLink> </li>
-                <li> <NavLink to={"/reports"}>Reports</NavLink></li>
+                {navListComponents}
             </ul>
         </nav>
     )
