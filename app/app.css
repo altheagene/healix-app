@@ -52,3 +52,20 @@ body{
   font-weight: 500;
   font-size: 2rem;
 }
+
+#navbar a{
+  text-decoration: none;
+  color: black;
+  width: 250px;
+}
+
+#navbar ul{
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+}
+
+#navbar ul{
+  width: 100%;
+}
