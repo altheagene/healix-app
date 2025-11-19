@@ -31,11 +31,13 @@ body{
 
 #header{
   height: 50px;
-  background-color: wheat;
+  background-color: #F8F8F8;
   width: 100%;
   display: flex;
   align-items: center;
   padding: 0 10px;
+  border-bottom: 1px solid #595959b4;
+  color: #334FBD
 }
 
 #main-content{
@@ -46,7 +48,9 @@ body{
 #navbar{
   width: 250px;
   height: 100%;
-  background-color: azure;
+  background-color: #F8F8F8;
+  border-right: 1px solid #595959b4;
+  padding: 2rem 0;
 }
 .route-header{
   font-weight: 500;
@@ -57,6 +61,7 @@ body{
   text-decoration: none;
   color: black;
   width: 250px;
+  opacity: 1;
 }
 
 #navbar ul{
@@ -67,5 +72,24 @@ body{
 }
 
 #navbar ul{
-  width: 100%;
+  width: 90%;
+}
+
+#navbar li{
+  height: 40px;
+  font-weight: 500;
+  
+}
+
+.navlist-bg{
+  padding: 0 20px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  border-top-right-radius: 100px;
+  border-bottom-right-radius: 100px;
+}
+
+#route-container{
+  padding: 1rem;
 }

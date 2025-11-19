@@ -1,6 +1,9 @@
 import { NavLink } from "react-router";
+import React from "react";
 
 export default function Navbar(){
+
+    const [routeChosen, setRouteChosen] = React.useState('Home')
     const navbarObj = [
         {
             route: "/",
@@ -30,7 +33,13 @@ export default function Navbar(){
 
     const navListComponents = navbarObj.map((obj) => {
         return(
-            <li> <NavLink to={obj.route}>{obj.text}</NavLink></li>
+            <li>
+                <div className="navlist-bg" style={{backgroundColor: routeChosen === obj.text ? '#B1C1FF' : 'transparent',}}>
+                    <NavLink to={obj.route} onClick={() => setRouteChosen(obj.text)}>
+                        {obj.text}
+                    </NavLink>
+                </div>
+            </li>
         )
     })
     return(
