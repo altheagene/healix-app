@@ -50,16 +50,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <>
-      <div id='header'>
-        <h1>Healix</h1>
-      </div>
-
-      <div id="main-content">
-        <Navbar/>
-        <div id="route-container">
-          <Outlet></Outlet>
+        <div id='header'>
+          <h1>Healix</h1>
         </div>
-      </div>
+
+        <div id="main-content">
+          <Navbar/>
+          <div id="route-container">
+            <Outlet></Outlet>
+          </div>
+        </div>
+
+      
             
     </>
   )

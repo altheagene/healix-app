@@ -10,7 +10,7 @@ export function meta({}: Route.MetaArgs) {
 
 export default function Dashboard() {
   return (
-    <div>
+    <div className="route-page">
       <h1 className="route-header">Dashboard</h1>
     </div>
   )

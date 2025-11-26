@@ -23,10 +23,30 @@ body {
   font-family: 'Bricolage Grotesque', sans-serif;
 }
 
+button{
+  cursor: pointer;
+   font-family: 'Bricolage Grotesque', sans-serif;
+}
+
+#gray-background{
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.189);
+  z-index: 3;
+}
+
+.gray-bg{
+    position: absolute;
+    background-color: #1e1e1e65;
+    height: 100%;
+    width: 100%;
+    z-index: 3;
+}
+
 body{
-  height: 100vh;
-  width: 100vw;
-  overflow: hidden;
+  position: fixed;
+  inset: 0;
 }
 
 #header{
@@ -41,7 +61,7 @@ body{
 }
 
 #main-content{
-  height: 100%;
+  height: calc(100vh - 50px);
   display: flex;
 }
 
@@ -52,6 +72,7 @@ body{
   border-right: 1px solid #595959b4;
   padding: 2rem 0;
 }
+
 .route-header{
   font-weight: 500;
   font-size: 2rem;
@@ -62,12 +83,14 @@ body{
   color: black;
   width: 250px;
   opacity: 1;
+  height: 100%;
+  display: flex;
+  align-items: center;
 }
 
 #navbar ul{
   display: flex;
   flex-direction: column;
-  gap: 1rem;
   width: 100%;
 }
 
@@ -75,21 +98,140 @@ body{
   width: 90%;
 }
 
-#navbar li{
-  height: 40px;
+#navbar > ul > li{
+  min-height: 50px;
+  max-height: fit-content;
   font-weight: 500;
-  
+}
+
+#navbar li:hover{
+  cursor: pointer;
 }
 
 .navlist-bg{
   padding: 0 20px;
-  height: 100%;
-  display: flex;
-  align-items: center;
+  height: 50px;
   border-top-right-radius: 100px;
   border-bottom-right-radius: 100px;
+  transition: ease-in-out 0.2s;
 }
 
 #route-container{
-  padding: 1rem;
+  height: 100%;
+  width: 100%;
+  position: relative;
+}
+
+.route-page{
+  padding: 2rem;
+  height: 100%;
+  z-index: 3;
+  overflow-y: auto;
+  background-color: #eeeeeef0;
+}
+
+.route-page-desc{
+  font-size: 1rem;
+  color: rgb(45, 45, 45);
+  font-weight: 400;
+  margin: 0.5rem 0
+}
+
+/* -------------TABLES----------------- */
+
+table{
+  /* margin-top: 2rem; */
+  border-collapse: collapse;
+  background-color: white;
+  border-radius: 10px;
+}
+
+th{
+  width: 150px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  /* background-color: #D9D9D9; */
+}
+
+tr{
+  height: 2rem;
+}
+
+.modal-header{
+  font-size: 1.5rem;
+  font-weight: 500;
+}
+
+label{
+  color: rgb(35, 35, 35)
+}
+
+/* ------------------SAVE & CANCEL BUTTONS----------------- */
+
+#cancel-save-btns-div{
+  display: flex;
+  gap: 1rem;
+  height: 50px;
+  position: absolute;
+  bottom: 1rem;
+  right: 2rem;
+  
+}
+
+#cancel-save-btns-div button{
+  width: 100px;
+  height: 30px;
+  font-weight: 600;
+  border: none;
+}
+
+.save-btn{
+  background-color: #72D544;
+}
+
+.cancel-btn{
+  background-color: #E3412F;
+  color: white;
+}
+
+/* ----------------MODAL FORM------------------- */
+
+.modal-form{
+  position: relative;
+}
+
+/* -------------------------INPUT-------------------------- */
+
+input, textarea, select{
+  padding: 0.5rem
+}
+
+/* --------------------------STAFF----------------------- */
+
+#staff-table-container{
+  width: 100%;
+  min-height: 500px;
+  background-color: white;
+  border-radius: 10px;
+}
+
+#staff-table{
+  width: 100%;
+
+}
+
+/* -------------------------SUBROUTE DIV---------------------------- */
+
+#subroute-div{
+  height: 0;
+  max-height: fit-content;
+  overflow: hidden;
+  transition: ease-in-out 0.3s;
+}
+
+#subroute-div ul{
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem
 }
