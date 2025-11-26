@@ -1,0 +1,250 @@
+#inventory-div{
+    max-width: 1500px;
+    overflow-y: auto;
+}
+
+#inventory-table-container{
+    background-color: white;
+    width: 100%;
+    min-height: 500px;
+    border-radius: 10px;
+    padding-top: 0.5rem;
+    margin: 0.5rem 0;
+}
+
+#inventory-table{
+    width: 100%;
+    overflow-y: auto;
+}
+
+#filter-by-category{
+    width: 500px;
+    display: flex;
+    padding: 0.5rem;
+    background-color: rgb(255, 255, 255);
+}
+
+.category-filter{
+    flex:1;
+    height: 30px;
+    background-color: transparent;
+    border: none;
+}
+
+#add-item-btn{
+    width: 130px;
+    height: 40px;
+    border-radius: 10px;
+    border: none;
+    background-color: #334FBD;
+    color: white;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+#filter-div{
+    height: 35px;
+    display: flex;
+    gap: 1rem;
+}
+
+#filter-div > *{
+    width: 200px;
+}
+
+option:hover{
+    background-color: rgba(128, 128, 128, 0.285);
+}
+
+#add-item-div{
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 4;
+}
+
+#gray-bg{
+    position: fixed;
+    inset: 0;
+    background-color: rgba(69, 69, 69, 0.268);
+    z-index: 3
+
+}
+
+#add-item-form{
+    width: 500px;
+    height: 600px;
+    background-color: rgb(255, 255, 255);
+    border: 1px solid;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    z-index: 4;
+    position: relative;
+}
+
+#add-item-form input, #add-item-form select {
+    display: block;
+    height: 35px;
+    width: 100%;
+    margin-top: 0.5rem;
+}
+
+#save-item-btn{
+    background-color: #72D544;   
+}
+
+#cancel-item-btn{
+    background-color: #E3412F;
+    color: white
+}
+
+#button-div{
+    display: flex;
+    gap: 1rem;
+    /* justify-content: right; */
+    position: absolute;
+    bottom: 2rem;
+    right: 2rem;
+}
+
+.save-cancel-btn{
+    width: 120px;
+    height: 35px;
+    border: none;
+    font-weight: 600;
+
+}
+
+/* -----------------------INVENTORY  ITEM DETAILS------------------- */
+
+#item-information-div{
+    display: grid;
+    grid-template-columns: 120px auto auto;
+    grid-template-rows: repeat(1fr, 5);
+    background-color: white;
+    padding: 1.5rem;
+    margin: 2rem 0;
+    max-width: 1400px;
+    border-radius: 10px;
+    z-index: 3;
+}
+
+#item-img{
+    grid-row: 1/3;
+    grid-column: 1/2;
+    height: 90px;
+    width: 90px;
+    background-color: bisque;
+    border-radius: 45px;
+}
+
+#item-name{
+    grid-row: 1/2;
+    grid-column: 2/3;
+    font-size: 1.5rem;
+    font-weight: 500;
+    display: flex;
+    align-items: end;
+}
+
+#item-categ{
+    grid-row: 2/3;
+    grid-column: 2/3;
+}
+
+#item-brand, #item-desc, #item-added-by{
+    margin-left: 1rem;
+    margin-top: 0.7rem;
+}
+
+#item-brand{
+    grid-row: 3/4;
+    grid-column: 1/3;
+    margin-top: 1rem;
+}
+
+#item-desc{
+    grid-row: 4/5;
+    grid-column: 1/3;
+}
+
+#item-added-by{
+    grid-row: 5/6;
+    grid-column: 1/3;
+}
+
+#item-edit-button-div{
+    grid-row: 1/2;
+    grid-column: 3/4;
+    display: flex;
+    justify-content: right;
+    right: 1rem
+}
+
+#edit-details-btn{
+    margin-right: 1rem;
+}
+
+#item-edit-button-div button{
+    height: 40px;
+    width: 150px;
+    border-radius: 10px;
+    border: none;
+    font-weight: 500
+}
+
+#batches-table-container{
+    min-height: 400px;
+    max-width: 1400px;
+    background-color: white;
+    margin: 1.5rem 0;
+    border-radius: 10px;
+    padding: 0.5rem 0;
+}
+
+#batches-table{
+    width: 100%;
+}
+
+#add-new-batch-btn{
+    width: 150px;
+    height: 35px;
+}
+
+/* ---------------------ADD BATCH DIV -------------- */
+
+#add-batch-div{
+    position: fixed;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#add-batch-form{
+    height: 600px;
+    width: 500px;
+    background-color: white;
+    z-index: 4;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem
+}
+
+
+#add-batch-form input, #add-batch-form textarea{
+    display: block;
+    height: 35px;
+    width: 90%;
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+}
+
+
