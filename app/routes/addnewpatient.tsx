@@ -1,18 +1,14 @@
 import '../patients.css'
 import '../app.css'
-import CancelSaveBtn from './cancelsavebtn'
+import CancelSaveBtn from '~/components/cancelsavebtn'
 
 export default function AddPatient(props:any){
 
     return(
-        <div id="add-new-patient-div">
-            <div className='gray-bg'></div>
-            <div id="add-patient-form" className='modal-form'>
-                <div className='modal-header-div'>
-                    <p className="modal-header">Add Patient</p>
-                </div>
-                
-                <div id='main-add-patient-form'>
+        <div className='route-page'>
+                <p className="route-header">Add Patient</p>
+                <div>
+
                     <div>
                         <label htmlFor="search-by-id" style={{display: 'inline-block', marginRight: '1rem'}}>
                             <input type="text" id='search-by-id' placeholder='Search by ID Number' style={{width: '250px'}}/>
@@ -48,17 +44,12 @@ export default function AddPatient(props:any){
                            
                             <label htmlFor="" style={{display: 'block'}}>Sex
                                 <div id='gender-div'>
-                                    <div>
-                                        <input type="radio" name="gender" id='female' />
-                                        <label htmlFor="female">Female</label>
-                                    </div>
-                
-                                    <div>
-                                        <input type="radio" name="gender" id="male" value='Male'/>
-                                        <label htmlFor="male">Male</label>
-                                    </div>
-                                    
-                                </div>
+                                <input type="radio" name="gender" id='female' />
+                                <label htmlFor="female">Female</label>
+
+                                <input type="radio" name="gender" id="male" value='Male'/>
+                                <label htmlFor="male">Male</label>
+                            </div>
                             </label>
                             
                         </div>
@@ -74,6 +65,8 @@ export default function AddPatient(props:any){
                                     <option value="college">College</option>
                                 </select>
                             </label>
+
+                            <label htmlFor=""></label>
                             
                            
                             <label htmlFor="level">Level
@@ -157,13 +150,9 @@ export default function AddPatient(props:any){
                             </label>
                         </div>
                     </div>
-                </div>
-
-                <div id='cancel-save-div'>
-                     <CancelSaveBtn hideForm={props.hideForm}></CancelSaveBtn>
+                    <CancelSaveBtn hideForm={props.hideForm}></CancelSaveBtn>
                 </div>
                 
             </div>
-        </div>
     )
 }

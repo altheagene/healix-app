@@ -38,10 +38,11 @@ button{
 
 .gray-bg{
     position: absolute;
-    background-color: #1e1e1e65;
+    background-color: #1e1e1ea4;
     height: 100%;
     width: 100%;
     z-index: 3;
+    transition: ease-in-out 0.15s;
 }
 
 body{
@@ -56,36 +57,74 @@ body{
   display: flex;
   align-items: center;
   padding: 0 10px;
-  border-bottom: 1px solid #595959b4;
+  border-bottom
+  : 1px solid #59595962;
   color: #334FBD
 }
 
 #main-content{
   height: calc(100vh - 50px);
   display: flex;
+  position: relative;
 }
 
 #navbar{
-  width: 250px;
+  /* width: 250px; */
   height: 100%;
   background-color: #F8F8F8;
-  border-right: 1px solid #595959b4;
+  border-right: 1px solid #59595962;
   padding: 2rem 0;
+  transition: ease-in-out 0.15s;
+  transform: translateX(-100%);
+  /* z-index: 2; */
+}
+
+.show-navbar{
+  transform: translateX(0%);
+  width: 250px;
+}
+
+.hide-navbar{
+  display: none;
+  width: 0px;
+}
+
+.navbar-mobile{
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+@keyframes hide{
+  0%{
+    width: 250px
+  }
+}
+
+
+
+
+#route-container{
+  height: 100%;
+  width: 100%;
+  position: relative;
 }
 
 .route-header{
   font-weight: 500;
   font-size: 2rem;
+  color: #1f1f1f;
 }
 
 #navbar a{
   text-decoration: none;
-  color: black;
+  color: #201f1f;
   width: 250px;
   opacity: 1;
   height: 100%;
   display: flex;
   align-items: center;
+  font-size: 0.95rem;
 }
 
 #navbar ul{
@@ -116,18 +155,14 @@ body{
   transition: ease-in-out 0.2s;
 }
 
-#route-container{
-  height: 100%;
-  width: 100%;
-  position: relative;
-}
 
 .route-page{
   padding: 2rem;
   height: 100%;
   z-index: 3;
   overflow-y: auto;
-  background-color: #eeeeeef0;
+  /* background-color: #eeeeeef0; */
+  background-color: whitesmoke;
 }
 
 .route-page-desc{
@@ -144,8 +179,18 @@ table{
   border-collapse: collapse;
   background-color: white;
   border-radius: 10px;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+  width: 100%;
+  max-width: 1300px;
+  min-width: 1000px
 }
 
+.table-container{
+  /* min-width: 1000px; */
+  max-width: 1300px;
+  min-height: 500px;
+  overflow-x: auto;
+}
 th{
   width: 150px;
   font-size: 0.9rem;
@@ -157,9 +202,13 @@ tr{
   height: 2rem;
 }
 
+ tr:hover {
+    background-color: #f5f7ff;
+}
+
 .modal-header{
-  font-size: 1.5rem;
-  font-weight: 500;
+  font-size: 1.3rem;
+  font-weight: 600;
 }
 
 label{
@@ -168,31 +217,68 @@ label{
 
 /* ------------------SAVE & CANCEL BUTTONS----------------- */
 
-#cancel-save-btns-div{
-  display: flex;
-  gap: 1rem;
-  height: 50px;
-  position: absolute;
-  bottom: 1rem;
-  right: 2rem;
-  
+/* Container for cancel and save buttons */
+#cancel-save-btns-div {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end; /* aligned right */
+    padding: 1rem;
+    border-top: 1px solid rgba(128, 128, 128, 0.3);
+    background-color: #fff;
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
 }
 
-#cancel-save-btns-div button{
-  width: 100px;
-  height: 30px;
-  font-weight: 600;
-  border: none;
+/* Buttons general style */
+#cancel-save-btns-div button {
+    min-width: 100px;
+    height: 36px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 0.5rem 1rem;
+    font-size: 0.95rem;
 }
 
-.save-btn{
-  background-color: #72D544;
+/* Save button */
+.save-btn {
+    background-color: #72D544;
+    color: #fff;
+    border: none;
+    box-shadow: 0 4px 8px rgba(114, 213, 68, 0.3);
 }
 
-.cancel-btn{
-  background-color: #E3412F;
-  color: white;
+.save-btn:hover {
+    background-color: #54a82d;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(84, 168, 45, 0.4);
 }
+
+.save-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 8px rgba(84, 168, 45, 0.3);
+}
+
+/* Cancel button */
+.cancel-btn {
+    background-color: transparent;
+    color: #1c1c1c;
+    border: 1px solid #7f7f7fa2;
+    box-shadow: none;
+}
+
+.cancel-btn:hover {
+    background-color: #bdbdbd6f;
+    transform: translateY(-1px);
+    border-color: #7f7f7f;
+}
+
+.cancel-btn:active {
+    transform: translateY(0);
+}
+
 
 /* ----------------MODAL FORM------------------- */
 
@@ -209,7 +295,7 @@ input, textarea, select{
 /* --------------------------STAFF----------------------- */
 
 #staff-table-container{
-  width: 100%;
+  
   min-height: 500px;
   background-color: white;
   border-radius: 10px;
@@ -234,4 +320,147 @@ input, textarea, select{
   display: flex;
   flex-direction: column;
   gap: 1.5rem
+}
+
+/* -----------------------------MODAL FORMS------------------------ */
+
+/* .modal-form{
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.modal-form input, .modal-form textarea{
+  display: block;
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.modal-header-div{
+  min-height: 60px;
+  width: 100%;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 1rem;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.636)
+}
+
+.main-form-content{
+  padding: 1rem 2rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.7rem
+}
+
+.main-form-content label{
+  font-size: 0.85rem;
+  color: rgb(67, 67, 67)
+} */
+
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  background-color: #fff;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  opacity: 0;
+  transform: scale(0.9);
+  animation: modalFadeIn 0.3s forwards;
+  z-index: 4;
+}
+
+/* Inputs and textarea */
+.modal-form input,
+.modal-form textarea {
+  display: block;
+  width: 100%;
+  margin-top: 0.5rem;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.modal-form input:focus,
+.modal-form textarea:focus {
+  border-color: #4f73ff;
+  box-shadow: 0 0 6px rgba(79, 115, 255, 0.3);
+  outline: none;
+}
+
+/* Modal header */
+.modal-header-div {
+  min-height: 60px;
+  width: 100%;
+  background-color: #f7f7f7;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 1rem;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.3);
+  font-weight: bold;
+  color: #333;
+}
+
+/* Main content */
+.main-form-content {
+  padding: 1rem 2rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.7rem;
+  overflow-y: auto;
+}
+
+/* Labels */
+.main-form-content label {
+  font-size: 0.85rem;
+  color: rgb(67, 67, 67);
+}
+
+
+/* Modal animation */
+@keyframes modalFadeIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Optional: add smooth close animation */
+.modal-form.close {
+  animation: modalFadeOut 0.2s forwards;
+}
+
+@keyframes modalFadeOut {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+
+/* ---------------------------------INPUT--------------------- */
+
+input[type='text'], input[type='number'], input[type='date'], textarea, select{
+  background-color: rgb(240, 240, 240);
 }

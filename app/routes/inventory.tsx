@@ -42,8 +42,8 @@ export default function Inventory(){
                     </div>
                     <button id="add-item-btn" onClick={() => setShowAddItem(true)}>+ Add Item</button>
                 </div>
-                <div id="inventory-table-container">
-                    <table id="inventory-table">
+                <div id="inventory-table-container" className="table-container">
+                    <table id="inventory-table" >
                         <tr>
                             <th>ID</th>
                             <th>Name</th>

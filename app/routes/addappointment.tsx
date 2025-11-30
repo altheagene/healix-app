@@ -37,9 +37,11 @@ export default function AddAppointment(){
                             <div id='search-patients-container'></div>
                         </div>
                         <div id='patient-chosen'>
-
+                            <img></img>
+                            <p id='patient-name'></p>
+                            <p id='patient-idnum'></p>
                         </div>
-                        <button style={{backgroundColor: '#FACB38', height: '45px', border: 'none', fontWeight: '600'}}>
+                        <button id='register-patient-btn' style={{}}>
                             Register New Patient
                         </button>
                     </div>
