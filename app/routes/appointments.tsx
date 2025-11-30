@@ -2,10 +2,37 @@ import '../routepages.css'
 import '../appointments.css'
 import Searchbar from '~/components/searchbar'
 import { NavLink } from 'react-router'
+import React from 'react'
 
 import { useNavigate } from 'react-router'
 
 export default function Appointments(){
+
+    const [apptType, setApptType] = React.useState('Today');
+    const [apptStatus, setApptStatus] = React.useState('Upcoming')
+    const apptTypes = ['Today', 'Future', 'Past'];
+    const apptStatuses = ['Upcoming', 'In-Progress', 'Completed', 'Cancelled'];
+
+    // DYNAMIC COMPONENTS
+    const apptTypeBtns = apptTypes.map(type => {
+        return(
+             <button className='filter-btn' 
+                    onClick={() => setApptType(type)}
+                    style={{backgroundColor: type === apptType ? '#FACB38' : 'white'}}>
+                        {type}</button>
+        )
+    })
+
+    const apptStatusBtns = apptStatuses.map(status => {
+        return(
+            <button className='appointment-status-btn' 
+                    onClick={() => setApptStatus(status)}
+                    style={{backgroundColor: apptStatus === status ? 'white' : ' rgb(230, 230, 230)'}}>
+                        {status}</button>
+        )
+    })
+
+
 
     const navigate = useNavigate()
     return(
@@ -16,18 +43,13 @@ export default function Appointments(){
             <button id='add-appointment-btn' onClick={() => navigate('/addappointment')}>+ Add Appointment</button>
 
             <div id='filter-btns'>
-                <button className='filter-btn'>Today</button>
-                <button className='filter-btn'>Future</button>
-                <button className='filter-btn'>All History</button>
+                {apptTypeBtns}
             </div>
 
             <div id='appointments-list'>
                 <div id='today-appointments' className='appointment-div'>
                     <div id='today-appointment-status-bar'>
-                        <button className='appointment-status-btn'>Upcoming</button>
-                        <button className='appointment-status-btn'>In-Progress</button>
-                        <button className='appointment-status-btn'>Completed</button>
-                        <button className='appointment-status-btn'>Cancelled</button>
+                       {apptStatusBtns}
                     </div>
                     <div className='appointments-table-container'>
                         <table className='appointments-table'>

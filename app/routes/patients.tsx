@@ -5,6 +5,7 @@ import AddPatient from '~/components/addpatient'
 import React from 'react'
 import { NavLink } from 'react-router'
 
+
 export default function Patients(){
 
     const [showForm, setShowForm] = React.useState(false)
@@ -18,7 +19,7 @@ export default function Patients(){
 
                 {showForm ? <AddPatient hideForm={() => setShowForm(false)} /> : null}
                 {/* {showForm ?  <AddPatientForm hideForm={() => setShowForm(false)}/> : null} */}
-                <div id='patients-table-container'>
+                <div id='patients-table-container' className='table-container'>
                     <table id='patients-table'>
                     <tr>
                             <th className='photo-col' style={{width: '50px'}}></th>
@@ -31,7 +32,8 @@ export default function Patients(){
                         </tr>
                     </table>
                 </div>
-                <NavLink to='/patientdetails'>PATIENTdETAILS</NavLink>
+                <NavLink to='/patientdetails'>Patient Details</NavLink>
+               
             </div>
     )
 }

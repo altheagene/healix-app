@@ -1,4 +1,5 @@
 import '../patients.css'
+import '../app.css'
 import AddRecord from '~/components/addrecord'
 import React from 'react'
 
@@ -40,7 +41,7 @@ export default function PatientDetails(){
                     <h2 style={{fontWeight: '500'}}>Clinic Visits</h2>
                     <button style={{height: '40px', width: '120px', backgroundColor: '#334FBD', borderRadius: '10px', color: 'white', border: 'none'}} onClick={() => setShowAddRecord(true)}>+ Add Record</button>
                 </div>
-                <div id='patient-visit-div'>
+                <div id='patient-visit-div' className='table-container'>
                     <table id='patient-visit-table'>
                         <tr>
                             <th>Date</th>

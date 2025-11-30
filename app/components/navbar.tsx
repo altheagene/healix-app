@@ -1,13 +1,28 @@
 import { NavLink } from "react-router";
 import React from "react";
 
-export default function Navbar(){
+import { index } from "@react-router/dev/routes";
+
+
+export default function Navbar(props:any){
+    const [width, setWidth] = React.useState(window.innerWidth)
+
+    React.useEffect(() => {
+    // Safe: window exists ONLY in the browser
+    const handleResize = () => setWidth(window.innerWidth);
+
+    handleResize(); // set initial width
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+    }, []);
 
     const [routeChosen, setRouteChosen] = React.useState('Home')
     const navbarObj = [
         {
             route: "/",
-            text: 'Home'
+            text: 'Home',
+            icon: 'speedometer2'
         },
         {
             route: "/patients",
@@ -89,8 +104,11 @@ export default function Navbar(){
         )
     })
     return(
-        <nav id="navbar">
-            <ul>
+        <nav id="navbar" className={`${props.showNavbar ? "show-navbar" : "hide-navbar"} ${width < 1000 ? "navbar-mobile" : ""}`} 
+                         style={{
+                            transform: props.showNavbar ? 'translateX(0%)' : 'translateX(-100%)'
+                         }}>
+            <ul> 
                 {navListComponents}
             </ul>
         </nav>

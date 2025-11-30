@@ -10,6 +10,7 @@ import {
 import type { Route } from "./+types/root";
 import "./app.css";
 import Navbar from "./components/navbar";
+import React from "react";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -25,6 +26,11 @@ export const links: Route.LinksFunction = () => [
   {
     rel:'stylesheet',
     href: "https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Manrope:wght@200..800&display=swap"
+  },
+  {
+   
+  rel:"stylesheet",
+  href: "https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
   }
 ];
 
@@ -48,14 +54,19 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+
+  const [showNavbar, setShowNavBar] = React.useState(false);
+  const [validUser, setValidUser] = React.useState(false)
   return (
     <>
+    
         <div id='header'>
+          <button onClick={() => setShowNavBar(prev => !prev)}>Click</button>
           <h1>Healix</h1>
         </div>
 
         <div id="main-content">
-          <Navbar/>
+          <Navbar showNavbar={showNavbar}/>
           <div id="route-container">
             <Outlet></Outlet>
           </div>

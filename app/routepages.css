@@ -18,6 +18,11 @@
     margin: 0 20px
 }
 
+#add-patient-btn:hover, #add-appointment-btn:hover{
+    background-color:#828DFF;
+    color: white;
+    transition: ease-in-out 0.15s;
+} 
 /* ----------------------------PATIENTS---------------------- */
 /* #add-patient-div {
     position: fixed;

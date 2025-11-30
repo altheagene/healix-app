@@ -7,7 +7,7 @@ export default function Staff(){
             <p className="route-page-desc">Manage clinic staff, roles, and permissions</p>
             <Searchbar id='staff-searchbar' placeholder='Search staff'/>
             
-            <div id="staff-table-container">
+            <div id="staff-table-container" className='table-container'>
                 <table id="staff-table">
                     <tr>
                         <th></th>
