@@ -3,6 +3,7 @@ import os
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))   # points to /backend/db
 database = os.path.join(BASE_DIR, "clinic.db")
+studentdb = os.path.join(BASE_DIR, "student.db")
 
 #----------------------------------------PATIENTS MODULE------------------------------
 
@@ -20,6 +21,21 @@ def findstudent(table:str, **kwargs):
     data = getprocess(sql, values)
 
     return data
+
+def getstudent(**kwargs):
+    keys = list(kwargs.keys())
+    values = list(kwargs.values())
+    
+    sql = f'SELECT * FROM students WHERE `{keys[0]}` = ?'
+    conn = connect(database)
+    conn.row_factory = Row
+    cursor = conn.cursor()
+    cursor.execute(sql, values)
+    data = cursor.fetchall()
+    cursor.close()
+
+    return [dict(row) for row in data]
+    
 
 def getallergies(string = 'allergies'):
     sql = f'SELECT * FROM {string}'
@@ -63,6 +79,20 @@ def getallwithcondition(table, **kwargs):
     sql = f'SELECT * FROM {table} WHERE `{keys[0]}` = ?'
 
     return getprocess(sql, values)
+
+def getitemdetails(table, **kwargs):
+    keys = list(kwargs.keys())
+    values = list(kwargs.values())
+
+    sql = f'''
+    SELECT s.supply_id, s.supply_name, s.description, c.category_name, s.brand, s.description 
+    FROM {table} s 
+    INNER JOIN supplies_categories c on  s.category_id = c.category_id 
+    WHERE s.supply_id = ?
+
+    '''
+    return getprocess(sql, values)
+
 
 def getprocess(sql, values) -> list:
     conn = connect(database)

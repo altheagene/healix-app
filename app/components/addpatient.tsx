@@ -115,7 +115,7 @@ export default function AddPatient(props: any) {
   // ---------- FUNCTIONS ----------
   function findStudent() {
     const idnum = idnumSearch.trim();
-    fetch(`http://localhost:5000/findstudent?idnum=${idnum}`)
+    fetch(`http://localhost:5000/getstudent?idnum=${idnum}`)
       .then(res => res.json())
       .then(data => setStudentData({...data[0], is_student:true}));
 
@@ -315,6 +315,12 @@ export default function AddPatient(props: any) {
                     <ul>
                         {conditionElements}
                     </ul>
+                </div>
+
+                <div style={{display: 'block'}}>
+                  <label htmlFor="notes">Notes
+                    <input type="text"  onChange={(e) => setStudentData({...studentData, notes: e.target.value})}/>
+                  </label>
                 </div>
             </div>
             

@@ -1,9 +1,20 @@
 import React from "react"
 import CancelSaveBtn from "./cancelsavebtn"
+import { useParams } from "react-router"
 
 
 export default function AddBatch(props:any){
+    
+    const { id } = useParams()
+    const [batchDetails, setBatchDetails] = React.useState({
+        supply_id: id,
+        batch_number: '',
+        expiration_data: null,
+        notes: '',
+        quantity: 0
+    })
 
+    
 
     return(
         <div id="add-batch-div">
@@ -30,9 +41,6 @@ export default function AddBatch(props:any){
                         <input type="number" min='0' id="addstock"/>
                     </label>
 
-                    <label htmlFor="notes">Notes
-                        <textarea name="notes" id="notes" rows='4' cols='60'></textarea>
-                    </label>
                 </div>
                 <CancelSaveBtn hideForm={props.hideForm}/>
             </div>

@@ -4,11 +4,22 @@ import '../app.css'
 import AddItem from "~/components/additem"
 import ItemDetails from "./itemdetails"
 import React from "react"
-import { NavLink } from "react-router"
+import { NavLink, useNavigate } from "react-router"
 
 export default function Inventory(){
 
+    const navigate = useNavigate()
     const [showAddItem, setShowAddItem] = React.useState(false)
+    const [supplies, setSupplies] = React.useState<any[]>([]);
+    
+
+    console.log(supplies)
+    React.useEffect(() => {
+        fetch(`http://localhost:5000/getallsupplies`).
+        then(res => res.json()).
+        then(data => setSupplies(data))
+
+    }, [])
 
     return(
         <div className="route-page">
@@ -43,19 +54,33 @@ export default function Inventory(){
                     <button id="add-item-btn" onClick={() => setShowAddItem(true)}>+ Add Item</button>
                 </div>
                 <div id="inventory-table-container" className="table-container">
-                    <table id="inventory-table" >
+                    <table id="inventory-table">
                         <tr>
-                            <th>ID</th>
+                            <th style={{maxWidth: '50px'}}>ID</th>
                             <th>Name</th>
                             <th>Stock Level</th>
                             <th>Status</th>
-                            <th>Comments</th>
+                            {/* <th>Comments</th> */}
                             <th>Last Updated</th>
                             <th></th>
                         </tr>
+
+                        {supplies.map(supply => {
+                            return(
+                                <tr onClick={() => navigate(`/itemdetails/${supply.supply_id}`)}>
+                                    <td>{supply.supply_id}</td>
+                                    <td>{supply.supply_name}</td>
+                                    <td>--</td>
+                                    <td>--</td>
+                                    {/* <td>--</td> */}
+                                    <td>--</td>
+                                    <td></td>
+                                </tr>
+                            )
+                        })}
                     </table>
                 </div>
-                <NavLink to='/itemdetails'>Item Details</NavLink>
+                {/* <NavLink to='/itemdetails'>Item Details</NavLink> */}
             </div>
         </div>
     )
