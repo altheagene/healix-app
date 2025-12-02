@@ -5,7 +5,7 @@ import { index } from "@react-router/dev/routes";
 
 
 export default function Navbar(props:any){
-    const [width, setWidth] = React.useState(window.innerWidth)
+    const [width, setWidth] = React.useState(0)
 
     React.useEffect(() => {
     // Safe: window exists ONLY in the browser

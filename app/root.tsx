@@ -55,7 +55,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export default function App() {
 
-  const [showNavbar, setShowNavBar] = React.useState(false);
+  const [showNavbar, setShowNavBar] = React.useState(true);
   const [validUser, setValidUser] = React.useState(false)
   return (
     <>
