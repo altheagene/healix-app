@@ -148,6 +148,12 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 
+
+.patient-info{
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
+}
 /* Specific sections */
 #student-info { grid-column: 1 / 2; }
 #medical-info { grid-column: 2 / 3; }
@@ -295,7 +301,9 @@ a:hover {
 }
 
 #medical-information{
-    min-height: 150px;
+    max-height: 500px;
+    /* min-height: 180px; */
+    
 }
 
 #emergency-contact-information{

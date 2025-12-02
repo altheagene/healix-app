@@ -182,13 +182,13 @@ table{
   box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
   width: 100%;
   max-width: 1300px;
-  min-width: 1000px
+  min-width: 1000px;
 }
 
 .table-container{
   /* min-width: 1000px; */
   max-width: 1300px;
-  min-height: 500px;
+  /* min-height: 500px; */
   overflow-x: auto;
 }
 th{
@@ -199,7 +199,16 @@ th{
 }
 
 tr{
-  height: 2rem;
+  height: 4rem;
+}
+
+td, th{
+  text-align: left;
+}
+
+td{
+  font-size: 0.9rem;
+  border-top: 1px solid  #3333331d;
 }
 
  tr:hover {
@@ -464,3 +473,31 @@ input, textarea, select{
 input[type='text'], input[type='number'], input[type='date'], textarea, select{
   background-color: rgb(240, 240, 240);
 }
+
+.dropdown{
+  height: 100px;
+  width: 200px;
+  background-color: white;
+  overflow-y: auto;
+  border: 1px solid #1c1c1c51;
+}
+
+.dropdown ul{
+  height: 100%;
+}
+
+.dropdown li{
+  height: 25px;
+  font-size: 0.9rem;
+}
+
+.dropdown > ul input{
+  display: inline-block;
+  width: 50px;
+}
+
+.form-div{
+  border: 1px solid #46454551;
+  padding: 2rem 1rem;
+  border-radius: 10px;
+  box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;}

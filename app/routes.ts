@@ -8,7 +8,7 @@ export default [
     route("inventory", "routes/inventory.tsx"),
     route("staff", "routes/staff.tsx"),
     route("reports", "routes/reports.tsx"),
-    route("patientdetails", 'routes/patientdetails.tsx'),
+    route("patientdetails/:id", 'routes/patientdetails.tsx'),
     route('addappointment', 'routes/addappointment.tsx'),
     route('itemdetails', 'routes/itemdetails.tsx'),
     route('patientreport', 'routes/patientreports.tsx'),
