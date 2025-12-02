@@ -3,13 +3,27 @@ import AddBatch from '~/components/addbatch'
 import UpdateStocks from '~/components/updatestocks';
 import EditItem from '~/components/edititem';
 import React from 'react'
+import { useParams } from 'react-router';
 
 
 export default function ItemDetails(){
 
+    const { id }  = useParams()
+    const [itemDetails, setItemDetails] = React.useState<any[]>([]);
     const [showAddBatch, setShowAddBatch] = React.useState(false);
     const [showUpdateStock, setShowUpdateStock] = React.useState(false);
-    const [showEditDetails, setShowEditDetails] = React.useState(true)
+    const [showEditDetails, setShowEditDetails] = React.useState(false)
+
+    console.log(id)
+
+    React.useEffect(() => {
+        fetch(`http://localhost:5000/getsupplydetails?idnum=${id}`).
+        then(res => res.json()).
+        then(data => setItemDetails(data[0]))
+
+    }, [])
+
+    console.log(itemDetails)
 
     return(
         <div className="route-page">
@@ -21,11 +35,11 @@ export default function ItemDetails(){
 
                 <div id="item-information-div">
                     <img id="item-img"></img>
-                    <p id="item-name">Ibuprofen (500mg)</p>
-                    <p id="item-categ">Medicine</p>
-                    <p id="item-brand">Brand: UniLab</p>
-                    <p id="item-desc">Lorem ipsum lol lorem ipsum lol</p>
-                    <p id="item-added-by">Added by: Melanie Hamilton, RN</p>
+                    <p id="item-name">{itemDetails.supply_name}</p>
+                    <p id="item-categ">{itemDetails.category_name}</p>
+                    <p id="item-brand">Brand: {itemDetails.brand}</p>
+                    <p id="item-desc">Description: {itemDetails.description}</p>
+                    {/* <p id="item-added-by">Added by: Melanie Hamilton, RN</p> */}
                     <div id="item-edit-button-div">
                         <button id='edit-details-btn' onClick={() => setShowEditDetails(true)}>Edit Details</button>
                         <button id='add-new-batch-btn' onClick={() => setShowAddBatch(true)}> Add new batch</button>

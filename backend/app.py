@@ -14,6 +14,13 @@ def find_student():
     data = findstudent('students', student_id=idnum)
     return jsonify(data)
 
+@app.route('/getstudent', methods=['GET'])
+def get_student():
+    idnum = request.args.get('idnum')
+    data = getstudent(student_id=idnum)
+    
+    return jsonify(data)
+
 @app.route('/getallergies', methods=['GET'])
 def get_allergies():
     data = getallergies('allergies')
@@ -62,7 +69,18 @@ def get_patient_conditions():
 @app.route('/getallsupplies', methods=['GET'])
 def get_all_supplies():
     data = getall('supplies')
+    return jsonify(data)
 
+@app.route('/getsupplydetails', methods=['GET'])
+def get_supply_details():
+    supply_id = request.args.get('idnum')
+    supply_info = getitemdetails('supplies', supply_id=supply_id)
+
+    return jsonify(supply_info)
+
+@app.route('/getallservices', methods=['GET'])
+def get_all_services():
+    data = getall('services')
     return jsonify(data)
 # ----------------------INSERT QUERIES----------------------------
 
@@ -72,6 +90,7 @@ def add_patient():
     success = addrecord('patients', **data)
 
     return jsonify({'success' : success})
+
 
 @app.route('/addpatientallergies', methods=['POST'])
 def add_patient_allergies():
@@ -97,6 +116,13 @@ def add_patient_conditions():
         ok = addrecord('patient_conditions', patient_id = id, condition_id =  condition)
         success = ok
 
+    return jsonify({'success' : success})
+    
+@app.route('/additem', methods=['POST'])
+def add_item():
+    data = request.get_json()
+    success = addrecord('supplies', **data)
+    
     return jsonify({'success' : success})
 
 if __name__=="__main__":
