@@ -233,7 +233,7 @@ export default function AddPatient(props: any) {
 
             <div>
               <label htmlFor="birthdate">Birthdate
-                <input type="date" />
+                <input type="date" id='birthdate' value={studentData?.birthday} onChange={(e)  => setStudentData({...studentData, birthday: e.target.value})}/>
               </label>
 
               <label style={{ display: 'block' }}>Sex

@@ -22,6 +22,15 @@ def findstudent(table:str, **kwargs):
 
     return data
 
+def getrecord(table, **kwargs):
+    keys = list(kwargs.keys())
+    values = list(kwargs.values())
+    sql = f'SELECT * FROM {table} WHERE `{keys[0]}` = ?'
+
+    data = getprocess(sql, values)
+
+    return data
+
 def getstudent(**kwargs):
     keys = list(kwargs.keys())
     values = list(kwargs.values())
@@ -93,6 +102,17 @@ def getitemdetails(table, **kwargs):
     '''
     return getprocess(sql, values)
 
+def updatestock(table, **kwargs):
+    keys = list(kwargs.keys())
+    values = list(kwargs.values())
+
+    sql = f'''
+            UPDATE {table}
+            SET stock_level = stock_level +  ? 
+            WHERE batch_id = ?
+            '''
+
+    return postprocess(sql, values)
 
 def getprocess(sql, values) -> list:
     conn = connect(database)
@@ -107,6 +127,7 @@ def getprocess(sql, values) -> list:
 def postprocess(sql, values) -> bool:
     print(sql)
     conn = connect(database)
+    conn.execute("PRAGMA foreign_keys = ON;")
     cursor = conn.cursor()
     cursor.execute(sql, values)
     conn.commit()
@@ -115,11 +136,12 @@ def postprocess(sql, values) -> bool:
 
     return rowcount > 0
 
-def main():
-    data = getallstudents('students')
+def main(): pass
+    # data = getallstudents('students')
 
-    for dat in data:
-        print(f"{dat['student_id']}")
+    # for dat in data:
+    #     print(f"{dat['student_id']}")
+    
 
 if __name__ == '__main__':
     main()

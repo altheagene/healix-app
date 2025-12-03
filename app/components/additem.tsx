@@ -4,17 +4,27 @@ import CancelSaveBtn from './cancelsavebtn'
 
 export default function AddItem(props:any){
 
+    const [suppliesCategories, setSuppliesCategories] = React.useState<any[]>()
     const [itemDetails, setItemDetails] = React.useState({
         supply_name: '',
         brand: '',
         description: '',
-        category_id: 0
+        category_id: 1
     })
-
-    const [services, setServices] = React.useState<any[]>([])
-
+    
     async function submitForm(){
         console.log(itemDetails)
+
+        //checks if all fields are filled
+        for (const key of Object.keys(itemDetails)){
+            const objkey = key as keyof typeof itemDetails
+            const value = itemDetails[objkey]
+
+            if(value === ''){
+                console.log('END')
+                return
+            }
+        }
 
         const response = await fetch(`http://localhost:5000/additem`, {
             method: 'POST',
@@ -23,7 +33,16 @@ export default function AddItem(props:any){
             },
             body: JSON.stringify(itemDetails)
         })
+        props.refetchSupplies()
     }
+
+    React.useEffect(() => {
+        fetch(`http://localhost:5000/getallsuppliescategories`)
+        .then(res => res.json())
+        .then(data => setSuppliesCategories(data))
+    }, [])
+
+    console.log(suppliesCategories)
 
     // React.useEffect(() => {
     //     fetch(`http://localhost:5000/getservices`)
@@ -54,10 +73,12 @@ export default function AddItem(props:any){
                     </label>
 
                     <label htmlFor="add-item-category"> Category
-                        <select name="category" id="">
-                            <option value="medication">Medication</option>
-                            <option value="medical-supplies">Medical Supplies</option>
-                            <option value="equipment">Equipment</option>
+                        <select name="category" id="add-item-category" value={itemDetails?.category_id} onChange={(e) => setItemDetails({...itemDetails, category_id: parseInt(e.target.value)})}>
+                            {suppliesCategories?.map(supply => {
+                                return(
+                                    <option value={supply.category_id}>{supply.category_name}</option>
+                                )
+                            })}
                         </select>
                     </label>
                 </div>

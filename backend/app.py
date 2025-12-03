@@ -3,6 +3,7 @@ from flask_cors import CORS
 import sys
 sys.path.insert(0, '/db')
 from db.dbhelper import *
+from datetime import date 
 
 app = Flask(__name__)
 # CORS(app, resources={r"/*" : {"origins":"*"}} )
@@ -14,11 +15,25 @@ def find_student():
     data = findstudent('students', student_id=idnum)
     return jsonify(data)
 
+@app.route('/getall', methods=['GET'])
+def get_all():
+    table = request.args.get('table')
+    data = getall(table)
+
+    return jsonify(data)
+
+@app.route('/getbatches', methods=['GET'])
+def get_batches():
+    supply_id = request.args.get('idnum')
+    data = getrecord('batch', supply_id=supply_id)
+
+    return jsonify(data)
+
 @app.route('/getstudent', methods=['GET'])
 def get_student():
     idnum = request.args.get('idnum')
     data = getstudent(student_id=idnum)
-    
+
     return jsonify(data)
 
 @app.route('/getallergies', methods=['GET'])
@@ -82,6 +97,11 @@ def get_supply_details():
 def get_all_services():
     data = getall('services')
     return jsonify(data)
+
+@app.route('/getallsuppliescategories', methods=['GET'])
+def get_all_supplies_categorie():
+    data = getall('supplies_categories')
+    return jsonify(data)
 # ----------------------INSERT QUERIES----------------------------
 
 @app.route('/addpatient', methods=['POST'])
@@ -123,6 +143,37 @@ def add_item():
     data = request.get_json()
     success = addrecord('supplies', **data)
     
+    return jsonify({'success' : success})
+
+@app.route('/addbatch', methods=['POST'])
+def add_batch():
+    data = request.get_json()
+    success = addrecord('batch', **data)
+
+    #get the latest and max batch id
+    max_batch_id = getmaxid('batch', 'batch_id')
+    batch_id = max_batch_id[0]['last_id']
+    # batch_id = 30
+    item_in = data['stock_level']
+    item_out = 0
+    inv_date = date.today()
+
+    success = addrecord('inventory', batch_id=batch_id, item_in=item_in, item_out=item_out, inv_date = inv_date)
+
+    return jsonify({'success' : success})
+    
+@app.route('/editstockbatch', methods=['POST'])
+def edit_stock_batch():
+    data = request.get_json()
+    print(data)
+    batch_id = data['batch_id']
+    inv_date = date.today()
+    item_in = data['item_in']
+    item_out = data['item_out']
+    update_value = item_in - item_out
+    success = addrecord('inventory', batch_id=batch_id, inv_date=inv_date, item_in=item_in, item_out=item_out)
+    updatestock('batch', update_value=update_value,  batch_id=batch_id)
+
     return jsonify({'success' : success})
 
 if __name__=="__main__":

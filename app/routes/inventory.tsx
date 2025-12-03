@@ -21,10 +21,16 @@ export default function Inventory(){
 
     }, [])
 
+    function refetchSupplies(){
+        fetch(`http://localhost:5000/getallsupplies`).
+        then(res => res.json()).
+        then(data => setSupplies(data))
+    }
+
     return(
         <div className="route-page">
             <div id="inventory-div">
-                {showAddItem ? <AddItem hideForm={() => setShowAddItem(false)}/> : null}
+                {showAddItem ? <AddItem hideForm={() => setShowAddItem(false)} refetchSupplies={refetchSupplies}/> : null}
                 <h1 className="route-header">Inventory</h1>
                 <p className="route-page-desc">Manage your clinic's inventory, supplies, and equipment.</p>
                 <Searchbar id='inventory-searchbar' placeholder='Search item'/>
