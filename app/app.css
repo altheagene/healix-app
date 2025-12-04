@@ -1,20 +1,25 @@
 /* @import "tailwindcss";
 
+
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
+
 html,
 body {
   @apply bg-white dark:bg-gray-950;
+
 
   @media (prefers-color-scheme: dark) {
     color-scheme: dark;
   }
 
+
   @layer components{}
 } */
+
 
 *{
   margin: 0;
@@ -23,10 +28,12 @@ body {
   font-family: 'Bricolage Grotesque', sans-serif;
 }
 
+
 button{
   cursor: pointer;
    font-family: 'Bricolage Grotesque', sans-serif;
 }
+
 
 #gray-background{
   position: absolute;
@@ -35,6 +42,7 @@ button{
   background-color: rgba(0, 0, 0, 0.189);
   z-index: 3;
 }
+
 
 .gray-bg{
     position: absolute;
@@ -45,10 +53,12 @@ button{
     transition: ease-in-out 0.15s;
 }
 
+
 body{
   position: fixed;
   inset: 0;
 }
+
 
 #header{
   height: 50px;
@@ -62,11 +72,13 @@ body{
   color: #334FBD
 }
 
+
 #main-content{
   height: calc(100vh - 50px);
   display: flex;
   position: relative;
 }
+
 
 #navbar{
   /* width: 250px; */
@@ -79,21 +91,25 @@ body{
   /* z-index: 2; */
 }
 
+
 .show-navbar{
   transform: translateX(0%);
   width: 250px;
 }
+
 
 .hide-navbar{
   display: none;
   width: 0px;
 }
 
+
 .navbar-mobile{
   position: absolute;
   top: 0;
   left: 0;
 }
+
 
 @keyframes hide{
   0%{
@@ -104,17 +120,23 @@ body{
 
 
 
+
+
+
+
 #route-container{
   height: 100%;
   width: 100%;
   position: relative;
 }
 
+
 .route-header{
   font-weight: 500;
   font-size: 2rem;
   color: #1f1f1f;
 }
+
 
 #navbar a{
   text-decoration: none;
@@ -127,15 +149,18 @@ body{
   font-size: 0.95rem;
 }
 
+
 #navbar ul{
   display: flex;
   flex-direction: column;
   width: 100%;
 }
 
+
 #navbar ul{
   width: 90%;
 }
+
 
 #navbar > ul > li{
   min-height: 50px;
@@ -143,9 +168,11 @@ body{
   font-weight: 500;
 }
 
+
 #navbar li:hover{
   cursor: pointer;
 }
+
 
 .navlist-bg{
   padding: 0 20px;
@@ -154,6 +181,8 @@ body{
   border-bottom-right-radius: 100px;
   transition: ease-in-out 0.2s;
 }
+
+
 
 
 .route-page{
@@ -165,6 +194,7 @@ body{
   background-color: whitesmoke;
 }
 
+
 .route-page-desc{
   font-size: 1rem;
   color: rgb(45, 45, 45);
@@ -172,7 +202,9 @@ body{
   margin: 0.5rem 0
 }
 
+
 /* -------------TABLES----------------- */
+
 
 table{
   /* margin-top: 2rem; */
@@ -184,6 +216,7 @@ table{
   min-width: 1000px;
 }
 
+
 .table-container{
   /* min-width: 1000px; */
   max-width: 1300px;
@@ -193,6 +226,7 @@ table{
   border-radius: 10px;
 }
 
+
 th{
   width: 150px;
   font-size: 0.9rem;
@@ -200,34 +234,42 @@ th{
   /* background-color: #D9D9D9; */
 }
 
+
 tr{
   height: 4rem;
 }
+
 
 td, th{
   text-align: left;
   padding-left: 1rem;
 }
 
+
 td{
   font-size: 0.9rem;
   border-top: 1px solid  #3333331d;
 }
 
+
  tr:hover {
     background-color: #f5f7ff;
 }
+
 
 .modal-header{
   font-size: 1.3rem;
   font-weight: 600;
 }
 
+
 label{
   color: rgb(35, 35, 35)
 }
 
+
 /* ------------------SAVE & CANCEL BUTTONS----------------- */
+
 
 /* Container for cancel and save buttons */
 #cancel-save-btns-div {
@@ -242,6 +284,7 @@ label{
     z-index: 10;
 }
 
+
 /* Buttons general style */
 #cancel-save-btns-div button {
     min-width: 100px;
@@ -254,6 +297,7 @@ label{
     font-size: 0.95rem;
 }
 
+
 /* Save button */
 .save-btn {
     background-color: #72D544;
@@ -262,16 +306,19 @@ label{
     box-shadow: 0 4px 8px rgba(114, 213, 68, 0.3);
 }
 
+
 .save-btn:hover {
     background-color: #54a82d;
     transform: translateY(-2px);
     box-shadow: 0 6px 12px rgba(84, 168, 45, 0.4);
 }
 
+
 .save-btn:active {
     transform: translateY(0);
     box-shadow: 0 4px 8px rgba(84, 168, 45, 0.3);
 }
+
 
 /* Cancel button */
 .cancel-btn {
@@ -281,44 +328,57 @@ label{
     box-shadow: none;
 }
 
+
 .cancel-btn:hover {
     background-color: #bdbdbd6f;
     transform: translateY(-1px);
     border-color: #7f7f7f;
 }
 
+
 .cancel-btn:active {
     transform: translateY(0);
 }
 
 
+
+
 /* ----------------MODAL FORM------------------- */
+
 
 .modal-form{
   position: relative;
 }
 
+
 /* -------------------------INPUT-------------------------- */
+
 
 input, textarea, select{
   padding: 0.5rem
 }
 
+
 /* --------------------------STAFF----------------------- */
 
+
 #staff-table-container{
-  
+ 
   min-height: 500px;
   background-color: white;
   border-radius: 10px;
 }
 
+
 #staff-table{
   width: 100%;
 
+
 }
 
+
 /* -------------------------SUBROUTE DIV---------------------------- */
+
 
 #subroute-div{
   height: 0;
@@ -327,6 +387,7 @@ input, textarea, select{
   transition: ease-in-out 0.3s;
 }
 
+
 #subroute-div ul{
   list-style: none;
   display: flex;
@@ -334,7 +395,9 @@ input, textarea, select{
   gap: 1.5rem
 }
 
+
 /* -----------------------------MODAL FORMS------------------------ */
+
 
 /* .modal-form{
   display: flex;
@@ -345,11 +408,13 @@ input, textarea, select{
   overflow: hidden;
 }
 
+
 .modal-form input, .modal-form textarea{
   display: block;
   width: 100%;
   margin-top: 0.5rem;
 }
+
 
 .modal-header-div{
   min-height: 60px;
@@ -362,6 +427,7 @@ input, textarea, select{
   border-bottom: 1px solid rgba(128, 128, 128, 0.636)
 }
 
+
 .main-form-content{
   padding: 1rem 2rem;
   flex: 1;
@@ -370,10 +436,12 @@ input, textarea, select{
   gap: 1.7rem
 }
 
+
 .main-form-content label{
   font-size: 0.85rem;
   color: rgb(67, 67, 67)
 } */
+
 
 .modal-form-div{
     width: 100%;
@@ -385,6 +453,7 @@ input, textarea, select{
     justify-content: center;
     z-index: 4;
 }
+
 
 .modal-form {
   display: flex;
@@ -403,8 +472,10 @@ input, textarea, select{
   z-index: 4;
 }
 
+
 /* Inputs and textarea */
 .modal-form input,
+.modal-form select,
 .modal-form textarea {
   display: block;
   width: 100%;
@@ -416,12 +487,19 @@ input, textarea, select{
   transition: all 0.2s ease;
 }
 
+
+.modal-form select{
+  width: 200px;
+}
+
+
 .modal-form input:focus,
 .modal-form textarea:focus {
   border-color: #4f73ff;
   box-shadow: 0 0 6px rgba(79, 115, 255, 0.3);
   outline: none;
 }
+
 
 /* Modal header */
 .modal-header-div {
@@ -437,6 +515,7 @@ input, textarea, select{
   color: #333;
 }
 
+
 /* Main content */
 .main-form-content {
   padding: 1rem 2rem;
@@ -447,11 +526,14 @@ input, textarea, select{
   overflow-y: auto;
 }
 
+
 /* Labels */
 .main-form-content label {
   font-size: 0.85rem;
   color: rgb(67, 67, 67);
 }
+
+
 
 
 /* Modal animation */
@@ -466,10 +548,12 @@ input, textarea, select{
   }
 }
 
+
 /* Optional: add smooth close animation */
 .modal-form.close {
   animation: modalFadeOut 0.2s forwards;
 }
+
 
 @keyframes modalFadeOut {
   0% {
@@ -482,11 +566,14 @@ input, textarea, select{
   }
 }
 
+
 /* ---------------------------------INPUT--------------------- */
+
 
 input[type='text'], input[type='number'], input[type='date'], textarea, select{
   background-color: rgb(240, 240, 240);
 }
+
 
 .dropdown{
   height: 150px;
@@ -496,25 +583,30 @@ input[type='text'], input[type='number'], input[type='date'], textarea, select{
   border: 1px solid #1c1c1c51;
 }
 
+
 .dropdown ul{
   height: 100%;
 }
+
 
 .dropdown li{
   height: 25px;
   font-size: 0.9rem;
 }
 
+
 .dropdown > ul input{
   display: inline-block;
   width: 50px;
 }
+
 
 .form-div{
   border: 1px solid #46454551;
   padding: 2rem 1rem;
   border-radius: 10px;
   box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;}
+
 
 .in-stock{
   background-color: rgb(90, 225, 90);
@@ -525,3 +617,4 @@ input[type='text'], input[type='number'], input[type='date'], textarea, select{
   justify-content: center;
   border-radius: 10px;
 }
+

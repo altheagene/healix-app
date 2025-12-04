@@ -9,7 +9,8 @@ export default function AddItem(props:any){
         supply_name: '',
         brand: '',
         description: '',
-        category_id: 1
+        category_id: 1,
+        auto_deduct: false
     })
     
     async function submitForm(){
@@ -80,6 +81,22 @@ export default function AddItem(props:any){
                                 )
                             })}
                         </select>
+                    </label>
+
+                    <label style={{ display: "flex", alignItems: "center", gap: "8px" , color: 'red'}}>
+                        <input
+                            type="checkbox"
+                            checked={itemDetails?.auto_deduct}
+                            onChange={(e) =>
+                                setItemDetails({ ...itemDetails, auto_deduct: e.target.checked })
+                            }
+                            style={{
+                                width: "18px",
+                                height: "18px",
+                                cursor: "pointer"
+                            }}
+                        />
+                        Auto deduct from inventory
                     </label>
                 </div>
                 

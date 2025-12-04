@@ -120,6 +120,13 @@ def getstaffandcategories():
             '''
     return getprocess(sql, [])
 
+def getallmedicine():
+    sql = f'SELECT * from supplies WHERE category_id = 1'
+
+    data = getprocess(sql, [])
+
+    return data
+
 def updatestock(table, **kwargs):
     keys = list(kwargs.keys())
     values = list(kwargs.values())
