@@ -2,6 +2,32 @@ import React from "react"
 import CancelSaveBtn from "./cancelsavebtn"
 
 export default function EditBatch(props:any){
+
+    const batch = props.batch;
+    const [batchDetails, setBatchDetails] = React.useState({
+        batch_id: batch.batch_id,
+        batch_number: batch.batch_number,
+        expiration_date: batch.expiration_date,
+    })
+
+    async function handleSubmit(){
+        const response = await fetch(`http://localhost:5000/editbatch`, 
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type' : 'application/json'
+                },
+                body: JSON.stringify(batchDetails)
+            }
+        )
+
+        console.log(response.json())
+
+        props.refetch()
+    }
+
+    
+
     return(
         <div className='modal-form-div'>
             <div className='gray-bg'></div>
@@ -11,16 +37,12 @@ export default function EditBatch(props:any){
                 </div>
 
                 <div className='main-form-content'>
-                    <label htmlFor="">Supply Name
-                        <input type="text"/>
-                    </label>
-
                     <label htmlFor="batch-number">Batch Number
-                        <input type="text" id="batch-number"/>
+                        <input type="text" id="batch-number" value={batchDetails?.batch_number} onChange={(e) => setBatchDetails({...batchDetails, batch_number: e.target.value})}/>
                     </label>
                     <div>
                         <label htmlFor="expiration-date">Expiration Date
-                            <input type="date"/>
+                            <input type="date" value={batchDetails.expiration_date} onChange={(e) => setBatchDetails({...batchDetails, expiration_date: e.target.value})}/>
                         </label>
                         <div style={{display: 'flex', alignItems: 'center', height: '30px'}}>
                             <input type="checkbox"
@@ -32,7 +54,7 @@ export default function EditBatch(props:any){
                         </div>
                     </div>
                 </div>
-                <CancelSaveBtn></CancelSaveBtn>
+                <CancelSaveBtn hideForm={props.hideForm} submit={handleSubmit}></CancelSaveBtn>
             </div>
         </div>
     )

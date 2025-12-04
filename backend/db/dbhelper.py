@@ -102,6 +102,24 @@ def getitemdetails(table, **kwargs):
     '''
     return getprocess(sql, values)
 
+def getstaffandcategories():
+    sql = f'''
+            SELECT 
+            s.staff_id,
+            s.first_name,
+            s.last_name,
+            s.staff_category_id,
+            sc.category_name,
+            s.sex,
+            s.phone,
+            s.email,
+            s.username
+            FROM staff s
+            JOIN staff_categories sc
+            ON s.staff_category_id = sc.staff_category_id;
+            '''
+    return getprocess(sql, [])
+
 def updatestock(table, **kwargs):
     keys = list(kwargs.keys())
     values = list(kwargs.values())
@@ -113,6 +131,26 @@ def updatestock(table, **kwargs):
             '''
 
     return postprocess(sql, values)
+
+def updaterecord(table, **kwargs):
+    keys = list(kwargs.keys())
+    values = list(kwargs.values())
+
+    listkeys = []
+    listvalues = []
+    for x in range(1, len(keys)):
+        listkeys.append(f'`{keys[x]}` = ?')
+        listvalues.append(values[x])
+
+    stringifykeys = ','.join(listkeys)
+    
+    sql = f'''
+            UPDATE {table}
+            SET {stringifykeys}
+            WHERE `{keys[0]}` = {values[0]}
+           '''
+    return postprocess(sql, listvalues)
+
 
 def getprocess(sql, values) -> list:
     conn = connect(database)
