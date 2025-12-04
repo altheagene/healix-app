@@ -17,10 +17,11 @@ export default function AddRecord(props:any){
         service_id: 1,
         reason: '',
         staff_id: 1,
-        notes: ''
+        notes: '',
 
     })
-
+    const [medicines, setMedicine] = React.useState<any[]>();
+    const [medications, setMedications] = React.useState<{ medication_id: number | null; auto_deduct: false | true; quantity: number }[]>([]);
     React.useEffect(() => {
         fetch(`http://localhost:5000/getall?table=services`)
         .then(res => res.json())
@@ -29,12 +30,49 @@ export default function AddRecord(props:any){
         fetch(`http://localhost:5000/getall?table=staff`)
         .then(res => res.json())
         .then(data => setStaff(data))
+
+        fetch(`http://localhost:5000/getallmedicine`)
+        .then(res => res.json())
+        .then(data => setMedicine(data))
     }, [])
 
     function handleSubmit(){
         console.log(recordDetails)
     }
     console.log(services)
+    console.log(medications)
+    console.log(medicines)
+
+    function addMedication() {
+            setMedications([...medications, { medication_id: medicines[0].supply_id, auto_deduct: medicines[0].auto_deduct, quantity: 1 }]
+        );
+    }
+
+    function updateMedication(
+        index: number,
+        field: "medication_id" | "quantity",
+        value: any
+    ) {
+        const updated = [...medications];
+        updated[index][field] = value;
+        console.log(value)
+        if (field === "medication_id"){
+             const med = medicines?.find(m => m.supply_id === parseInt(value))
+            if (med.auto_deduct === 0){
+                updated[index]['auto_deduct'] = false;
+                updated[index]['quantity'] = 0
+            }else{
+                updated[index]['auto_deduct'] = true;
+            }
+        }
+
+        setMedications(updated);
+    }
+
+    function removeMedication(index: number) {
+        setMedications(medications.filter((_, i) => i !== index));
+    }
+    
 
     return(
         <div id="add-record-div">
@@ -49,9 +87,6 @@ export default function AddRecord(props:any){
                     <label htmlFor="">Date
                         <input type="date" value={new Date().toISOString().split("T")[0]} style={{width: '70%'}}/>
                     </label>
-                    {/* <label htmlFor="reason">Reason
-                        <textarea name="reason" id="reason" rows='5' cols='50'></textarea>
-                    </label> */}
 
                     <label htmlFor="">Reason
                         <select name="" id="" style={{display: 'block', width: '70%', marginTop: '0.3rem'}} value={recordDetails?.service_id} onChange={(e) => setRecordDetails({...recordDetails, service_id: parseInt(e.target.value)})}>
@@ -73,14 +108,53 @@ export default function AddRecord(props:any){
                         </label>
                     </div>
 
-                    <div style={{display: 'flex', width: '100%', gap: '1rem'}}>
-                        <label htmlFor="medication">Medication
-                            <input type="text" id="medication" />
-                        </label>
+                    <div style={{ width: '100%' }}>
+                        <label>Medications</label>
 
-                        <label htmlFor="quantity">Quantity
-                            <input type="number" id="quantity"/>
-                        </label>
+                        {medications.map((med, index) => (
+                            <div key={index} style={{display: 'flex', gap: '1rem', marginTop: '0.5rem'}}>
+                                
+                               
+                                    <select value={med.medication_id ?? ""} 
+                                            onChange={(e) => updateMedication(index, 'medication_id', e.target.value)}
+                                            style={{display: 'block'}}>
+                                        {medicines?.map(med => {
+                                            return(
+                                                <option value={med.supply_id}>{med.supply_name}</option>
+                                            )
+                                        })}
+                                    </select>
+                              
+
+                                {med.auto_deduct && 
+                                    <label htmlFor="" style={{width: '150px'}}>Quantity
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            style={{ width: "100%" }}
+                                            value={med.quantity}
+                                            // readOnly={med.auto_deduct === false} 
+                                            onChange={(e) => updateMedication(index, "quantity", parseInt(e.target.value))
+                                            }
+                                        />
+                                    </label>
+                                }
+
+                                <button type="button"
+                                        onClick={() => removeMedication(index)}
+                                        style={{border: 'none'}}>
+                                    X
+                                </button>
+                            </div>
+                        ))}
+
+                        <button 
+                            type="button"
+                            style={{ marginTop: "0.5rem" , display: 'block'}}
+                            onClick={addMedication}
+                        >
+                            + Add medication
+                        </button>
                     </div>
 
                     <label htmlFor="">Staff

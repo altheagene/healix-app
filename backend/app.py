@@ -103,6 +103,11 @@ def get_all_services():
 def get_all_supplies_categorie():
     data = getall('supplies_categories')
     return jsonify(data)
+
+@app.route('/getallmedicine')
+def get_all_medicine():
+    data = getallmedicine()
+    return jsonify(data)
 # ----------------------INSERT QUERIES----------------------------
 
 @app.route('/addpatient', methods=['POST'])
