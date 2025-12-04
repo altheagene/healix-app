@@ -19,6 +19,7 @@ def find_student():
 def get_all():
     table = request.args.get('table')
     data = getall(table)
+    print(data)
 
     return jsonify(data)
 
@@ -175,6 +176,18 @@ def edit_stock_batch():
     updatestock('batch', update_value=update_value,  batch_id=batch_id)
 
     return jsonify({'success' : success})
+
+@app.route('/editbatch', methods=['POST'])
+def edit_batch():
+    data = request.get_json()
+    success = updaterecord('batch', **data)
+    
+    return jsonify({'success' : success})
+
+@app.route('/getstaffandcateg', methods=['GET'])
+def getstaffandcateg():
+    data = getstaffandcategories()
+    return jsonify(data)
 
 if __name__=="__main__":
     app.run(debug=True, port=5000)

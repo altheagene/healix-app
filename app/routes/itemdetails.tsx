@@ -87,11 +87,15 @@ export default function ItemDetails(){
         .then(data => setBatches(data))
     }
 
-    function editBtnClick(batch:any, edit:any){
+    function editStockClick(batch:any){
         setCurrentBatch(batch)
         setShowEditStock(true)
     }
 
+    function editBtnClick(batch:any){
+        setCurrentBatch(batch)
+        setShowEditBatch(true)
+    }
     function hideform(){
         setShowEditStock(false)
     }
@@ -99,6 +103,7 @@ export default function ItemDetails(){
     return(
         <div className="route-page">
             <div id="item-details-div">
+                {showEditBatch ? <EditBatch hideForm={() => setShowEditBatch(false)} batch={currentBatch} refetch={refetchBatches}/> : null}
                 {showEditStock ? <EditStock hideForm={hideform} batch={currentBatch} refetch={refetchBatches}/> : null}
                 {showEditDetails ? <EditItem  hideForm={() => setShowEditDetails(false)}/> : null}
                 {showUpdateStock ? <UpdateStocks hideForm={() => setShowUpdateStock(false)}/> : null}
@@ -114,7 +119,7 @@ export default function ItemDetails(){
                     {/* <p id="item-added-by">Added by: Melanie Hamilton, RN</p> */}
                     <div id="item-edit-button-div">
                         <button id='edit-details-btn' onClick={() => setShowEditDetails(true)}>Edit Details</button>
-                        <button id='add-new-batch-btn' onClick={() => setShowAddBatch(true)}> Add new batch</button>
+                        {/* <button id='add-new-batch-btn' onClick={() => setShowAddBatch(true)}> Add new batch</button> */}
                     </div>
                 </div>
 
@@ -122,7 +127,7 @@ export default function ItemDetails(){
                    
                     <div style={{maxWidth: '1400px'}}>
                         <p style={{fontSize: '1.5rem', fontWeight: '500', display: 'flex', justifyContent: 'space-between'}}>Batches 
-                            <span><button id='add-new-batch-btn'> Add new batch</button></span>
+                            <span><button id='add-new-batch-btn' onClick={() => setShowAddBatch(true)}> Add new batch</button></span>
                         </p>
                         <div  id='batches-table-container'  className='table-container'>
                             <table id='batches-table'>
@@ -145,8 +150,13 @@ export default function ItemDetails(){
                                             <td></td>
                                             <td>
                                                 <button style={{fontWeight: '600', fontSize: '1rem', color: 'gray',backgroundColor: 'transparent', border: 'none'}}
-                                                        onClick={() => editBtnClick(batch)}>
+                                                        onClick={() => editStockClick(batch)}>
                                                     <i className='bi bi-pen-fill'></i>
+                                                </button>
+                                                
+                                                <button style={{fontWeight: '600', fontSize: '1rem', color: 'gray',backgroundColor: 'transparent', border: 'none'}}
+                                                        onClick={() => editBtnClick(batch)}>
+                                                    <i className='bi bi-three-dots-vertical'></i>
                                                 </button>
                                             </td>
                                         </tr>
