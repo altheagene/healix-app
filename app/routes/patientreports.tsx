@@ -111,9 +111,12 @@
 // }
 
 import React from "react"
+import { PieChart, Pie, Cell, Legend, Tooltip, ResponsiveContainer } from "recharts";
+
 
 export default function PatientReports()
 {
+    
     const [dateRange, setDateRange] = React.useState({
         from_date: new Date().toISOString().split("T")[0], 
         to_date: new Date().toISOString().split("T")[0]
@@ -122,6 +125,17 @@ export default function PatientReports()
     const [visitLogs, setVisitLogs] = React.useState<any[]>()
     const uniquePatientCount = new Set(visitLogs?.map(v => v.patient_id)).size;
 
+    const serviceCounts: { name: string; value: number }[] = [];
+
+    if (visitLogs?.length > 0) {
+        const countsMap: Record<string, number> = {};
+        visitLogs.forEach(v => {
+            countsMap[v.service_name] = (countsMap[v.service_name] || 0) + 1;
+        });
+        for (const [name, value] of Object.entries(countsMap)) {
+            serviceCounts.push({ name, value });
+        }
+    }
      React.useEffect(() => {
         fetch(`http://localhost:5000/clinic_visits?fromdate=${dateRange.from_date}&todate=${dateRange.to_date}`)
         .then(res => res.json())
@@ -134,8 +148,11 @@ export default function PatientReports()
         .then(data => setVisitLogs(data))
     }, [dateRange])
 
+    const colors = ["#4e79a7", "#f28e2b", "#e15759", "#76b7b2", "#59a14f", "#edc949"];
+
     console.log(visitLogs)
     console.log(dateRange)
+
     const boxStyle = {
     border: "1px solid #ccc",
     borderRadius: "8px",
@@ -148,8 +165,10 @@ export default function PatientReports()
 
   const containerStyle = {
     display: "flex",
+    flexDirection: 'column',
     justifyContent: "space-around",
     margin: "20px 0",
+    width: '50%'
   };
 
   const numberStyle = {
@@ -162,7 +181,7 @@ export default function PatientReports()
             <p className="route-header">Clinic Visit Reports</p>
             <p className="route-page-desc">Track clinic visits, demographics, and health trends</p>
 
-            <div>
+            <div style={{margin: '2rem 0', display: 'flex', gap: '2rem'}}>
                 <label htmlFor="">From
                     <input type="date" value={dateRange?.from_date} onChange={(e) => setDateRange({...dateRange, from_date: e.target.value})}/>
                 </label>
@@ -173,7 +192,8 @@ export default function PatientReports()
                 
             </div>
 
-              <div style={containerStyle}>
+            <div style={{display: 'flex'}} >
+                <div style={containerStyle}>
                     <div style={boxStyle}>
                         <div>Total Visits</div>
                         <div style={numberStyle}>{visitLogs?.length}</div>
@@ -183,6 +203,30 @@ export default function PatientReports()
                         <div style={numberStyle}>{uniquePatientCount}</div>
                     </div>
                 </div>
+                <div style={containerStyle}>
+                    <div style={{ width: "100%", height: 350, margin: '0.5rem 0', padding: '2rem', border: "1px solid #ccc",  backgroundColor: "#f9f9f9"}}>
+                        <h3>Visits by Service Type</h3>
+                        <ResponsiveContainer>
+                            <PieChart>
+                                <Pie
+                                    data={serviceCounts}
+                                    dataKey="value"
+                                    nameKey="name"
+                                    outerRadius={120}
+                                    label
+                                >
+                                    {serviceCounts.map((_, i) => (
+                                        <Cell key={i} fill={colors[i % colors.length]} />
+                                    ))}
+                                </Pie>
+                                <Tooltip />
+                                <Legend />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+            </div>
+              
 
             <table>
                 <tr>

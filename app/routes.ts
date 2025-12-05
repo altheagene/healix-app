@@ -13,5 +13,6 @@ export default [
     route('itemdetails/:id', 'routes/itemdetails.tsx'),
     route('patientreport', 'routes/patientreports.tsx'),
     route('inventoryreport', 'routes/inventoryreport.tsx'),
+    route('appointmentreports', 'routes/appointmentreports.tsx'),
     route('addnewpatient', 'routes/addnewpatient.tsx')
 ] satisfies RouteConfig;

@@ -2,7 +2,9 @@ import '../patients.css'
 import '../app.css'
 import AddRecord from '~/components/addrecord'
 import React from 'react'
-import { useParams } from 'react-router'
+import { useParams } from 'react-router';
+import 'bootstrap-icons/font/bootstrap-icons.css';
+
 
 export default function PatientDetails(){
 
@@ -11,10 +13,15 @@ export default function PatientDetails(){
     const [studentData, setStudentData] = React.useState()
     const [allergies, setAllergies] = React.useState()
     const [conditions, setConditions] = React.useState()
+    const [clinicLogs, setClinicLogs]= React.useState<any[]>();
 
     React.useEffect(() => {
         fetch(`http://localhost:5000/getpatient?idnum=${id}`).then
         (res => res.json()).then(data => setStudentData(data[0]))
+
+        fetch(`http://localhost:5000/getpatientcliniclogs?idnum=${id}`)
+        .then(res => res.json())
+        .then(data => setClinicLogs(data))
     }, [])
 
      React.useEffect(() => {
@@ -30,6 +37,7 @@ export default function PatientDetails(){
     console.log(studentData)
     console.log(allergies)
     console.log(conditions)
+    console.log(clinicLogs)
     return(
         <div className="route-page" id="patient-details-div" style={{backgroundColor: '#EEEEEE'}}>
             <h1 className='route-header'>Patient Details</h1>
@@ -74,6 +82,18 @@ export default function PatientDetails(){
                             <th>Notes</th>
                             <th></th>
                         </tr>
+
+                        {clinicLogs?.map(log => {
+                            return(
+                                <tr>
+                                    <td>{log.visit_datetime}</td>
+                                    <td>{log.service_name}</td>
+                                    <td>{log.staff_name}</td>
+                                    <td>{log.notes}</td>
+                                    <td><button style={{backgroundColor: 'transparent', border: 'none', fontSize: '1.2rem'}}><i className='bi bi-eye'></i></button></td>
+                                </tr>
+                            )
+                        })}
                     </table>
                 </div>
             </div>
