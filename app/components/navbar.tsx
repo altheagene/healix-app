@@ -53,12 +53,8 @@ export default function Navbar(props:any){
                     text: 'Inventory Reports'
                 },
                 {
-                    route: '/appointmentreport',
+                    route: '/appointmentreports',
                     text: 'Appointment Reports'
-                },
-                {
-                    routes: '/staffreport',
-                    text: 'Staff Reports'
                 }
 
             ]

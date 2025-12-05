@@ -64,7 +64,7 @@ export default function Inventory(){
                         <tr>
                             <th style={{maxWidth: '50px'}}>ID</th>
                             <th>Name</th>
-                            <th>Stock Level</th>
+                            <th>Total Stock</th>
                             <th>Status</th>
                             {/* <th>Comments</th> */}
                             <th>Last Updated</th>
@@ -76,8 +76,18 @@ export default function Inventory(){
                                 <tr onClick={() => navigate(`/itemdetails/${supply.supply_id}`)}>
                                     <td>{supply.supply_id}</td>
                                     <td>{supply.supply_name}</td>
-                                    <td>--</td>
-                                    <td>--</td>
+                                    <td>{supply.total_stock > 0 ? supply.total_stock : 0}</td>
+                                    <td><p style={{
+                                        backgroundColor: supply.total_stock > 20 ? '#6EC207' : supply.total_stock > 0 ? 'orange' : '#FB4141',
+                                        padding: '0.3rem',
+                                        textAlign: 'center',
+                                        borderRadius: '10px',
+                                        width: '80px',
+                                        fontSize: '0.7rem',
+                                        height: '25px',
+                                        fontWeight: '500',
+                                        color: 'white'
+                                    }}>{supply.total_stock > 20 ? 'In Stock' :supply.total_stock > 0 ? 'Low Stock' : 'Out-of-Stock'}</p></td>
                                     {/* <td>--</td> */}
                                     <td>--</td>
                                     <td></td>

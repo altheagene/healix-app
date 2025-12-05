@@ -622,3 +622,38 @@ button:disabled{
   opacity: 0.5;
 }
 
+input[type="date"] {
+    padding: 10px 12px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    outline: none;
+    color: #333;
+    background-color: #fdfdfd;
+    width: 200px;
+    box-sizing: border-box;
+    transition: 0.3s all ease;
+}
+
+/* Focus state */
+input[type="date"]:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+/* Placeholder text color (WebKit browsers) */
+input[type="date"]::-webkit-datetime-edit {
+    color: #555;
+}
+
+/* Calendar icon (WebKit browsers) */
+input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.6;
+    transition: 0.3s ease;
+}
+
+/* Hover effect on calendar icon */
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+}

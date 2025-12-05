@@ -266,6 +266,99 @@ def getclinicvisits(**kwargs):
 
     return data
 
+def getinventorylogs(**kwargs):
+    values = list(kwargs.values())
+    sql = f'''
+        SELECT
+        i.inv_id,
+        i.inv_date,
+        i.batch_id,
+        b.batch_number,
+        b.expiration_date,
+        s.supply_id,
+        s.supply_name,
+        i.item_in,
+        i.item_out,
+        i.auto_update
+    FROM inventory i
+    JOIN batch b ON i.batch_id = b.batch_id
+    JOIN supplies s ON b.supply_id = s.supply_id
+    WHERE DATE(i.inv_date) BETWEEN ? AND ?
+    ORDER BY i.inv_date DESC;
+
+    '''
+
+    data = getprocess(sql, values)
+
+    return data
+
+def getappointmentlogs(**kwargs):
+    values = list(kwargs.values())
+    sql = f'''
+        SELECT
+        a.appointment_id,
+        a.service_id,
+        s.service_name,
+        a.appointment_date,
+        a.start_time,
+        a.status,
+        p.patient_id,
+        p.first_name || ' ' || p.middle_name || ' ' || p.last_name AS patient_name
+    FROM appointments a
+    JOIN services s ON s.service_id = a.service_id
+    JOIN patients p ON a.patient_id = p.patient_id
+    WHERE DATE(a.appointment_date) BETWEEN ? AND ?
+    ORDER BY a.appointment_date DESC;
+
+    '''
+
+    data = getprocess(sql, values)
+
+    return data
+
+def getpatientcliniclogs(**kwargs):
+    values = list(kwargs.values())
+    sql = f"""
+        SELECT 
+                v.visit_id,
+                v.visit_datetime,
+                v.notes,
+                s.service_id,
+                s.service_name,
+                p.patient_id,
+                p.first_name || ' ' || p.middle_name || ' ' || p.last_name AS patient_name,
+                st.staff_id,
+                st.first_name || ' ' || st.last_name AS staff_name
+            FROM visit_logs v
+            JOIN services s ON v.service_id = s.service_id
+            JOIN patients p ON v.patient_id = p.patient_id
+            JOIN staff st ON v.staff_id = st.staff_id
+            WHERE p.patient_id  = ?
+            ORDER BY v.visit_datetime;
+            """
+
+    data = getprocess(sql, values)
+
+    return data
+
+def getallsupplies():
+    sql = f"""
+       SELECT
+            s.supply_id,
+            s.supply_name,
+            sc.category_name,
+            SUM(b.stock_level) AS total_stock
+        FROM supplies s
+        JOIN supplies_categories sc ON sc.category_id = s.category_id
+        LEFT JOIN batch b ON b.supply_id = s.supply_id
+        GROUP BY s.supply_id, s.supply_name, sc.category_name
+        ORDER BY s.supply_name;
+            """
+
+    data = getprocess(sql, [])
+
+    return data
+
 
 def getprocess(sql, values) -> list:
     conn = connect(database)

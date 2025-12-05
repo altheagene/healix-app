@@ -95,10 +95,10 @@ def get_patient_conditions():
 
     return jsonify(data)
 
-@app.route('/getallsupplies', methods=['GET'])
-def get_all_supplies():
-    data = getall('supplies')
-    return jsonify(data)
+# @app.route('/getallsupplies', methods=['GET'])
+# def get_all_supplies():
+#     data = getall('supplies')
+#     return jsonify(data)
 
 @app.route('/getsupplydetails', methods=['GET'])
 def get_supply_details():
@@ -117,12 +117,12 @@ def get_all_supplies_categorie():
     data = getall('supplies_categories')
     return jsonify(data)
 
-@app.route('/getallmedicine')
+@app.route('/getallmedicine', methods=['GET'])
 def get_all_medicine():
     data = getallmedicine()
     return jsonify(data)
 
-@app.route("/clinic_visits")
+@app.route("/clinic_visits", methods=['GET'])
 def get_clinic_visits():
     args = {
         "from_date": request.args.get("fromdate"),
@@ -131,6 +131,37 @@ def get_clinic_visits():
 
     print(args['from_date'])
     data = getclinicvisits(**args)
+    return jsonify(data)
+
+@app.route('/getinvlogs', methods=['GET'])
+def get_inv_logs():
+    args = {
+        "from_date": request.args.get("fromdate"),
+        "to_date": request.args.get("todate")
+    }
+
+    data = getinventorylogs(**args)
+    return jsonify(data)
+
+@app.route('/getapptlogs')
+def get_appt_logs():
+    args = {
+        "from_date": request.args.get("fromdate"),
+        "to_date": request.args.get("todate")
+    }
+
+    data = getappointmentlogs(**args)
+    return jsonify(data)
+
+@app.route('/getpatientcliniclogs', methods=['GET'])
+def get_patient_clinic_logs():
+    args = request.args.get('idnum')
+    data = getpatientcliniclogs(patient_id=args)
+    return jsonify(data)
+
+@app.route('/getallsupplies', methods=['GET'])
+def get_all_supplies():
+    data = getallsupplies()
     return jsonify(data)
     
 # ----------------------INSERT QUERIES----------------------------
