@@ -12,14 +12,18 @@
     "@react-router/node": "^7.9.2",
     "@react-router/serve": "^7.9.2",
     "bootstrap-icons": "^1.13.1",
+    "chart.js": "^4.5.1",
     "isbot": "^5.1.31",
     "react": "^19.1.1",
+    "react-chartjs-2": "^5.3.1",
     "react-dom": "^19.1.1",
-    "react-router": "^7.9.2"
+    "react-router": "^7.9.2",
+    "recharts": "^3.5.1"
   },
   "devDependencies": {
     "@react-router/dev": "^7.9.2",
     "@tailwindcss/vite": "^4.1.13",
+    "@types/chart.js": "^2.9.41",
     "@types/node": "^22",
     "@types/react": "^19.1.13",
     "@types/react-dom": "^19.1.9",

@@ -1,5 +1,6 @@
 from sqlite3 import Row, connect
 import os
+from datetime import date
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))   # points to /backend/db
 database = os.path.join(BASE_DIR, "clinic.db")
@@ -120,9 +121,25 @@ def getstaffandcategories():
             '''
     return getprocess(sql, [])
 
-def getallmedicine():
-    sql = f'SELECT * from supplies WHERE category_id = 1'
+# def getallmedicine():
+#     sql = f'SELECT * from supplies WHERE category_id = 1'
 
+#     data = getprocess(sql, [])
+
+#     return data
+
+def getallmedicine():
+    sql = f'''
+            SELECT 
+            s.supply_id,
+            s.supply_name,
+            s.auto_deduct,
+            COALESCE(SUM(b.stock_level), 0) AS available_stock
+            FROM Supplies s
+            LEFT JOIN batch b ON b.supply_id = s.supply_id
+            WHERE s.category_id = 1
+            GROUP BY s.supply_id;
+            '''
     data = getprocess(sql, [])
 
     return data
@@ -157,6 +174,97 @@ def updaterecord(table, **kwargs):
             WHERE `{keys[0]}` = {values[0]}
            '''
     return postprocess(sql, listvalues)
+
+def deductbatch(supply_id, quantity):
+    conn = connect(database)
+    cursor = conn.cursor()
+
+    # Get all batches with stock > 0, ordered by earliest expiration
+    cursor.execute("""
+        SELECT batch_id, stock_level
+        FROM batch
+        WHERE supply_id = ? AND stock_level > 0
+        ORDER BY expiration_date ASC
+    """, (supply_id,))
+    
+    batches = cursor.fetchall()  # [(batch_id, stock_level), ...]
+
+    remaining = quantity
+
+    for batch_id, stock in batches:
+        cursor = conn.cursor()
+        if remaining <= 0:
+            break
+        take = min(stock, remaining)
+        cursor.execute("""
+            UPDATE batch
+            SET stock_level = stock_level - ?
+            WHERE batch_id = ?
+        """, (take, batch_id))
+        remaining -= take
+
+        cursor.execute(f'''
+                        INSERT INTO INVENTORY (inv_date, batch_id, item_in, item_out)
+                       values ({date.today()}, {batch_id}, 0, {take})
+                       ''')
+
+    if remaining > 0:
+        print(f"Warning: Not enough stock for supply_id {supply_id}, {remaining} remaining!")
+
+    conn.commit()
+    cursor.close()
+
+def getappointments():
+
+    sql = """
+    SELECT 
+        a.appointment_id,
+        a.appointment_date,
+        a.start_time,
+        a.status,
+        a.notes,
+        s.service_id,
+        s.service_name,
+        p.patient_id,
+        p.first_name || ' ' || p.middle_name || ' ' || p.last_name AS patient_name
+        FROM 
+            appointments a
+        JOIN 
+            services s ON a.service_id = s.service_id
+        JOIN 
+            patients p ON a.patient_id = p.patient_id
+        ORDER BY a.appointment_date, a.start_time
+        """
+
+    data = getprocess(sql, [])
+
+    return data
+
+def getclinicvisits(**kwargs):
+    values = list(kwargs.values())
+    print(values)
+    sql = f"""
+        SELECT 
+                v.visit_id,
+                v.visit_datetime,
+                v.notes,
+                s.service_id,
+                s.service_name,
+                p.patient_id,
+                p.first_name || ' ' || p.middle_name || ' ' || p.last_name AS patient_name,
+                st.staff_id,
+                st.first_name || ' ' || st.last_name AS staff_name
+            FROM visit_logs v
+            JOIN services s ON v.service_id = s.service_id
+            JOIN patients p ON v.patient_id = p.patient_id
+            JOIN staff st ON v.staff_id = st.staff_id
+            WHERE DATE(v.visit_datetime) BETWEEN ? AND ?
+            ORDER BY v.visit_datetime;
+            """
+
+    data = getprocess(sql, values)
+
+    return data
 
 
 def getprocess(sql, values) -> list:
