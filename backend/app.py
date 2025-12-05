@@ -23,6 +23,19 @@ def get_all():
 
     return jsonify(data)
 
+@app.route('/getallappointments', methods=['GET'])
+def get_all_appointments():
+    data = getappointments()
+
+    return jsonify(data)
+
+@app.route('/updateappointment', methods=['POST'])
+def update_appointment():
+    data = request.get_json()
+    success = updaterecord('appointments', **data)
+
+    return jsonify({'success' : success})
+
 @app.route('/getbatches', methods=['GET'])
 def get_batches():
     supply_id = request.args.get('idnum')
@@ -108,7 +121,26 @@ def get_all_supplies_categorie():
 def get_all_medicine():
     data = getallmedicine()
     return jsonify(data)
+
+@app.route("/clinic_visits")
+def get_clinic_visits():
+    args = {
+        "from_date": request.args.get("fromdate"),
+        "to_date": request.args.get("todate")
+    }
+
+    print(args['from_date'])
+    data = getclinicvisits(**args)
+    return jsonify(data)
+    
 # ----------------------INSERT QUERIES----------------------------
+
+@app.route('/addvisitlog', methods=['POST'])
+def add_visitlog():
+    data = request.get_json()
+    success = addrecord('visit_logs', **data)
+
+    return jsonify({'success' : success})
 
 @app.route('/addpatient', methods=['POST'])
 def add_patient():
@@ -188,6 +220,31 @@ def edit_batch():
     success = updaterecord('batch', **data)
     
     return jsonify({'success' : success})
+
+@app.route('/addmedicationdetails', methods=['POST'])
+def add_med_details():
+    data = request.get_json()
+    print(data)
+    latest_visit_id = getmaxid('visit_logs', 'visit_id')
+    for med in data:
+        supply_id = med['supply_id']
+        quantity = med['quantity']
+        latest_visit = latest_visit_id[0]['last_id']
+        print(supply_id)
+        print(med)
+        print(latest_visit_id)
+        addrecord('medication_details', visit_id=latest_visit, supply_id=supply_id, quantity=quantity)
+        if med['auto_deduct'] == 1:
+            deductbatch(supply_id, quantity)
+            
+
+@app.route('/addappointment', methods=['POST'])
+def add_appointment():
+    data = request.get_json()
+    success = addrecord('appointments', **data)
+
+    return jsonify({'success' : success})
+
 
 @app.route('/getstaffandcateg', methods=['GET'])
 def getstaffandcateg():

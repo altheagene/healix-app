@@ -6,6 +6,7 @@ import React from "react"
 export default function AddRecord(props:any){
 
     const {id} = useParams()
+    const now = new Date()
     const [services, setServices] = React.useState<any[]>()
     const [staff, setStaff] = React.useState<any[]>()
     const [recordDetails, setRecordDetails] = React.useState({
@@ -13,15 +14,14 @@ export default function AddRecord(props:any){
         appointment_id: null,
         weight: '',
         temperature: '',
-        visit_datetime : '',
+        visit_datetime : now.toISOString().replace('T', ' ').slice(0, 19),
         service_id: 1,
-        reason: '',
-        staff_id: 1,
+        staff_id: staff?[0]?.staff_id : 0,
         notes: '',
 
     })
     const [medicines, setMedicine] = React.useState<any[]>();
-    const [medications, setMedications] = React.useState<{ medication_id: number | null; auto_deduct: false | true; quantity: number }[]>([]);
+    const [medications, setMedications] = React.useState<{ supply_id: number | null; auto_deduct: false | true; quantity: number }[]>([]);
     React.useEffect(() => {
         fetch(`http://localhost:5000/getall?table=services`)
         .then(res => res.json())
@@ -36,27 +36,55 @@ export default function AddRecord(props:any){
         .then(data => setMedicine(data))
     }, [])
 
-    function handleSubmit(){
-        console.log(recordDetails)
+    React.useEffect(() => {
+    if (staff && staff.length > 0) {
+        setRecordDetails({...recordDetails,staff_id: staff[0].staff_id});
+    }
+    }, [staff]);
+
+    async function handleSubmit(){
+        const response = await fetch(`http://localhost:5000/addvisitlog`,
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type' : 'application/json'
+                },
+                body: JSON.stringify(recordDetails)
+            }
+        )
+
+        const addmed = await fetch(`http://localhost:5000/addmedicationdetails`,
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type' : 'application/json'
+                },
+                body: JSON.stringify(medications)
+            }
+        )
+
+        console.log(await response.json())
+        console.log(medications)
     }
     console.log(services)
     console.log(medications)
     console.log(medicines)
+    console.log(staff)
 
     function addMedication() {
-            setMedications([...medications, { medication_id: medicines[0].supply_id, auto_deduct: medicines[0].auto_deduct, quantity: 1 }]
+            setMedications([...medications, { supply_id: medicines[0].supply_id, auto_deduct: medicines[0].auto_deduct, quantity: 1 }]
         );
     }
 
     function updateMedication(
         index: number,
-        field: "medication_id" | "quantity",
+        field: "supply_id" | "quantity",
         value: any
     ) {
         const updated = [...medications];
         updated[index][field] = value;
         console.log(value)
-        if (field === "medication_id"){
+        if (field === "supply_id"){
              const med = medicines?.find(m => m.supply_id === parseInt(value))
             if (med.auto_deduct === 0){
                 updated[index]['auto_deduct'] = false;
@@ -115,8 +143,8 @@ export default function AddRecord(props:any){
                             <div key={index} style={{display: 'flex', gap: '1rem', marginTop: '0.5rem'}}>
                                 
                                
-                                    <select value={med.medication_id ?? ""} 
-                                            onChange={(e) => updateMedication(index, 'medication_id', e.target.value)}
+                                    <select value={med.supply_id ?? ""} 
+                                            onChange={(e) => updateMedication(index, 'supply_id', e.target.value)}
                                             style={{display: 'block'}}>
                                         {medicines?.map(med => {
                                             return(
@@ -168,7 +196,7 @@ export default function AddRecord(props:any){
                     </label>
 
                     <label htmlFor="reason">Notes
-                        <textarea name="notes" id="notes" rows='5' cols='50'></textarea>
+                        <textarea name="notes" id="notes" rows='5' cols='50' value={recordDetails?.notes} onChange={(e) => setRecordDetails({...recordDetails, notes: e.target.value})}></textarea>
                     </label>
                 </div>
 
