@@ -84,14 +84,15 @@ def get_patient():
 @app.route('/getpatientallergies', methods=['GET'])
 def get_patient_allergies():
     patient_id = request.args.get('idnum')
-    data = getallwithcondition('patient_allergies', patient_id=patient_id)
+    # data = getallwithcondition('patient_allergies', patient_id=patient_id)
+    data = getallpatientallergies(patient_id = patient_id)
 
     return jsonify(data)
 
-@app.route('/getpatientallergies', methods=['GET'])
+@app.route('/getpatientconditions', methods=['GET'])
 def get_patient_conditions():
     patient_id = request.args.get('idnum')
-    data = getallwithcondition('patient_conditions', patient_id=patient_id)
+    data = getpatientconditions(patient_id=patient_id)
 
     return jsonify(data)
 
@@ -163,7 +164,21 @@ def get_patient_clinic_logs():
 def get_all_supplies():
     data = getallsupplies()
     return jsonify(data)
+
+@app.route('/getmedicationdetails')
+def get_medication_details():
+    idnum = request.args.get('idnum')
+    data = getmedicationdetails(visit_id = idnum)
     
+    return jsonify(data)
+
+@app.route('/validateuser', methods=['POST'])
+def validate_user():
+    data = request.get_json()
+    success = validateuser(**data)
+    print(success)
+    return ({'success' : len(success) > 0})
+
 # ----------------------INSERT QUERIES----------------------------
 
 @app.route('/addvisitlog', methods=['POST'])
@@ -191,6 +206,13 @@ def add_patient_allergies():
     for allergy in allergies:
         ok = addrecord('patient_allergies', patient_id = id, allergy_id = allergy)
         success = ok
+
+    return jsonify({'success' : success})
+
+@app.route('/addstaff', methods=['POST'])
+def add_staff():
+    data = request.get_json()
+    success = addrecord('staff', **data)
 
     return jsonify({'success' : success})
 
@@ -276,11 +298,76 @@ def add_appointment():
 
     return jsonify({'success' : success})
 
+@app.route('/updatepatient', methods=['POST'])
+def update_patient():
+    data = request.get_json()
+    patient_id = data['patient_id']
+    del data['patient_id']
+    success = updatepatients(patient_id, **data)
+
+    return jsonify({'success' : success})
+
 
 @app.route('/getstaffandcateg', methods=['GET'])
 def getstaffandcateg():
     data = getstaffandcategories()
     return jsonify(data)
+
+# -----------------------------------DELETE----------------------------
+
+@app.route('/deletepatientallergies', methods=['POST'])
+def delete_patient_allergies():
+    data = request.get_json()
+    patient_id = data['patient_id']
+    allergies = data['allergies']
+    success = True
+    for item in allergies:
+        success = deletemedical('patient_allergies', patient_id=patient_id, allergy_id=item)
+
+    return jsonify({'success' : success})
+
+@app.route('/addallergies', methods=['POST'])
+def add_allergies():
+    data = request.get_json()
+    patient_id = data['patient_id']
+    allergies = data['allergies']
+    success = True
+
+    for item in allergies:
+        success = addrecord('patient_allergies', patient_id=patient_id, allergy_id=item)
+    
+    return jsonify({'success' : success})
+
+@app.route('/deletepatientconditions', methods=['POST'])
+def delete_patient_conditions():
+    data = request.get_json()
+    patient_id = data['patient_id']
+    conditions = data['conditions']
+    success = True
+
+    for item in conditions:
+        success = deletemedical('patient_conditions', patient_id=patient_id, condition_id=item)
+    
+    return jsonify({'success' : success})
+
+@app.route('/addconditions', methods=['POST'])
+def add_conditions():
+    data = request.get_json()
+    patient_id = data['patient_id']
+    conditions = data['conditions']
+    success = True
+
+    for item in conditions:
+        addrecord('patient_conditions', patient_id=patient_id, condition_id=item)
+    
+    return jsonify({'success' : success})
+
+@app.route('/updatesupply', methods=['POST'])
+def update_supply():
+    data = request.get_json()
+    success = updaterecord('supplies', **data)
+
+    return jsonify({'success' : success})
 
 if __name__=="__main__":
     app.run(debug=True, port=5000)

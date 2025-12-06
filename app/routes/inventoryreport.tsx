@@ -84,7 +84,7 @@ export default function InventoryReport(){
             <div style={containerStyle}>
                 <div style={boxStyle}>
                     <div>Total Item In</div>
-                    <div style={numberStyle}><p style={{color: '#6EC207'}}>-{itemInOut.item_in}</p></div>
+                    <div style={numberStyle}><p style={{color: '#6EC207'}}>+{itemInOut.item_in}</p></div>
                 </div>
                 <div style={boxStyle}>
                     <div>Total Item Out</div>

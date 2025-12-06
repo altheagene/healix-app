@@ -53,6 +53,9 @@ export default function EditBatch(props:any){
                             
                         </div>
                     </div>
+                    <label>Not
+                        <input type="text" />
+                    </label>
                 </div>
                 <CancelSaveBtn hideForm={props.hideForm} submit={handleSubmit}></CancelSaveBtn>
             </div>

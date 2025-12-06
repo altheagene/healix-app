@@ -100,12 +100,18 @@ export default function ItemDetails(){
         setShowEditStock(false)
     }
 
+    function refetchDetails(){
+        fetch(`http://localhost:5000/getsupplydetails?idnum=${id}`).
+        then(res => res.json()).
+        then(data => setItemDetails(data[0]))
+    }
+
     return(
         <div className="route-page">
             <div id="item-details-div">
                 {showEditBatch ? <EditBatch hideForm={() => setShowEditBatch(false)} batch={currentBatch} refetch={refetchBatches}/> : null}
                 {showEditStock ? <EditStock hideForm={hideform} batch={currentBatch} refetch={refetchBatches}/> : null}
-                {showEditDetails ? <EditItem  hideForm={() => setShowEditDetails(false)}/> : null}
+                {showEditDetails ? <EditItem  hideForm={() => setShowEditDetails(false)} itemDetails={itemDetails} refetch={refetchDetails}/> : null}
                 {showUpdateStock ? <UpdateStocks hideForm={() => setShowUpdateStock(false)}/> : null}
                 {showAddBatch ? <AddBatch hideForm={() => setShowAddBatch(false)} name={itemDetails?.supply_name} refetch={refetchBatches}/> : null}
                 <p className="route-header">Item Details</p>
@@ -146,7 +152,7 @@ export default function ItemDetails(){
                                             <td>{batch.batch_number}</td>
                                             <td>{batch.stock_level}</td>
                                             <td>{batch.expiration_date === '' ? 'None' : batch.expiration_date}</td>
-                                            <td>{batch.stock_level > 20 ? <p className='in-stock'>In Stock</p> : 'Low-Stock'}</td>
+                                            <td>{new Date(batch.expiration_date) < new Date() ? 'Expired' :batch.stock_level > 20 ? <p className='in-stock'>In Stock</p> : 'Low-Stock'}</td>
                                             <td></td>
                                             <td>
                                                 <button style={{fontWeight: '600', fontSize: '1rem', color: 'gray',backgroundColor: 'transparent', border: 'none'}}

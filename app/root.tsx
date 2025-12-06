@@ -12,6 +12,7 @@ import type { Route } from "./+types/root";
 import "./app.css";
 import Navbar from "./components/navbar";
 import React from "react";
+import LoginPage from "./routes/login";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -32,6 +33,10 @@ export const links: Route.LinksFunction = () => [
    
   rel:"stylesheet",
   href: "https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+  },
+  {
+    rel: 'stylesheet',
+    href: 'https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap'
   }
 ];
 
@@ -57,13 +62,29 @@ export function Layout({ children }: { children: React.ReactNode }) {
 export default function App() {
 
   const [showNavbar, setShowNavBar] = React.useState(true);
-  const [validUser, setValidUser] = React.useState(false)
+  const [validUser, setValidUser] = React.useState(() => {
+    return localStorage.getItem("loggedIn") === "true";
+  });
+
+  function validate(){
+    localStorage.setItem("loggedIn", "true");
+    setValidUser(true)
+  }
+
+  function logout(){
+    setValidUser(false);
+    localStorage.setItem("loggedIn", "false");
+
+  }
   return (
     <>
     
+    {validUser ? 
+      <>
         <div id='header'>
           <button onClick={() => setShowNavBar(prev => !prev)}>Click</button>
           <h1>Healix</h1>
+          <button onClick={logout}>Logout</button>
         </div>
 
         <div id="main-content">
@@ -72,9 +93,10 @@ export default function App() {
             <Outlet></Outlet>
           </div>
         </div>
-
-      
-            
+      </>
+      :
+      <LoginPage validate={validate}/>
+    }    
     </>
   )
 }

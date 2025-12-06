@@ -95,7 +95,7 @@ def getitemdetails(table, **kwargs):
     values = list(kwargs.values())
 
     sql = f'''
-    SELECT s.supply_id, s.supply_name, s.description, c.category_name, s.brand, s.description 
+    SELECT s.supply_id, s.supply_name, s.description, c.category_name, s.brand, s.description, s.auto_deduct
     FROM {table} s 
     INNER JOIN supplies_categories c on  s.category_id = c.category_id 
     WHERE s.supply_id = ?
@@ -324,6 +324,8 @@ def getpatientcliniclogs(**kwargs):
                 v.visit_datetime,
                 v.notes,
                 s.service_id,
+                v.weight,
+                v.temperature,
                 s.service_name,
                 p.patient_id,
                 p.first_name || ' ' || p.middle_name || ' ' || p.last_name AS patient_name,
@@ -361,28 +363,123 @@ def getallsupplies():
 
     return data
 
+def getallpatientallergies(**kwargs):
+    values = list(kwargs.values())
+    sql = f"""
+
+        SELECT 
+            pa.allergy_id,
+            a.allergy_name
+        FROM patient_allergies pa
+        JOIN allergies a on a.allergy_id = pa.allergy_id
+        WHERE pa.patient_id = ?
+    """
+
+    data = getprocess(sql, values)
+    return data
+
+def  getpatientconditions(**kwargs):
+    values = list(kwargs.values())
+    sql = f"""
+
+        SELECT 
+            pc.condition_id,
+            c.condition_name
+        FROM patient_conditions pc
+        JOIN conditions c on c.condition_id = pc.condition_id
+        WHERE pc.patient_id = ?
+    """
+
+    data = getprocess(sql, values)
+    return data
+
+def getmedicationdetails(**kwargs):
+    values = list(kwargs.values())
+
+    sql = f'''
+            SELECT 
+            s.supply_name,
+            m.quantity
+            FROM medication_details m
+            JOIN supplies s on s.supply_id = m.supply_id
+            WHERE visit_id = ?
+            '''
+    return getprocess(sql, values)
+
+def validateuser(**kwargs):
+    keys = list(kwargs.keys())
+    values = list(kwargs.values())
+
+    sql = f'''
+        SELECT * from staff
+        WHERE `{keys[0]}` = ? AND `{keys[1]}` = ?
+
+    '''
+    return getprocess(sql, values)
+
+def updatepatients(patient_id, **kwargs):
+    keys = list(kwargs.keys())
+    values = list(kwargs.values())
+
+    listkeys = []
+    for x in range(0, len(keys)):
+        listkeys.append(f'`{keys[x]}` = ?')
+
+    stringifykeys = ','.join(listkeys)
+    
+    sql = f'''
+            UPDATE patients
+            SET {stringifykeys}
+            WHERE `patient_id` = {patient_id}
+           '''
+    return postprocess(sql, values)
+
+def deletemedical(table, **kwargs):
+    keys = list(kwargs.keys())
+    values = list(kwargs.values())
+
+    sql = f'''
+        DELETE from {table}
+        WHERE `{keys[0]}` = ? AND `{keys[1]}` = ?
+    '''
+
+    return postprocess(sql, values)
+
 
 def getprocess(sql, values) -> list:
-    conn = connect(database)
-    conn.row_factory = Row
-    cursor = conn.cursor()
-    cursor.execute(sql, values)
-    data = cursor.fetchall()
-    cursor.close()
+    try:
+        conn = connect(database)
+        conn.row_factory = Row
+        cursor = conn.cursor()
+        cursor.execute(sql, values)
+        data = cursor.fetchall()
+        cursor.close()
+        conn.close()
 
-    return [dict(row) for row in data]
+        return [dict(row) for row in data]
+
+    except Exception as e:
+        print("GET error:", e)
+        return []     # Return empty list if something goes wrong
 
 def postprocess(sql, values) -> bool:
-    print(sql)
-    conn = connect(database)
-    conn.execute("PRAGMA foreign_keys = ON;")
-    cursor = conn.cursor()
-    cursor.execute(sql, values)
-    conn.commit()
-    rowcount = cursor.rowcount
-    cursor.close()
+    try:
+        conn = connect(database)
+        conn.execute("PRAGMA foreign_keys = ON;")
+        cursor = conn.cursor()
+        cursor.execute(sql, values)
+        conn.commit()
 
-    return rowcount > 0
+        rowcount = cursor.rowcount
+
+        cursor.close()
+        conn.close()
+
+        return rowcount > 0   # success if at least 1 row affected
+
+    except Exception as e:
+        print("POST error:", e)
+        return False          # failure
 
 def main(): pass
     # data = getallstudents('students')

@@ -4,84 +4,61 @@
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background: linear-gradient(135deg, #4f73ff, #6bc1ff);
+ background: #C47BE4;
+background: linear-gradient(68deg,rgba(196, 123, 228, 1) 0%, rgba(39, 60, 179, 0.9) 43%, rgba(255, 255, 255, 1) 88%);
   /* font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; */
   font-family: 'Bricolage Grotesque', sans-serif;
+  box-shadow: rgba(255, 255, 255, 0.1) 0px 1px 1px 0px inset, rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px;
 }
 
-/* Form card */
-.login-form {
-  background: #ffffff;
-  padding: 2.5rem 3rem;
-  border-radius: 12px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-  width: 360px;
+.login-form h2{
   text-align: center;
-  transition: transform 0.3s ease;
+  font-size: 2.5rem;
+  color: #252525
 }
+
+.login-form{
+  width: 400px;
+  background-color: rgba(255, 255, 255, 0.947);
+  display: flex;
+  flex-direction: column;
+  padding: 3rem;
+  gap: 1.5rem;;
+  border-radius: 10px;
+  transition: transform 0.3s ease; /* smooth animation */
+}
+
 
 .login-form:hover {
-  transform: translateY(-4px);
+  transform: translateY(-2%);
 }
 
-/* Title */
-.login-title {
-  font-size: 2rem;
-  color: #4f73ff;
-  margin-bottom: 0.2rem;
-}
 
-.login-subtitle {
-  font-size: 0.95rem;
-  color: #555;
-  margin-bottom: 1.5rem;
-}
-
-/* Inputs */
-.login-input {
+.login-form input{
+  display: block;
   width: 100%;
-  padding: 0.7rem 1rem;
-  margin-bottom: 1rem;
-  border-radius: 8px;
   border: 1px solid #ccc;
-  font-size: 1rem;
-  transition: all 0.2s;
+  border-radius: 5px;
+  margin-top: 0.3rem;
 }
 
-.login-input:focus {
+.login-form input:focus{
   border-color: #4f73ff;
-  box-shadow: 0 0 8px rgba(79, 115, 255, 0.3);
+   box-shadow: 0 0 6px rgba(79, 115, 255, 0.3);
   outline: none;
 }
 
-/* Button */
-.login-button {
+.login-form button{
   width: 100%;
-  padding: 0.7rem;
-  font-size: 1rem;
-  background-color: #4f73ff;
-  color: #fff;
+  height: 40px;
+  margin: 2rem 0;
+  font-family: 'Bricolage Grotesque';
+  background-color: #253ecbd2;
+  border-radius: 10px;
+  color: white;
+  font-weight: 700;
+  font-size: 1.1rem;
   border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.3s, transform 0.2s;
-}
 
-.login-button:hover {
-  background-color: #3a5edc;
-  transform: translateY(-2px);
-}
 
-/* Error */
-.error {
-  color: #ff4d4f;
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
-}
-
-/* Footer text */
-.login-footer {
-  margin-top: 1.5rem;
-  font-size: 0.8rem;
-  color: #999;
 }

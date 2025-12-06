@@ -87,7 +87,7 @@
     flex-wrap: wrap;
     height: auto;
     gap: 1.5rem;
-    padding: 2rem 1rem;
+    padding: 2rem 0;
     color: #1E1E1E;
     justify-content: center;
 }
@@ -131,7 +131,7 @@
     background-color: #fff;
     border-radius: 12px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     padding: 1rem;
 }
 
@@ -151,8 +151,31 @@
 
 .patient-info{
     font-size: 1rem;
-    font-weight: 500;
+    font-weight: 600;
     margin-bottom: 1rem;
+}
+
+.patient-info-div{
+    padding-left: 0.5rem;
+     display: flex;
+    flex-direction: column;
+    gap: 1rem
+}
+
+.patient-info-div p{
+    font-weight: 400;
+    /* color: #393939 */
+}
+
+.patient-info-div span{
+    font-weight: 400;
+    /* display: block; */
+    color:rgb(27, 27, 27)
+}
+.info-div{
+    display: flex;
+    flex-direction: column;
+    gap: 1rem
 }
 /* Specific sections */
 #student-info { grid-column: 1 / 2; }
@@ -382,7 +405,7 @@ a:hover {
 
 #add-record-form{
     height: 700px;
-    width: 700px;
+    width: 500px;
     z-index: 4;
     background-color: white;
     display: flex;
@@ -410,4 +433,9 @@ a:hover {
     bottom: 2rem;
     right: 2rem
 } */
+
+#main-patient-details{
+    display: grid;
+    
+}
 

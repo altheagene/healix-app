@@ -21,7 +21,7 @@ export default function AddPatient(props: any) {
   async function handleSubmit(){
     console.log(studentData);
     
-
+    let success = true;
     const response = await fetch('http://localhost:5000/addpatient',
         {
             method: 'POST',
@@ -31,7 +31,13 @@ export default function AddPatient(props: any) {
             body: JSON.stringify(studentData)
         }
     )
-    console.log(response.json())
+    success = await response.json()
+    console.log(success)
+
+    if (!success.success){
+      alert('This patient already exists!')
+      return;
+    }
 
     console.log(selectedAllergy)
     if (selectedAllergy.length > 0){
@@ -62,7 +68,7 @@ export default function AddPatient(props: any) {
         });
     }
 
-    
+    alert("Successfully added new patient!")
     props.refetchPatients()
   }
   // ---------- EFFECTS ----------
@@ -247,6 +253,16 @@ export default function AddPatient(props: any) {
                     <label htmlFor="male">Male</label>
                   </div>
                 </div>
+              </label>
+            </div>
+
+            <div>
+              <label htmlFor="email">Email
+                <input type="text" id='email' value={studentData?.email} onChange={(e)  => setStudentData({...studentData, email: e.target.value})}/>
+              </label>
+
+              <label htmlFor="phone">Phone
+                <input type="text" id='phone' value={studentData?.phone} onChange={(e)  => setStudentData({...studentData, phone: e.target.value})}/>
               </label>
             </div>
 
