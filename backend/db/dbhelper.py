@@ -347,10 +347,12 @@ def getallsupplies():
             s.supply_id,
             s.supply_name,
             sc.category_name,
-            SUM(b.stock_level) AS total_stock
+            SUM(b.stock_level) AS total_stock,
+            MAX(i.inv_date) AS last_updated
         FROM supplies s
         JOIN supplies_categories sc ON sc.category_id = s.category_id
         LEFT JOIN batch b ON b.supply_id = s.supply_id
+        LEFT JOIN inventory i ON i.batch_id = b.batch_id
         GROUP BY s.supply_id, s.supply_name, sc.category_name
         ORDER BY s.supply_name;
             """

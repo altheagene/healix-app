@@ -76,7 +76,7 @@ export default function Inventory(){
                                 <tr onClick={() => navigate(`/itemdetails/${supply.supply_id}`)}>
                                     <td>{supply.supply_id}</td>
                                     <td>{supply.supply_name}</td>
-                                    <td>{supply.total_stock > 0 ? supply.total_stock : 0}</td>
+                                    <td >{supply.total_stock > 0 ? supply.total_stock : 0}</td>
                                     <td><p style={{
                                         backgroundColor: supply.total_stock > 20 ? '#6EC207' : supply.total_stock > 0 ? 'orange' : '#FB4141',
                                         padding: '0.3rem',
@@ -89,7 +89,7 @@ export default function Inventory(){
                                         color: 'white'
                                     }}>{supply.total_stock > 20 ? 'In Stock' :supply.total_stock > 0 ? 'Low Stock' : 'Out-of-Stock'}</p></td>
                                     {/* <td>--</td> */}
-                                    <td>--</td>
+                                    <td>{supply.last_updated != null ? supply.last_updated : 'None'}</td>
                                     <td></td>
                                 </tr>
                             )
