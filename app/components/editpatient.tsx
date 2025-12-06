@@ -4,172 +4,210 @@ import '../app.css';
 import CancelSaveBtn from './cancelsavebtn';
 import React from 'react';
 
-export default function AddPatient(props: any) {
-  // ---------- STATE ----------
+export default function EditPatient(props: any) {
+   // ============================================================
+  // STATE
+  // ============================================================
   const [idnumSearch, setIdnumSearch] = React.useState('');
-  const [studentData, setStudentData] = React.useState({});
+  const [studentData, setStudentData] = React.useState<any>();
+
+  // master lists from backend
   const [allergies, setAllergies] = React.useState<any[]>([]);
   const [conditions, setConditions] = React.useState<any[]>([]);
-  const [selectedAllergy, setSelectedAllergy] = React.useState<number[]>([]);
-  const [selectedCondition, setSelectedCondition] = React.useState<number[]>([]);
+
+  // selected values
+  const [selectedAllergy, setSelectedAllergy] = React.useState<any[]>([]);
+  const [selectedCondition, setSelectedCondition] = React.useState<any[]>([]);
+
+  // record changes
+  const [addedAllergy, setAddedAllergy] = React.useState<any[]>([]);
+  const [removedAllergy, setRemovedAllergy] = React.useState<any[]>([]);
+
+  const [addedCondition, setAddedCondition] = React.useState<any[]>([]);
+  const [removedCondition, setRemovedCondition] = React.useState<any[]>([]);
+
+  // dropdowns
   const [showAllergyDropdown, setShowAllergyDropdown] = React.useState(false);
   const [showConditionDropdown, setShowConditionDropdown] = React.useState(false);
-  const [allergyElements, setAllergyElements] = React.useState([]);
+
+  const [allergyElements, setAllergyElements] = React.useState([]); 
   const [conditionElements, setConditionElements] = React.useState([]);
 
+  // ============================================================
+  // EFFECTS — LOAD INITIAL DATA
+  // ============================================================
 
-  async function handleSubmit(){
-    console.log(studentData);
-    
-    let success = true;
-    const response = await fetch('http://localhost:5000/addpatient',
-        {
-            method: 'POST',
-            headers:{
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(studentData)
-        }
-    )
-    success = await response.json()
-    console.log(success)
-
-    if (!success.success){
-      alert('This patient already exists!')
-      return;
-    }
-
-    console.log(selectedAllergy)
-    if (selectedAllergy.length > 0){
-        const id = await fetch('http://localhost:5000/getmaxpatientid').
-        then(res => res.json())
-        
-        await fetch('http://localhost:5000/addpatientallergies', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                'patient_id': id[0].last_id,
-                'allergies' : selectedAllergy
-            })
-        });
-    }
-
-    if (selectedCondition.length > 0){
-        const id = await fetch('http://localhost:5000/getmaxpatientid').
-        then(res => res.json())
-        
-        await fetch('http://localhost:5000/addpatientconditions', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                'patient_id': id[0].last_id,
-                'conditions' : selectedCondition
-            })
-        });
-    }
-
-    alert("Successfully added new patient!")
-    props.refetchPatients()
-  }
-  // ---------- EFFECTS ----------
-
+  // Load allergies
   React.useEffect(() => {
     fetch('http://localhost:5000/getallergies')
       .then(res => res.json())
       .then(data =>
-        setAllergies(
-          data.sort((a, b) =>
-            a.allergy_name.toLowerCase().localeCompare(b.allergy_name.toLowerCase())
-          )
-        )
+        setAllergies(data.sort((a, b) =>
+          a.allergy_name.localeCompare(b.allergy_name)
+        ))
       );
   }, []);
 
+  // Load conditions
   React.useEffect(() => {
     fetch('http://localhost:5000/getconditions')
       .then(res => res.json())
       .then(data =>
-        setConditions(
-          data.sort((a, b) =>
-            a.condition_name.toLowerCase().localeCompare(b.condition_name.toLowerCase())
-          )
-        )
+        setConditions(data.sort((a, b) =>
+          a.condition_name.localeCompare(b.condition_name)
+        ))
       );
   }, []);
 
-//   React.useEffect(() => {
-//     const elements = selectedAllergy.map(item => {
-//         const allergy = allergies.find(item => item.id === item)
-//         const name = allergy
-//         return(
-//             <li></li>
-//         )
-//     })
-//     setSelectedAllergy()
-//   }, [selectedAllergy])
+  // Load selected student & preset selections
+  React.useEffect(() => {
+    setStudentData(props.studentData);
+    setSelectedAllergy(props.allergies?.map(a => a.allergy_id) || []);
+    setSelectedCondition(props.conditions?.map(c => c.condition_id) || []);
+  }, [props.studentData]);
 
-//   React.useEffect(() => {
-//     conditionElements = conditions.map(item => {
-//         if (selectedCondition.includes(item.condition_id )){
-//             return(
-//                 <li>{item.condition_name}</li>
-//             )
-//         }
-//     })
-//   }, [selectedCondition])
+  // ============================================================
+  // LOGIC — ADD / REMOVE ITEMS
+  // ============================================================
 
-  // ---------- FUNCTIONS ----------
-  function findStudent() {
-    const idnum = idnumSearch.trim();
-    fetch(`http://localhost:5000/getstudent?idnum=${idnum}`)
-      .then(res => res.json())
-      .then(data => setStudentData({...data[0], is_student:true}));
+  function add(item: any, type: 'allergy' | 'condition') {
+    const id = type === 'allergy' ? item.allergy_id : item.condition_id;
 
-    setSelectedAllergy([])
-    setSelectedCondition([])
-    setShowAllergyDropdown(false)
-    setShowConditionDropdown(false)
-  }
-
-  
-
-  function toggleOption(id: number, type: 'allergy' | 'condition') {
     if (type === 'allergy') {
-      if (!selectedAllergy.includes(id)) setSelectedAllergy(prev => [...prev, id]);
-      else setSelectedAllergy(prev => prev.filter(item => item !== id));
+      setAddedAllergy(prev => [...new Set([...prev, id])]);
+      setSelectedAllergy(prev => [...new Set([...prev, id])]);
+      setRemovedAllergy(prev => prev.filter(x => x !== id));
     } else {
-      if (!selectedCondition.includes(id)) setSelectedCondition(prev => [...prev, id]);
-      else setSelectedCondition(prev => prev.filter(item => item !== id));
+      setAddedCondition(prev => [...new Set([...prev, id])]);
+      setSelectedCondition(prev => [...new Set([...prev, id])]);
+      setRemovedCondition(prev => prev.filter(x => x !== id));
     }
   }
 
-  // ---------- CHECKBOXES ----------
+  function remove(item: any, type: 'allergy' | 'condition') {
+    const id = type === 'allergy' ? item.allergy_id : item.condition_id;
+
+    if (type === 'allergy') {
+      setRemovedAllergy(prev => [...new Set([...prev, id])]);
+      setAddedAllergy(prev => prev.filter(x => x !== id));
+      setSelectedAllergy(prev => prev.filter(x => x !== id));
+    } else {
+      setRemovedCondition(prev => [...new Set([...prev, id])]);
+      setAddedCondition(prev => prev.filter(x => x !== id));
+      setSelectedCondition(prev => prev.filter(x => x !== id));
+    }
+  }
+
+  // ============================================================
+  // FETCH FUNCTIONS
+  // ============================================================
+
+  async function submitAddAllergies() {
+    if (addedAllergy.length === 0) return;
+    await fetch("http://localhost:5000/addallergies", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        patient_id: studentData.patient_id,
+        allergies: addedAllergy,
+      }),
+    });
+  }
+
+  async function submitDeleteAllergies() {
+    if (removedAllergy.length === 0) return;
+    await fetch("http://localhost:5000/deletepatientallergies", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        patient_id: studentData.patient_id,
+        allergies: removedAllergy,
+      }),
+    });
+  }
+
+  async function submitAddConditions() {
+    if (addedCondition.length === 0) return;
+    await fetch("http://localhost:5000/addconditions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        patient_id: studentData.patient_id,
+        conditions: addedCondition,
+      }),
+    });
+  }
+
+  async function submitDeleteConditions() {
+    if (removedCondition.length === 0) return;
+    await fetch("http://localhost:5000/deletepatientconditions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        patient_id: studentData.patient_id,
+        conditions: removedCondition,
+      }),
+    });
+  }
+
+  // ============================================================
+  // SUBMIT — MAIN SAVE
+  // ============================================================
+
+  async function handleSubmit() {
+    const res = await fetch("http://localhost:5000/updatepatient", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(studentData),
+    });
+
+    const success = await res.json();
+
+    if (success.success) {
+      await submitAddAllergies();
+      await submitDeleteAllergies();
+      await submitAddConditions();
+      await submitDeleteConditions();
+
+      alert("Patient Updated Successfully!");
+      props.hideForm();
+      props.refetch();
+    }
+  }
+
+  // ============================================================
+  // RENDER LISTS
+  // ============================================================
+
   const allergyCheckboxes = allergies.map(item => (
     <li key={item.allergy_id}>
       <input
         type="checkbox"
-        id={`allergy-${item.allergy_id}`}
         checked={selectedAllergy.includes(item.allergy_id)}
-        onChange={() => toggleOption(item.allergy_id, 'allergy')}
+        onChange={() =>
+          selectedAllergy.includes(item.allergy_id)
+            ? remove(item, "allergy")
+            : add(item, "allergy")
+        }
       />
-      <label htmlFor={`allergy-${item.allergy_id}`}>{item.allergy_name}</label>
+      <label>{item.allergy_name}</label>
     </li>
   ));
 
-  const conditionsCheckboxes = conditions.map(item => (
+  const conditionCheckboxes = conditions.map(item => (
     <li key={item.condition_id}>
       <input
         type="checkbox"
-        id={`condition-${item.condition_id}`}
         checked={selectedCondition.includes(item.condition_id)}
-        onChange={() => toggleOption(item.condition_id, 'condition')}
+        onChange={() =>
+          selectedCondition.includes(item.condition_id)
+            ? remove(item, "condition")
+            : add(item, "condition")
+        }
       />
-      <label htmlFor={`condition-${item.condition_id}`}>{item.condition_name}</label>
+      <label>{item.condition_name}</label>
     </li>
   ));
-
-
-
   // ---------- JSX ----------
   return (
     <div id="add-new-patient-div">
@@ -196,7 +234,6 @@ export default function AddPatient(props: any) {
             </label>
             <button
               style={{ height: '40px', width: '80px', borderRadius: '10px', border: 'none' }}
-              onClick={findStudent}
             >
               Search
             </button>
@@ -309,9 +346,6 @@ export default function AddPatient(props: any) {
                         </div>
                     )}
 
-                    <ul>
-                        {allergyElements}
-                    </ul>
                 </div>
 
                 {/* Conditions */}
@@ -324,13 +358,9 @@ export default function AddPatient(props: any) {
                     />
                     {showConditionDropdown && (
                         <div className='dropdown'>
-                        <ul>{conditionsCheckboxes}</ul>
+                        <ul>{conditionCheckboxes}</ul>
                         </div>
                     )}
-
-                    <ul>
-                        {conditionElements}
-                    </ul>
                 </div>
 
                 <div style={{display: 'block'}}>

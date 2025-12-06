@@ -1,63 +1,44 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router';
-import '../login.css';
 
-type Props = {
-  login: (username: string, password: string) => boolean;
-};
+import '../login.css'
+import React, { use } from 'react'
 
-export default function LoginPage({ login }: Props) {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const navigate = useNavigate();
+export default function LoginPage(props:any){
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const [username, setUsername] = React.useState('');
+  const [password, setPassword] = React.useState('');
 
-    if (!username || !password) {
-      setError('Please enter username and password.');
-      return;
-    }
 
-    const success = login(username, password);
-    if (success) {
-      navigate('/');
-    } else {
-      setError('Invalid username or password.');
-    }
-  };
+ async function handleSubmit(){
+  const response = await fetch(`http://localhost:5000/validateuser`, {
+    method: 'POST',
+    headers: {
+      'Content-Type' : 'application/json'
+    },
+    body: JSON.stringify({username: username, password: password})
+  })
 
-  return (
+  const success = await response.json()
+
+  if(success.success){
+    props.validate()
+  }
+ }
+  return(
     <div className="login-container">
-      <form onSubmit={handleSubmit} className="login-form">
-        <h1 className="login-title">Healix</h1>
-        <p className="login-subtitle">Welcome back! Please login to continue.</p>
+      <div className="login-form">
+        <h2>Healix</h2>
 
-        {error && <p className="error">{error}</p>}
+        <label htmlFor="">
+           <input type="text" className='login-input' placeholder='Username' onChange={(e) => setUsername(e.target.value)}/>
+        </label>
 
-        <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          className="login-input"
-        />
+        <label htmlFor="">
+          <input type="password" className='login-input' placeholder='Password'  onChange={(e) => setPassword(e.target.value)}/>
+        </label>
+        
 
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="login-input"
-        />
-
-        <button type="submit" className="login-button">
-          Login
-        </button>
-
-        <p className="login-footer">© 2025 Healix. All rights reserved.</p>
-      </form>
+        <button onClick={handleSubmit}>Login</button>
+      </div>
     </div>
-  );
+  )
 }

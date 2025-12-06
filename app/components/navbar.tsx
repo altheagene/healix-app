@@ -17,32 +17,37 @@ export default function Navbar(props:any){
     return () => window.removeEventListener("resize", handleResize);
     }, []);
 
-    const [routeChosen, setRouteChosen] = React.useState('Home')
+    const [routeChosen, setRouteChosen] = React.useState('Dashboard')
     const navbarObj = [
         {
             route: "/",
-            text: 'Home',
-            icon: 'speedometer2'
+            text: 'Dashboard',
+            icon: 'bi bi-speedometer2'
         },
         {
             route: "/patients",
-            text: 'Patients' 
+            text: 'Patients',
+            icon: 'bi bi-person'
         },
         {
             route: "/appointments",
-            text: 'Appointments' 
+            text: 'Appointments',
+            icon: 'bi bi-calendar-date'
         },
         {
             route: "/inventory",
-            text: 'Inventory' 
+            text: 'Inventory',
+            icon: 'bi bi-box'
         },
         {
             route: "/staff",
-            text: 'Staff' 
+            text: 'Staff' ,
+            icon: 'bi bi-people'
         },
         {
             route: "/reports",
             text: 'Reports' ,
+            icon: 'bi bi-file-earmark',
             subroutes: [
                 {
                     route: '/patientreport',
@@ -80,10 +85,10 @@ export default function Navbar(props:any){
         return(
             <li>
                 <div className="navlist-bg" style={{backgroundColor: routeChosen === obj.text ? '#B1C1FF' : 'transparent',
-                                                    width: routeChosen === obj.text ? '90%' : '0px'
+                                                    width: routeChosen === obj.text ? '100%' : '0px'
                 }}>
                     <NavLink to={obj.route} onClick={() => setRouteChosen(obj.text)}>
-                        {obj.text}
+                        <i className={obj.icon} style={{marginRight: '1.3rem', fontSize: '1.3rem', fontWeight: 700}}></i>{obj.text}
                     </NavLink>
                 </div>
 

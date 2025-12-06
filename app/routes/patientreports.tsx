@@ -168,8 +168,16 @@ export default function PatientReports()
     flexDirection: 'column',
     justifyContent: "space-around",
     margin: "20px 0",
-    width: '50%'
+    width: '30%'
   };
+
+  const graphStyle = {
+    display: "flex",
+    flexDirection: 'column',
+    justifyContent: "space-around",
+    margin: "20px 0",
+    width: '70%'
+  }
 
   const numberStyle = {
     fontSize: "2rem",
@@ -203,7 +211,7 @@ export default function PatientReports()
                         <div style={numberStyle}>{uniquePatientCount}</div>
                     </div>
                 </div>
-                <div style={containerStyle}>
+                <div style={graphStyle}>
                     <div style={{ width: "100%", height: 350, margin: '0.5rem 0', padding: '2rem', border: "1px solid #ccc",  backgroundColor: "#f9f9f9"}}>
                         <h3>Visits by Service Type</h3>
                         <ResponsiveContainer>

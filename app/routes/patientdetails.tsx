@@ -1,6 +1,8 @@
 import '../patients.css'
 import '../app.css'
 import AddRecord from '~/components/addrecord'
+import EditPatient from '~/components/editpatient'
+import ViewVisit from '~/components/viewVisit'
 import React from 'react'
 import { useParams } from 'react-router';
 import 'bootstrap-icons/font/bootstrap-icons.css';
@@ -10,9 +12,13 @@ export default function PatientDetails(){
 
     const { id } = useParams()
     const [showAddRecord, setShowAddRecord] = React.useState(false)
+    const [showEdit, setShowEdit] = React.useState(false)
+    const [showVisit, setShowVisit] = React.useState(false)
+    const [visitChosen, setVisitChosen] = React.useState(false)
+
     const [studentData, setStudentData] = React.useState()
-    const [allergies, setAllergies] = React.useState()
-    const [conditions, setConditions] = React.useState()
+    const [allergies, setAllergies] = React.useState<any[]>()
+    const [conditions, setConditions] = React.useState<any[]>()
     const [clinicLogs, setClinicLogs]= React.useState<any[]>();
 
     React.useEffect(() => {
@@ -34,69 +40,120 @@ export default function PatientDetails(){
         (res => res.json()).then(data => setConditions(data))
     }, [])
 
-    console.log(studentData)
-    console.log(allergies)
-    console.log(conditions)
+    async function refetch(){
+        await fetch(`http://localhost:5000/getpatient?idnum=${id}`).then
+        (res => res.json()).then(data => setStudentData(data[0]))
+
+         fetch(`http://localhost:5000/getpatientallergies?idnum=${id}`).then
+        (res => res.json()).then(data => setAllergies(data))
+    }
+
     console.log(clinicLogs)
     return(
         <div className="route-page" id="patient-details-div" style={{backgroundColor: '#EEEEEE'}}>
             <h1 className='route-header'>Patient Details</h1>
+            <button onClick={() => setShowEdit(true)}>Edit</button>
+            {showVisit && visitChosen? <ViewVisit visit={visitChosen} hideForm={() => setShowVisit(false)}/> : null}
+            {showEdit ? <EditPatient studentData={studentData} allergies={allergies} conditions={conditions} refetch={refetch} hideForm={() => setShowEdit(false)}/> : null}
             {showAddRecord ? <AddRecord hideForm={() => setShowAddRecord(false)}/> : null}
-            <div id="patient-overview-div">
-                <div id="photo-name-div">
-                    <img></img>
-                    <p>{studentData?.first_name} {studentData?.middle_name} {studentData?.last_name}</p>
+
+            <div>
+                <div id="patient-overview-div">
+                    <div id="photo-name-div">
+                        <img></img>
+                        <p>{studentData?.first_name} {studentData?.middle_name} {studentData?.last_name}</p>
+                    </div>
+                    <div id="patient-information" >
+                        <div id="student-info" className='info-div'>
+                            <p className='patient-info'>Student Information</p>
+                            <div className='patient-info-div'>
+                                 <p>Level: <span>{studentData?.level}</span></p>
+                                <p>ID Number: <span>{studentData?.student_id}</span></p>
+                                <p>Department: <span>{studentData?.department}</span></p>
+                                <p>Email: <span>{studentData?.email}</span></p>
+                                <p>Phone: <span>{studentData?.phone}</span></p>
+                            </div>
+                            
+                        </div>
+                        <div id='medical-info'  className='info-div'>
+                            <p className='patient-info'>Medical Information</p>
+                            <div >Allergies:
+                                <span style={{display: 'flex', gap: '0.5rem'}}>
+                                        {allergies?.map(allergy => {
+                                            return(
+                                                <div style={{padding: '0.3rem', 
+                                                            backgroundColor: 'white',
+                                                            fontSize: '0.8rem', 
+                                                            borderRadius: '10px',
+                                                            border: '1px solid #ccc',
+                                                            width: 'fit-content',
+                                                        flexWrap: 'wrap'}}>{allergy.allergy_name}</div>
+                                            )
+                                        })}
+                                </span>
+                            </div>
+                            <div>Conditions:
+                                <span style={{display: 'flex', gap: '0.5rem'}}>
+                                        {conditions?.map(condition => {
+                                            return(
+                                                <div style={{padding: '0.3rem', 
+                                                            backgroundColor: 'white',
+                                                            fontSize: '0.8rem', 
+                                                            borderRadius: '10px',
+                                                            border: '1px solid #ccc',
+                                                            width: 'fit-content'}}>{condition.condition_name}</div>
+                                            )
+                                        })}
+                                </span>
+                            </div>
+
+                            <p>Notes: {studentData?.notes}</p>
+                        </div>
+                        <div id='emergency-contact'  className='info-div'>
+                            <p className='patient-info'>Emergency Contact</p>
+                            <p>Name: {studentData?.emergency_contact_name}</p>
+                            {/* <p>Relationship: </p> */}
+                            <p>Contact no: {studentData?.emergency_contact_phone}</p>
+                        </div>
+                    </div>
                 </div>
-                <div id="patient-information" >
-                    <div id="student-info">
-                        <p className='patient-info'>Student Information</p>
-                        <p>ID Number: {studentData?.student_id}</p>
-                        <p>Department: {studentData?.department}</p>
-                        <p>Level: {studentData?.level}</p>
+
+                <div style={{marginTop: '2rem', width:'100%', padding: '1rem 0'}}>
+                    <div style={{width: '100%', display:'flex', justifyContent: 'space-between'}}>
+                        <h2 style={{fontWeight: '500'}}>Clinic Visits</h2>
+                        <button style={{height: '40px', width: '120px', backgroundColor: '#334FBD', borderRadius: '10px', color: 'white', border: 'none'}} onClick={() => setShowAddRecord(true)}>+ Add Record</button>
                     </div>
-                    <div id='medical-info' >
-                        <p className='patient-info'>Medical Information</p>
-                        <p>Allergies:</p>
-                        <p>Conditions:</p>
-                    </div>
-                    <div id='emergency-contact'>
-                        <p className='patient-info'>Emergency Contact</p>
-                        <p>Name: {studentData?.emergency_contact_name}</p>
-                        {/* <p>Relationship: </p> */}
-                        <p>Contact no: {studentData?.emergency_contact_phone}</p>
+                    <div id='patient-visit-div' className='table-container'>
+                        <table id='patient-visit-table'>
+                            <tr>
+                                <th>Date</th>
+                                <th>Reason</th>
+                                <th>Attending</th>
+                                <th>Notes</th>
+                                <th></th>
+                            </tr>
+
+                            {clinicLogs?.map(log => {
+                                return(
+                                    <tr>
+                                        <td>{log.visit_datetime}</td>
+                                        <td>{log.service_name}</td>
+                                        <td>{log.staff_name}</td>
+                                        <td>{log.notes}</td>
+                                        <td>
+                                            <button style={{backgroundColor: 'transparent', border: 'none', fontSize: '1.2rem'}}
+                                                    onClick={() => {setShowVisit(true); setVisitChosen(log)}}>
+                                                <i className='bi bi-eye'></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                )
+                            })}
+                        </table>
                     </div>
                 </div>
             </div>
-
-            <div style={{marginTop: '2rem', width:'100%', padding: '1rem 0'}}>
-                <div style={{width: '100%', display:'flex', justifyContent: 'space-between'}}>
-                    <h2 style={{fontWeight: '500'}}>Clinic Visits</h2>
-                    <button style={{height: '40px', width: '120px', backgroundColor: '#334FBD', borderRadius: '10px', color: 'white', border: 'none'}} onClick={() => setShowAddRecord(true)}>+ Add Record</button>
-                </div>
-                <div id='patient-visit-div' className='table-container'>
-                    <table id='patient-visit-table'>
-                        <tr>
-                            <th>Date</th>
-                            <th>Reason</th>
-                            <th>Attending</th>
-                            <th>Notes</th>
-                            <th></th>
-                        </tr>
-
-                        {clinicLogs?.map(log => {
-                            return(
-                                <tr>
-                                    <td>{log.visit_datetime}</td>
-                                    <td>{log.service_name}</td>
-                                    <td>{log.staff_name}</td>
-                                    <td>{log.notes}</td>
-                                    <td><button style={{backgroundColor: 'transparent', border: 'none', fontSize: '1.2rem'}}><i className='bi bi-eye'></i></button></td>
-                                </tr>
-                            )
-                        })}
-                    </table>
-                </div>
-            </div>
+            
         </div>
     )
 }
