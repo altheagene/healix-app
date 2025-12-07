@@ -65,6 +65,12 @@ def get_all_patients():
     data  = getall('patients')
     return jsonify(data)
 
+@app.route('/getappointmentstoday', methods=['GET'])
+def get_appointments_today():
+    data = getallappointmentstoday()
+
+    return jsonify(data)
+
 @app.route('/getpatientdetails', methods=['GET'])
 def get_patient_details():
     None
@@ -205,6 +211,7 @@ def add_visitlog():
 @app.route('/addpatient', methods=['POST'])
 def add_patient():
     data = request.get_json()
+    del data['Id']
     success = addrecord('patients', **data)
 
     return jsonify({'success' : success})
