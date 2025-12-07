@@ -5,6 +5,7 @@ border-radius: 20px;
 width: 100%;
 box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 margin: 2rem 0;
+min-height: 300px;
 }
 
 
@@ -19,6 +20,7 @@ margin-bottom: 20px;
 display: flex;
 gap: 20px;
 margin-bottom: 25px;
+height: 100%;
 }
 
 
@@ -26,7 +28,7 @@ margin-bottom: 25px;
 background: #f6f6f6;
 padding: 20px;
 border-radius: 18px;
-width: 180px;
+width: 250px;
 /* text-align: center; */
 box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 
@@ -39,12 +41,15 @@ padding: 10px;
 border-radius: 10px;
 display: inline-block;
 margin-bottom: 10px;
+/* color: #1d1d1d */
+color: white;
 }
 
 
-.blue { background: #e1eaff; }
-.green { background: #d7f8d7; }
-.orange { background: #ffe4cc; }
+.blue { background: #0063f8b5; }
+.green { background: #77c841e1; }
+.orange { background: #f97800dc; }
+.purple { background: #b700f981; }
 
 
 .value {
@@ -73,4 +78,12 @@ gap: 12px;
 height: 40vh;
 padding: 10px 0;
 
+}
+
+.inventory-chart-container {
+  background-color: white;
+  padding: 1rem;
+  margin-top: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
 }

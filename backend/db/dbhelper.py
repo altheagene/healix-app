@@ -4,7 +4,7 @@ from datetime import date
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))   # points to /backend/db
 database = os.path.join(BASE_DIR, "clinic.db")
-studentdb = os.path.join(BASE_DIR, "student.db")
+studentdb = os.path.join(BASE_DIR, "students.db")
 
 #----------------------------------------PATIENTS MODULE------------------------------
 
@@ -37,12 +37,13 @@ def getstudent(**kwargs):
     values = list(kwargs.values())
     
     sql = f'SELECT * FROM students WHERE `{keys[0]}` = ?'
-    conn = connect(database)
+    conn = connect(studentdb)
     conn.row_factory = Row
     cursor = conn.cursor()
     cursor.execute(sql, values)
     data = cursor.fetchall()
     cursor.close()
+    conn.close()
 
     return [dict(row) for row in data]
     
@@ -82,6 +83,16 @@ def getpatient(table, **kwargs):
     sql = f'SELECT * FROM {table} WHERE `{keys[0]}` = ?'
 
     return getprocess(sql, values)
+
+def getallappointmentstoday():
+
+    sql = f'''
+        SELECT *
+        FROM appointments
+        WHERE date(appointment_datetime) = date('now');
+    '''
+
+    return getprocess(sql, [])
 
 def getallwithcondition(table, **kwargs):
     keys = list(kwargs.keys())
@@ -482,6 +493,7 @@ def getprocess(sql, values) -> list:
 def postprocess(sql, values) -> bool:
     try:
         conn = connect(database)
+        print(sql)
         conn.execute("PRAGMA foreign_keys = ON;")
         cursor = conn.cursor()
         cursor.execute(sql, values)

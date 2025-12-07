@@ -8,6 +8,7 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import CancelSaveBtn from '~/components/cancelsavebtn';
 import EditStock from '~/components/editstocks';
 import EditBatch from '~/components/editbatch';
+import { useNavigate } from 'react-router';
 
 // function EditBatch(props:any){
 //     return(
@@ -57,6 +58,7 @@ import EditBatch from '~/components/editbatch';
 export default function ItemDetails(){
 
     const { id }  = useParams()
+    const navigate = useNavigate()
     const [itemDetails, setItemDetails] = React.useState<any[]>([]);
     const [currentBatch, setCurrentBatch] = React.useState()
     const [batches, setBatches] = React.useState<any[]>([]);
@@ -114,7 +116,14 @@ export default function ItemDetails(){
                 {showEditDetails ? <EditItem  hideForm={() => setShowEditDetails(false)} itemDetails={itemDetails} refetch={refetchDetails}/> : null}
                 {showUpdateStock ? <UpdateStocks hideForm={() => setShowUpdateStock(false)}/> : null}
                 {showAddBatch ? <AddBatch hideForm={() => setShowAddBatch(false)} name={itemDetails?.supply_name} refetch={refetchBatches}/> : null}
-                <p className="route-header">Item Details</p>
+                <div style={{display: 'flex', gap: '1rem'}}>
+                    <button
+                    onClick={() => navigate(-1)}
+                    className='back-btn'>
+                        <i className="bi bi-caret-left-fill"></i>
+                    </button>  
+                    <p className="route-header">Item Details</p>
+                </div>
 
                 <div id="item-information-div">
                     <img id="item-img"></img>

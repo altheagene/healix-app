@@ -5,12 +5,14 @@ import EditPatient from '~/components/editpatient'
 import ViewVisit from '~/components/viewVisit'
 import React from 'react'
 import { useParams } from 'react-router';
+import { useNavigate } from 'react-router'
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
 
 export default function PatientDetails(){
 
     const { id } = useParams()
+    const navigate = useNavigate()
     const [showAddRecord, setShowAddRecord] = React.useState(false)
     const [showEdit, setShowEdit] = React.useState(false)
     const [showVisit, setShowVisit] = React.useState(false)
@@ -51,7 +53,15 @@ export default function PatientDetails(){
     console.log(clinicLogs)
     return(
         <div className="route-page" id="patient-details-div" >
-            <h1 className='route-header'>Patient Details</h1>
+
+            <div style={{display: 'flex', gap: '1rem'}}>
+                <button
+                    onClick={() => navigate(-1)}
+                    className='back-btn'>
+                        <i className="bi bi-caret-left-fill"></i>
+                    </button>  
+                <h1 className='route-header'>Patient Details</h1>
+            </div>
             <button onClick={() => setShowEdit(true)}>Edit</button>
             {showVisit && visitChosen? <ViewVisit visit={visitChosen} hideForm={() => setShowVisit(false)}/> : null}
             {showEdit ? <EditPatient studentData={studentData} allergies={allergies} conditions={conditions} refetch={refetch} hideForm={() => setShowEdit(false)}/> : null}
