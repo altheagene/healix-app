@@ -9,6 +9,28 @@ app = Flask(__name__)
 # CORS(app, resources={r"/*" : {"origins":"*"}} )
 CORS(app)
 
+
+app = Flask(
+    __name__,
+    static_folder="react_build/static",
+    template_folder="react_build"
+)
+
+@app.route("/api/test")
+def test():
+    return {"message": "Hello from Flask!"}
+
+# React Router 7 fallback — IMPORTANT
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve_react(path):
+    if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
+        return send_from_directory(app.static_folder, path)
+
+    # Always return index.html for React Router routes
+    return send_from_directory(app.template_folder, "index.html")
+
+
 @app.route('/findstudent', methods=['GET'])
 def find_student():
     idnum = request.args.get('idnum')
