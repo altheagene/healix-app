@@ -1,0 +1,1 @@
+import{p as n}from"./chunk-4WY6JWTD-DFeZLFN5.js";/* empty css            */function a(e){return n.jsxs("div",{id:"cancel-save-btns-div",children:[n.jsx("button",{className:"cancel-btn",onClick:e.hideForm,children:"Cancel"}),n.jsx("button",{className:"save-btn",onClick:e.submit,children:"Save"})]})}export{a as C};

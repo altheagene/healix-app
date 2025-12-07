@@ -1,0 +1,1 @@
+import{w as r,p as e}from"./chunk-4WY6JWTD-DFeZLFN5.js";const o=r(function(){return e.jsx("div",{className:"route-page",children:e.jsx("h1",{className:"route-header",children:"Reports"})})});export{o as default};
