@@ -84,11 +84,11 @@ export default function Navbar(props:any){
 
         return(
             <li>
-                <div className="navlist-bg" style={{backgroundColor: routeChosen === obj.text ? '#B1C1FF' : 'transparent',
+                <div className="navlist-bg" style={{backgroundColor: routeChosen === obj.text ? '#b1c1ffac' : 'transparent',
                                                     width: routeChosen === obj.text ? '100%' : '0px'
                 }}>
                     <NavLink to={obj.route} onClick={() => setRouteChosen(obj.text)}>
-                        <i className={obj.icon} style={{marginRight: '1.3rem', fontSize: '1.3rem', fontWeight: 700}}></i>{obj.text}
+                        <i className={obj.icon} style={{marginRight: '1.3rem', fontSize: '1.3rem', fontWeight: 700, color: '#1c1c1c'}}></i>{obj.text}
                     </NavLink>
                 </div>
 

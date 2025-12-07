@@ -50,7 +50,7 @@ export default function PatientDetails(){
 
     console.log(clinicLogs)
     return(
-        <div className="route-page" id="patient-details-div" style={{backgroundColor: '#EEEEEE'}}>
+        <div className="route-page" id="patient-details-div" >
             <h1 className='route-header'>Patient Details</h1>
             <button onClick={() => setShowEdit(true)}>Edit</button>
             {showVisit && visitChosen? <ViewVisit visit={visitChosen} hideForm={() => setShowVisit(false)}/> : null}
@@ -65,9 +65,9 @@ export default function PatientDetails(){
                     </div>
                     <div id="patient-information" >
                         <div id="student-info" className='info-div'>
-                            <p className='patient-info'>Student Information</p>
+                            <p className='patient-info'><i className='bi bi-person-fill' style={{marginRight: '0.5rem'}}></i>Student Information</p>
                             <div className='patient-info-div'>
-                                 <p>Level: <span>{studentData?.level}</span></p>
+                                <p>Level: <span>{studentData?.level}</span></p>
                                 <p>ID Number: <span>{studentData?.student_id}</span></p>
                                 <p>Department: <span>{studentData?.department}</span></p>
                                 <p>Email: <span>{studentData?.email}</span></p>
@@ -76,13 +76,13 @@ export default function PatientDetails(){
                             
                         </div>
                         <div id='medical-info'  className='info-div'>
-                            <p className='patient-info'>Medical Information</p>
-                            <div >Allergies:
+                            <p className='patient-info'><i className='bi bi-heart-pulse-fill' style={{marginRight: '0.5rem'}}></i>Medical Information</p>
+                            <div > <p>Allergies:</p>
                                 <span style={{display: 'flex', gap: '0.5rem'}}>
                                         {allergies?.map(allergy => {
                                             return(
                                                 <div style={{padding: '0.3rem', 
-                                                            backgroundColor: 'white',
+                                                             backgroundColor: '#6dc3ba5d',
                                                             fontSize: '0.8rem', 
                                                             borderRadius: '10px',
                                                             border: '1px solid #ccc',
@@ -92,12 +92,12 @@ export default function PatientDetails(){
                                         })}
                                 </span>
                             </div>
-                            <div>Conditions:
+                            <div><p>Conditions:</p>
                                 <span style={{display: 'flex', gap: '0.5rem'}}>
                                         {conditions?.map(condition => {
                                             return(
                                                 <div style={{padding: '0.3rem', 
-                                                            backgroundColor: 'white',
+                                                            backgroundColor: '#6dc3ba5d',
                                                             fontSize: '0.8rem', 
                                                             borderRadius: '10px',
                                                             border: '1px solid #ccc',
@@ -110,10 +110,10 @@ export default function PatientDetails(){
                             <p>Notes: {studentData?.notes}</p>
                         </div>
                         <div id='emergency-contact'  className='info-div'>
-                            <p className='patient-info'>Emergency Contact</p>
-                            <p>Name: {studentData?.emergency_contact_name}</p>
+                            <p className='patient-info'><i className='bi bi-telephone-fill' style={{marginRight: '0.5rem'}}></i>Emergency Contact</p>
+                            <p>Name: <span>{studentData?.emergency_contact_name}</span></p>
                             {/* <p>Relationship: </p> */}
-                            <p>Contact no: {studentData?.emergency_contact_phone}</p>
+                            <p>Contact no: <span>{studentData?.emergency_contact_phone}</span></p>
                         </div>
                     </div>
                 </div>
@@ -123,7 +123,9 @@ export default function PatientDetails(){
                         <h2 style={{fontWeight: '500'}}>Clinic Visits</h2>
                         <button style={{height: '40px', width: '120px', backgroundColor: '#334FBD', borderRadius: '10px', color: 'white', border: 'none'}} onClick={() => setShowAddRecord(true)}>+ Add Record</button>
                     </div>
-                    <div id='patient-visit-div' className='table-container'>
+                    <div 
+                        // id='patient-visit-div' 
+                        className='table-container'>
                         <table id='patient-visit-table'>
                             <tr>
                                 <th>Date</th>
@@ -133,7 +135,7 @@ export default function PatientDetails(){
                                 <th></th>
                             </tr>
 
-                            {clinicLogs?.map(log => {
+                            { clinicLogs?.length > 0 ? clinicLogs?.map(log => {
                                 return(
                                     <tr>
                                         <td>{log.visit_datetime}</td>
@@ -148,7 +150,13 @@ export default function PatientDetails(){
                                         </td>
                                     </tr>
                                 )
-                            })}
+                            }) :
+                                <tr>
+                                    <td colSpan={7} style={{ textAlign: 'center', padding: '15px' }}>
+                                        No Clinic Records found
+                                    </td>
+                                </tr>
+                            }
                         </table>
                     </div>
                 </div>

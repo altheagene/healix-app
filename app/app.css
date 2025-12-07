@@ -234,6 +234,7 @@ table{
   overflow-x: auto;
   box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;  
   border-radius: 10px;
+  margin: 1.5rem 0;
 }
 
 
@@ -586,24 +587,41 @@ input[type='text'], input[type='number'], input[type='date'], textarea, select{
 
 
 .dropdown{
-  height: 150px;
+  max-height: 150px;
   width: 200px;
   background-color: white;
   overflow-y: auto;
   border: 1px solid #1c1c1c51;
+  padding: 1rem 0
 }
-
 
 .dropdown ul{
-  height: 100%;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
 }
 
+.dropdown input{
+  height: 20px;
+  margin: 0;
+}
+.dropdown label{
+  height: 20px;
+}
 
 .dropdown li{
-  height: 25px;
+  min-height: 25px;
   font-size: 0.9rem;
+  display: flex;
+  /* justify-content: flex-start; */
+  align-items: center;
+  cursor: pointer;
 }
 
+.dropdown li:hover{
+  background-color: transparent;
+}
 
 .dropdown > ul input{
   display: inline-block;

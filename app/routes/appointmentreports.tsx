@@ -136,7 +136,7 @@ export default function AppointmentReport() {
           </tr>
         </thead>
         <tbody>
-          {apptLogs?.map((appt) => (
+          {apptLogs.length > 0 ? apptLogs?.map((appt) => (
             <tr key={appt.appointment_id}>
               <td>{appt.appointment_id}</td>
               <td>{appt.patient_name}</td>
@@ -154,7 +154,13 @@ export default function AppointmentReport() {
                 appt.status === 'Cancelled' ? '#ed3e27' :
                     '#799EFF'}}>{appt.status}</p></td>
             </tr>
-          ))}
+          )) :
+              <tr>
+                  <td colSpan={7} style={{ textAlign: 'center', padding: '15px' }}>
+                      No Appointments found
+                  </td>
+              </tr>
+          }
         </tbody>
       </table>
     </div>

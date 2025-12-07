@@ -146,7 +146,7 @@ export default function ItemDetails(){
                                     <th>Actions</th>
                                 </tr>
 
-                                {batches.map((batch) => {
+                                {batches.length > 0 ?batches.map((batch) => {
                                     return(
                                         <tr>
                                             <td>{batch.batch_number}</td>
@@ -167,7 +167,13 @@ export default function ItemDetails(){
                                             </td>
                                         </tr>
                                     )
-                                })}
+                                }) : 
+                                    <tr>
+                                        <td colSpan={7} style={{ textAlign: 'center', padding: '15px' }}>
+                                            No Batches found
+                                        </td>
+                                    </tr>
+                                }
                             </table>
                         </div>
                     </div>

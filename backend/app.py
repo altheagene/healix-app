@@ -181,6 +181,20 @@ def validate_user():
 
 # ----------------------INSERT QUERIES----------------------------
 
+@app.route('/addnewallergy', methods=['POST'])
+def add_new_allergy():
+    data = request.get_json()
+    success = addrecord('allergies', **data)
+
+    return jsonify({'success' : success})
+
+@app.route('/addnewcondition', methods=['POST'])
+def add_new_conditions():
+    data = request.get_json()
+    success = addrecord('conditions', **data)
+
+    return jsonify({'success' : success})
+
 @app.route('/addvisitlog', methods=['POST'])
 def add_visitlog():
     data = request.get_json()
@@ -305,6 +319,17 @@ def update_patient():
     del data['patient_id']
     success = updatepatients(patient_id, **data)
 
+    return jsonify({'success' : success})
+
+@app.route('/updateappointmentdetails', methods=['POST'])
+def update_appointmen_details():
+    data = request.get_json()
+    appointment_id = data['appointment_id']
+    del data['appointment_id']
+    del data['patient_name']
+    del data['service_name']
+    print(data)
+    success = updateappointment(appointment_id, **data)
     return jsonify({'success' : success})
 
 

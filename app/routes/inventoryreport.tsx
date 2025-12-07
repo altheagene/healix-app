@@ -93,30 +93,32 @@ export default function InventoryReport(){
             </div>
 
             
-
-            <table>
-                <tr>
-                    <th style={{width: '70px'}}>ID</th>
-                    <th>Supply</th>
-                    <th>Batch</th>
-                    <th>Date</th>
-                    <th>Item In</th>
-                    <th>Item Out</th>
-                </tr>
-                {invLogs?.map(inv => {
-                    return(
-                        <tr>
-                            <td>{inv.inv_id}</td>
-                            <td>{inv.supply_name}</td>
-                            <td>{inv.batch_number}</td>
-                            <td>{inv.inv_date}</td>
-                            <td>{inv.item_in}</td>
-                            <td>{inv.item_out}</td>
-                        </tr>
-                    )
-                    })
-                }
-            </table>
+            <div className="table-container">
+                <table>
+                    <tr>
+                        <th style={{width: '70px'}}>ID</th>
+                        <th>Supply</th>
+                        <th>Batch</th>
+                        <th>Date</th>
+                        <th>Item In</th>
+                        <th>Item Out</th>
+                    </tr>
+                    {invLogs?.map(inv => {
+                        return(
+                            <tr>
+                                <td>{inv.inv_id}</td>
+                                <td>{inv.supply_name}</td>
+                                <td>{inv.batch_number}</td>
+                                <td>{inv.inv_date}</td>
+                                <td>{inv.item_in}</td>
+                                <td>{inv.item_out}</td>
+                            </tr>
+                        )
+                        })
+                    }
+                </table>
+            </div>
+            
         </div>
     )
 }

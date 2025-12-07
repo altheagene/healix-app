@@ -4,12 +4,15 @@ import Searchbar from '~/components/searchbar'
 import React from 'react'
 import { useNavigate } from 'react-router'
 import 'bootstrap-icons/font/bootstrap-icons.css'
+import EditAppointment from '~/components/editappointment'
 
 export default function Appointments() {
     const [apptStatus, setApptStatus] = React.useState('All Appointments')
+    const [apptID, setApptId] = React.useState();
     const apptStatuses = ['All Appointments', 'Today', 'Upcoming', 'Completed', 'Cancelled']
     const [appointments, setAppointments] = React.useState<any[]>([])
     const [searchQuery, setSearchQuery] = React.useState('')
+    const [showEdit, setShowEdit] = React.useState(false);
 
     const navigate = useNavigate()
     const today = new Date().toISOString().split('T')[0]
@@ -65,6 +68,7 @@ export default function Appointments() {
 
     return (
         <div className="route-page">
+            {showEdit ? <EditAppointment appt={apptID} hideForm={() => setShowEdit(false)} refetch={refetchAppts}/> : null}
             <h1 className="route-header">Appointments</h1>
             <p className='route-page-desc'>Manage your clinic's appointments and schedules.</p>
 
@@ -96,8 +100,9 @@ export default function Appointments() {
             </div>
 
             {/* Appointments Table */}
-            <div className='appointments-table-container'>
-                <table className='appointments-table'>
+            <div className=' table-container'>
+                <table 
+                    className='appointments-table'>
                     <thead>
                         <tr>
                             <th>Patient</th>
@@ -152,6 +157,7 @@ export default function Appointments() {
                                         <button
                                             style={{ background: 'white', border: 'none', fontSize: '1.2rem', color: 'orange' }}
                                             title='Edit Appointment'
+                                            onClick={() => {setApptId(appt); setShowEdit(true)}}
                                         >
                                             <i className='bi bi-pen'></i>
                                         </button>
