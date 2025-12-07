@@ -82,9 +82,12 @@ export default function App() {
     {validUser ? 
       <>
         <div id='header'>
-          <button onClick={() => setShowNavBar(prev => !prev)}>Click</button>
-          <h1>Healix</h1>
-          <button onClick={logout}>Logout</button>
+          <div>
+            <button onClick={() => setShowNavBar(prev => !prev)}><i className={showNavbar ? 'bi bi-caret-left-fill' : 'bi bi-caret-right-fill'}></i></button>
+            <h1>Healix</h1>
+          </div>
+          
+          <button onClick={logout} className="logout-btn">Logout</button>
         </div>
 
         <div id="main-content">
