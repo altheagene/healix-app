@@ -62,16 +62,36 @@ export default function PatientDetails(){
                     </button>  
                 <h1 className='route-header'>Patient Details</h1>
             </div>
-            <button onClick={() => setShowEdit(true)}>Edit</button>
             {showVisit && visitChosen? <ViewVisit visit={visitChosen} hideForm={() => setShowVisit(false)}/> : null}
             {showEdit ? <EditPatient studentData={studentData} allergies={allergies} conditions={conditions} refetch={refetch} hideForm={() => setShowEdit(false)}/> : null}
             {showAddRecord ? <AddRecord hideForm={() => setShowAddRecord(false)}/> : null}
 
             <div>
+
                 <div id="patient-overview-div">
-                    <div id="photo-name-div">
+                    <div id="photo-name-div" style={{position: 'relative'}}>
                         <img></img>
                         <p>{studentData?.first_name} {studentData?.middle_name} {studentData?.last_name}</p>
+                        <button
+                            onClick={() => setShowEdit(true)}
+                            style={{
+                                height: '25px',
+                                width: '80px',
+                                backgroundColor: 'transparent', // nice blue
+                                borderRadius: '10px',
+                                color: '#334FBD',
+                                border: '1px solid #ccc',
+                                cursor: 'pointer',
+                                fontWeight: '700',
+                                marginBottom: '1rem',
+                                top: '0.6em',
+                                right: '1rem',
+                                position: 'absolute'
+                            }}
+                            >
+                            Edit
+                            <i className='bi bi-pencil' style={{marginLeft: '0.5rem'}}></i>
+                        </button>
                     </div>
                     <div id="patient-information" >
                         <div id="student-info" className='info-div'>

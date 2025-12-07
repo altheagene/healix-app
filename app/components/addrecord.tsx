@@ -103,7 +103,7 @@ export default function AddRecord(props:any){
     
 
     return(
-        <div id="add-record-div">
+        <div id="add-record-div" className="modal-form-div">
             <div className="gray-bg"></div>
             <div id="add-record-form" className="modal-form">
                 <div className="modal-header-div">

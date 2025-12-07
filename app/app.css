@@ -70,9 +70,32 @@ body{
   display: flex;
   align-items: center;
   padding: 0 10px;
-  border-bottom
-  : 1px solid #59595962;
-  color: #334FBD
+  border-bottom: 1px solid #59595962;
+  color: #334FBD;
+  display: flex;
+  justify-content: space-between;
+}
+
+#header > div{
+  display: flex;
+  gap: 0.5rem
+}
+
+.logout-btn{
+  border: none;
+  background-color: transparent;
+  color: #334FBD;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding-right: 0.5rem;
+}
+
+#header > div button{
+  border: none;
+  background-color: transparent;
+  font-size: 1.5rem;
+  padding: 0;
+  color: #334FBD;
 }
 
 

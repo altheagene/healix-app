@@ -88,7 +88,11 @@ export default function Navbar(props:any){
                                                     width: routeChosen === obj.text ? '100%' : '0px'
                 }}>
                     <NavLink to={obj.route} onClick={() => setRouteChosen(obj.text)}>
-                        <i className={obj.icon} style={{marginRight: '1.3rem', fontSize: '1.3rem', fontWeight: 700, color: '#1c1c1c'}}></i>{obj.text}
+                        <i className={obj.icon} style={{marginRight: '1.3rem', fontSize: '1.3rem', fontWeight: 700, color:  routeChosen === obj.text ? '#1c1c1c' : '#2b2b2bdb'}}></i>
+                        <p 
+                            // style={{color:  routeChosen === obj.text ? '#1c1c1c' : '#2b2b2bb0'}}
+                            >
+                            {obj.text}</p>
                     </NavLink>
                 </div>
 
