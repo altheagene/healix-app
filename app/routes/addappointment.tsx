@@ -123,6 +123,8 @@ export default function AddAppointment() {
                     <label htmlFor="time">Time
                         <input
                             type="time"
+                            min="09:00" 
+                            max="17:00"
                             value={appointmentDetails.start_time}
                             onChange={(e) => setAppointmentDetails({ ...appointmentDetails, start_time: e.target.value })}
                         />

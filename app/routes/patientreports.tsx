@@ -235,28 +235,30 @@ export default function PatientReports()
                 </div>
             </div>
               
-
-            <table>
-                <tr>
-                    <th>Patient</th>
-                    <th>Type</th>
-                    <th>Date</th>
-                    <th>Attending</th>
-                    <th>Notes</th>
-                </tr>
-                {visitLogs?.map(visit => {
-                    return(
-                        <tr>
-                            <td>{visit.patient_name}</td>
-                            <td>{visit.service_name}</td>
-                            <td>{visit.visit_datetime}</td>
-                            <td>{visit.staff_name}</td>
-                            <td>{visit.notes}</td>
-                        </tr>
-                    )
-                    })
-                }
-            </table>
+            <div className="table-container">
+                <table>
+                    <tr>
+                        <th>Patient</th>
+                        <th>Type</th>
+                        <th>Date</th>
+                        <th>Attending</th>
+                        <th>Notes</th>
+                    </tr>
+                    {visitLogs?.map(visit => {
+                        return(
+                            <tr>
+                                <td>{visit.patient_name}</td>
+                                <td>{visit.service_name}</td>
+                                <td>{visit.visit_datetime}</td>
+                                <td>{visit.staff_name}</td>
+                                <td>{visit.notes}</td>
+                            </tr>
+                        )
+                        })
+                    }
+                </table>
+            </div>
+            
         </div>
     )
 }

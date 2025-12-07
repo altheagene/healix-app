@@ -40,7 +40,9 @@ export default function Staff() {
 
             <button onClick={() => setShowStaff(true)}>+ Add Staff</button>
 
-            <div id="staff-table-container" className='table-container'>
+            <div 
+                //id="staff-table-container"
+                className='table-container'>
                 <table id="staff-table">
                     <thead>
                         <tr>

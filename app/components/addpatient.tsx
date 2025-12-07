@@ -16,6 +16,18 @@ export default function AddPatient(props: any) {
   const [showConditionDropdown, setShowConditionDropdown] = React.useState(false);
   const [allergyElements, setAllergyElements] = React.useState([]);
   const [conditionElements, setConditionElements] = React.useState([]);
+  const [allergySearch, setAllergySearch] = React.useState('');
+  const [conditionSearch, setConditionSearch] = React.useState('');
+
+  const filteredAllergies = allergies.filter(a =>
+    a.allergy_name.toLowerCase().includes(allergySearch.toLowerCase())
+  );
+
+  const filteredConditions = conditions.filter(c =>
+    c.condition_name.toLowerCase().includes(conditionSearch.toLowerCase())
+  );
+
+  
 
 
   async function handleSubmit(){
@@ -68,6 +80,7 @@ export default function AddPatient(props: any) {
         });
     }
 
+
     alert("Successfully added new patient!")
     props.refetchPatients()
   }
@@ -119,6 +132,27 @@ export default function AddPatient(props: any) {
 //   }, [selectedCondition])
 
   // ---------- FUNCTIONS ----------
+  function refetchAllergyAndCondi(){
+     fetch('http://localhost:5000/getallergies')
+      .then(res => res.json())
+      .then(data =>
+        setAllergies(
+          data.sort((a, b) =>
+            a.allergy_name.toLowerCase().localeCompare(b.allergy_name.toLowerCase())
+          )
+        )
+      );
+
+      fetch('http://localhost:5000/getconditions')
+      .then(res => res.json())
+      .then(data =>
+        setConditions(
+          data.sort((a, b) =>
+            a.condition_name.toLowerCase().localeCompare(b.condition_name.toLowerCase())
+          )
+        )
+      );
+  }
   function findStudent() {
     const idnum = idnumSearch.trim();
     fetch(`http://localhost:5000/getstudent?idnum=${idnum}`)
@@ -130,7 +164,38 @@ export default function AddPatient(props: any) {
     setShowAllergyDropdown(false)
     setShowConditionDropdown(false)
   }
+async function addNewAllergy(name: string) {
+  if (!name.trim()) return;
+  const response = await fetch('http://localhost:5000/addnewallergy', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ allergy_name: name.trim() }),
+  });
+  const result = await response.json();
+  if (result.success) {
+    setAllergies(prev => [...prev, { allergy_id: result.id, allergy_name: name.trim() }]);
+    setSelectedAllergy(prev => [...prev, result.id]); // select it automatically
+    setAllergySearch(''); // clear search
+  }
 
+  refetchAllergyAndCondi()
+}
+
+async function addNewCondition(name: string) {
+  if (!name.trim()) return;
+  const response = await fetch('http://localhost:5000/addnewcondition', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ condition_name: name.trim() }),
+  });
+  const result = await response.json();
+  if (result.success) {
+    setConditions(prev => [...prev, { condition_id: result.id, condition_name: name.trim() }]);
+    setSelectedCondition(prev => [...prev, result.id]);
+    setConditionSearch('');
+  }
+  refetchAllergyAndCondi()
+}
   
 
   function toggleOption(id: number, type: 'allergy' | 'condition') {
@@ -144,29 +209,30 @@ export default function AddPatient(props: any) {
   }
 
   // ---------- CHECKBOXES ----------
-  const allergyCheckboxes = allergies.map(item => (
-    <li key={item.allergy_id}>
-      <input
-        type="checkbox"
-        id={`allergy-${item.allergy_id}`}
-        checked={selectedAllergy.includes(item.allergy_id)}
-        onChange={() => toggleOption(item.allergy_id, 'allergy')}
-      />
-      <label htmlFor={`allergy-${item.allergy_id}`}>{item.allergy_name}</label>
-    </li>
-  ));
+const allergyCheckboxes = filteredAllergies.map(item => (
+  <li key={item.allergy_id}>
+    <input
+      type="checkbox"
+      id={`allergy-${item.allergy_id}`}
+      checked={selectedAllergy.includes(item.allergy_id)}
+      onChange={() => toggleOption(item.allergy_id, 'allergy')}
+    />
+    <label htmlFor={`allergy-${item.allergy_id}`}>{item.allergy_name}</label>
+  </li>
+));
 
-  const conditionsCheckboxes = conditions.map(item => (
-    <li key={item.condition_id}>
-      <input
-        type="checkbox"
-        id={`condition-${item.condition_id}`}
-        checked={selectedCondition.includes(item.condition_id)}
-        onChange={() => toggleOption(item.condition_id, 'condition')}
-      />
-      <label htmlFor={`condition-${item.condition_id}`}>{item.condition_name}</label>
-    </li>
-  ));
+const conditionsCheckboxes = filteredConditions.map(item => (
+  <li key={item.condition_id}>
+    <input
+      type="checkbox"
+      id={`condition-${item.condition_id}`}
+      checked={selectedCondition.includes(item.condition_id)}
+      onChange={() => toggleOption(item.condition_id, 'condition')}
+    />
+    <label htmlFor={`condition-${item.condition_id}`}>{item.condition_name}</label>
+  </li>
+));
+
 
 
 
@@ -297,40 +363,48 @@ export default function AddPatient(props: any) {
             <div>
                 {/* Allergies */}
                 <div>
-                    <label>Allergies</label>
-                    <input
-                        type="text"
-                        placeholder="Search Allergies"
-                        onClick={() => setShowAllergyDropdown(prev => !prev)}
-                    />
-                    {showAllergyDropdown && (
-                        <div className='dropdown'>
-                        <ul>{allergyCheckboxes}</ul>
-                        </div>
-                    )}
+                  <label>Allergies</label>
 
-                    <ul>
-                        {allergyElements}
-                    </ul>
+                  <input
+                    type="text"
+                    placeholder="Search Allergies"
+                    onClick={() => setShowAllergyDropdown(prev => !prev)}
+                    onChange={e => setAllergySearch(e.target.value)}
+                  />
+
+                  {showAllergyDropdown && (
+                    <div className="dropdown">
+                      <ul>{allergyCheckboxes}</ul>
+                      {allergySearch && !filteredAllergies.some(a => a.allergy_name.toLowerCase() === allergySearch.toLowerCase()) && (
+                        <li style={{ cursor: 'pointer', fontWeight: 'bold' }} onClick={() => addNewAllergy(allergySearch)}>
+                          + Add "{allergySearch}"
+                        </li>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Conditions */}
                 <div>
-                    <label>Conditions</label>
-                    <input
-                        type="text"
-                        placeholder="Search Conditions"
-                        onClick={() => setShowConditionDropdown(prev => !prev)}
-                    />
-                    {showConditionDropdown && (
-                        <div className='dropdown'>
-                        <ul>{conditionsCheckboxes}</ul>
-                        </div>
-                    )}
+                  <label>Conditions</label>
 
-                    <ul>
-                        {conditionElements}
-                    </ul>
+                  <input
+                    type="text"
+                    placeholder="Search Conditions"
+                    onClick={() => setShowConditionDropdown(prev => !prev)}
+                    onChange={e => setConditionSearch(e.target.value)}
+                  />
+
+                  {showConditionDropdown && (
+                    <div className="dropdown">
+                      <ul>{conditionsCheckboxes}</ul>
+                      {conditionSearch && !filteredConditions.some(c => c.condition_name.toLowerCase() === conditionSearch.toLowerCase()) && (
+                        <li style={{ cursor: 'pointer', fontWeight: 'bold' }} onClick={() => addNewCondition(conditionSearch)}>
+                          + Add "{conditionSearch}"
+                        </li>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <div style={{display: 'block'}}>

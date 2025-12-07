@@ -434,6 +434,23 @@ def updatepatients(patient_id, **kwargs):
            '''
     return postprocess(sql, values)
 
+def updateappointment(appointment_id, **kwargs):
+    keys = list(kwargs.keys())
+    values = list(kwargs.values())
+
+    listkeys = []
+    for x in range(0, len(keys)):
+        listkeys.append(f'`{keys[x]}` = ?')
+
+    stringifykeys = ','.join(listkeys)
+    
+    sql = f'''
+            UPDATE appointments
+            SET {stringifykeys}
+            WHERE `appointment_id` = {appointment_id}
+           '''
+    return postprocess(sql, values)
+
 def deletemedical(table, **kwargs):
     keys = list(kwargs.keys())
     values = list(kwargs.values())
