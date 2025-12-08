@@ -59,49 +59,103 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
+// export default function App() {
+
+//   const [showNavbar, setShowNavBar] = React.useState(true);
+//   const [validUser, setValidUser] = React.useState(() => {
+//     return localStorage.getItem("loggedIn") === "true";
+//   });
+
+//   function validate(){
+//     localStorage.setItem("loggedIn", "true");
+//     setValidUser(true)
+//   }
+
+//   function logout(){
+//     setValidUser(false);
+//     localStorage.setItem("loggedIn", "false");
+
+//   }
+//   return (
+//     <>
+    
+//     {validUser ? 
+//       <>
+//         <div id='header'>
+//           <div>
+//             <button onClick={() => setShowNavBar(prev => !prev)}><i className={showNavbar ? 'bi bi-caret-left-fill' : 'bi bi-caret-right-fill'}></i></button>
+//             <h1>Healix</h1>
+//           </div>
+          
+//           <button onClick={logout} className="logout-btn">Logout</button>
+//         </div>
+
+//         <div id="main-content">
+//           <Navbar showNavbar={showNavbar}/>
+//           <div id="route-container">
+//             <Outlet></Outlet>
+//           </div>
+//         </div>
+//       </>
+//       :
+//       <LoginPage validate={validate}/>
+//     }    
+//     </>
+//   )
+// }
+
 export default function App() {
 
   const [showNavbar, setShowNavBar] = React.useState(true);
+  const [flashMessage, setFlashMessage] = React.useState("");
+
   const [validUser, setValidUser] = React.useState(() => {
     return localStorage.getItem("loggedIn") === "true";
   });
 
   function validate(){
     localStorage.setItem("loggedIn", "true");
-    setValidUser(true)
+    setValidUser(true);
+
+    setFlashMessage("Logged in successfully!");
+    setTimeout(() => setFlashMessage(""), 3000);
   }
 
   function logout(){
     setValidUser(false);
     localStorage.setItem("loggedIn", "false");
-
   }
+
   return (
     <>
-    
-    {validUser ? 
-      <>
-        <div id='header'>
-          <div>
-            <button onClick={() => setShowNavBar(prev => !prev)}><i className={showNavbar ? 'bi bi-caret-left-fill' : 'bi bi-caret-right-fill'}></i></button>
-            <h1>Healix</h1>
-          </div>
-          
-          <button onClick={logout} className="logout-btn">Logout</button>
-        </div>
+      {flashMessage && (
+        <div className="flash-message" style={{backgroundColor: validUser ? '#4caf50' : '#FF3838'}}>{flashMessage}</div>
+      )}
 
-        <div id="main-content">
-          <Navbar showNavbar={showNavbar}/>
-          <div id="route-container">
-            <Outlet></Outlet>
+      {validUser ? 
+        <>
+          <div id='header'>
+            <div>
+              <button onClick={() => setShowNavBar(prev => !prev)}>
+                <i className={showNavbar ? 'bi bi-caret-left-fill' : 'bi bi-caret-right-fill'}></i>
+              </button>
+              <h1>Healix</h1>
+            </div>
+            <button onClick={logout} className="logout-btn">Logout</button>
           </div>
-        </div>
-      </>
-      :
-      <LoginPage validate={validate}/>
-    }    
+
+          <div id="main-content">
+            <Navbar showNavbar={showNavbar}/>
+            <div id="route-container">
+              <Outlet></Outlet>
+            </div>
+          </div>
+        </>
+        :
+        <LoginPage validate={validate} setFlash={() => {setFlashMessage('Invalid credentials!'); setTimeout(() => setFlashMessage(""), 3000);}}/>
+      }    
     </>
-  )
+  );
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
