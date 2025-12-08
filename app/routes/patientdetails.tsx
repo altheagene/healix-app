@@ -7,6 +7,7 @@ import React from 'react'
 import { useParams } from 'react-router';
 import { useNavigate } from 'react-router'
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import user from '../images/user.png'
 
 
 export default function PatientDetails(){
@@ -70,7 +71,7 @@ export default function PatientDetails(){
 
                 <div id="patient-overview-div">
                     <div id="photo-name-div" style={{position: 'relative'}}>
-                        <img></img>
+                        <img src={user}></img>
                         <p>{studentData?.first_name} {studentData?.middle_name} {studentData?.last_name}</p>
                         <button
                             onClick={() => setShowEdit(true)}

@@ -311,7 +311,9 @@ def add_med_details():
         addrecord('medication_details', visit_id=latest_visit, supply_id=supply_id, quantity=quantity)
         if med['auto_deduct'] == 1:
             deductbatch(supply_id, quantity)
-            
+        
+    
+    return jsonify({'success' : True})
 
 @app.route('/addappointment', methods=['POST'])
 def add_appointment():
