@@ -582,6 +582,10 @@ export default function AddPatient(props: any) {
 
   async function findStudent() {
     const idnum = idnumSearch.trim();
+    if (idnum.length === 0){
+      setFlashMessage('Please enter an id number!')
+      return;
+    }
     const response = await fetch(`http://localhost:5000/getstudent?idnum=${idnum}`);
     const jsonified = await response.json();
 
@@ -673,14 +677,14 @@ export default function AddPatient(props: any) {
           <p className="modal-header">Add Patient</p>
         </div>
 
-        {/* Flash message */}
+        <div id='main-add-patient-form'>
+
+          Flash message
         {flashMessage.length > 0 && (
           <div className='flash-message' style={{ background: found ? '#4caf50' : '#FF3838' }}>
             {flashMessage}
           </div>
         )}
-
-        <div id='main-add-patient-form'>
           {/* Search */}
           <div>
             <label htmlFor="search-by-id" style={{ display: 'inline-block', marginRight: '1rem' }}>
