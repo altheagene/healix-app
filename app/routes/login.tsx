@@ -19,8 +19,12 @@ export default function LoginPage(props:any){
 
   const success = await response.json()
 
-  if(success.success){
+  console.log(success)
+
+  if(success.success.length > 0){
     props.validate()
+  }else{
+    props.setFlash()
   }
  }
   return(

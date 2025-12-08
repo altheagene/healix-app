@@ -216,7 +216,7 @@ export default function EditPatient(props: any) {
       <div id="add-patient-form" className='modal-form'>
         {/* Header */}
         <div className='modal-header-div'>
-          <p className="modal-header">Add Patient</p>
+          <p className="modal-header">Edit Patient</p>
         </div>
 
         <div id='main-add-patient-form'>

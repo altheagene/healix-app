@@ -43,7 +43,7 @@ def getstudent(**kwargs):
     cursor.execute(sql, values)
     data = cursor.fetchall()
     cursor.close()
-    conn.close()
+    # conn.close()
 
     return [dict(row) for row in data]
     
