@@ -1,7 +1,7 @@
 
 import '../login.css'
 import React, { use } from 'react'
-import { API_BASE_URL } from '../config';
+import {API_BASE_URL} from  '../config';
 
 export default function LoginPage(props:any){
 
@@ -10,7 +10,7 @@ export default function LoginPage(props:any){
 
 
  async function handleSubmit(){
-  const response = await fetch(`/validateuser`, {
+  const response = await fetch(`${API_BASE_URL}/validateuser`, {
     method: 'POST',
     headers: {
       'Content-Type' : 'application/json'
