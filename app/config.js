@@ -1,1 +1,1 @@
-export const API_BASE_URL = process.env.REACT_APP_BACKEND_URL 
+export const API_BASE_URL = 'https://web-production-8fb6.up.railway.app'
