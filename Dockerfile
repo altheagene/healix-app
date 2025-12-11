@@ -21,35 +21,24 @@
 # WORKDIR /app
 # CMD ["npm", "run", "start"]
 
-# Stage 1: Build
-FROM node:20 AS build
+# 
+# Stage 1: Build React frontend
+FROM node:20 AS frontend
 WORKDIR /app
-
-# Copy package.json and install dependencies ignoring peer deps
 COPY package*.json ./
 RUN npm install --legacy-peer-deps
-
-# Copy source code
 COPY . .
-
-# Build SSR app
 RUN npm run build
 
-# Stage 2: Run
-FROM node:20
+# Stage 2: Flask backend
+FROM python:3.12-slim
 WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY . .
+COPY --from=frontend /app/build ./frontend/build
 
-# Copy build folder and package.json
-COPY --from=build /app/build ./build
-COPY package*.json ./
-
-# Install dependencies in run stage
-RUN npm install --legacy-peer-deps
-
-EXPOSE 3000
-CMD ["npm", "start"]
-
-# # Start SSR server
-# CMD ["node", "build/server/index.js"]
-
-
+EXPOSE 5000
+ENV FLASK_APP=app.py
+ENV FLASK_RUN_HOST=0.0.0.0
+CMD ["flask", "run"]
