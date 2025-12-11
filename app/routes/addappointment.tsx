@@ -4,6 +4,8 @@ import React from 'react'
 import AddPatient from '~/components/addpatient'
 import { useNavigate } from 'react-router'
 import EditAppointment from '~/components/editappointment'
+import {API_BASE_URL} from '../config'
+
 
 export default function AddAppointment() {
     
@@ -26,11 +28,11 @@ export default function AddAppointment() {
     const [saving, setSaving] = React.useState(false)
 
     React.useEffect(() => {
-        fetch(`http://localhost:5000/getallservices`)
+        fetch(`${API_BASE_URL}/getallservices`)
             .then(res => res.json())
             .then(data => setServices(data))
 
-        fetch(`http://localhost:5000/getallpatients`)
+        fetch(`${API_BASE_URL}/getallpatients`)
             .then(res => res.json())
             .then(data => setPatients(data))
     }, [])
@@ -68,7 +70,7 @@ export default function AddAppointment() {
         setSaving(true)
 
         try {
-            const res = await fetch('http://localhost:5000/addappointment', {
+            const res = await fetch('${API_BASE_URL}/addappointment', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(appointmentDetails)
@@ -101,7 +103,7 @@ export default function AddAppointment() {
 
     return (
         <div className="route-page add-appointment-page">
-            {showRegister ? <AddPatient hideForm={() => {setShowRegister(false); fetch(`http://localhost:5000/getallpatients`)
+            {showRegister ? <AddPatient hideForm={() => {setShowRegister(false); fetch(`${API_BASE_URL}/getallpatients`)
             .then(res => res.json())
             .then(data => setPatients(data)) }}/> : null}
             <div style={{display: 'flex', gap: '1rem'}}>

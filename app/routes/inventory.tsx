@@ -5,6 +5,8 @@ import AddItem from "~/components/additem"
 import ItemDetails from "./itemdetails"
 import React from "react"
 import { NavLink, useNavigate } from "react-router"
+import {API_BASE_URL} from '../config'
+
 
 export default function Inventory() {
   const navigate = useNavigate();
@@ -13,13 +15,13 @@ export default function Inventory() {
   const [searchTerm, setSearchTerm] = React.useState("");
 
   React.useEffect(() => {
-    fetch(`http://localhost:5000/getallsupplies`)
+    fetch(`${API_BASE_URL}/getallsupplies`)
       .then(res => res.json())
       .then(data => setSupplies(data));
   }, []);
 
   function refetchSupplies() {
-    fetch(`http://localhost:5000/getallsupplies`)
+    fetch(`${API_BASE_URL}/getallsupplies`)
       .then(res => res.json())
       .then(data => setSupplies(data));
   }

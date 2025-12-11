@@ -9,6 +9,8 @@ import CancelSaveBtn from '~/components/cancelsavebtn';
 import EditStock from '~/components/editstocks';
 import EditBatch from '~/components/editbatch';
 import { useNavigate } from 'react-router';
+import {API_BASE_URL} from '../config'
+
 
 // function EditBatch(props:any){
 //     return(
@@ -71,20 +73,20 @@ export default function ItemDetails(){
     console.log(id)
 
     React.useEffect(() => {
-        fetch(`http://localhost:5000/getsupplydetails?idnum=${id}`).
+        fetch(`${API_BASE_URL}/getsupplydetails?idnum=${id}`).
         then(res => res.json()).
         then(data => setItemDetails(data[0]))
 
     }, [])
 
     React.useEffect(() => {
-        fetch(`http://localhost:5000/getbatches?idnum=${id}`)
+        fetch(`${API_BASE_URL}/getbatches?idnum=${id}`)
         .then(res => res.json())
         .then(data => setBatches(data))
     }, [])
 
     function refetchBatches(){
-        fetch(`http://localhost:5000/getbatches?idnum=${id}`)
+        fetch(`${API_BASE_URL}/getbatches?idnum=${id}`)
         .then(res => res.json())
         .then(data => setBatches(data))
     }
@@ -103,7 +105,7 @@ export default function ItemDetails(){
     }
 
     function refetchDetails(){
-        fetch(`http://localhost:5000/getsupplydetails?idnum=${id}`).
+        fetch(`${API_BASE_URL}/getsupplydetails?idnum=${id}`).
         then(res => res.json()).
         then(data => setItemDetails(data[0]))
     }

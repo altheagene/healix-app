@@ -112,6 +112,7 @@
 
 import React from "react"
 import { PieChart, Pie, Cell, Legend, Tooltip, ResponsiveContainer } from "recharts";
+import {API_BASE_URL} from '../config'
 
 
 export default function PatientReports()
@@ -137,13 +138,13 @@ export default function PatientReports()
         }
     }
      React.useEffect(() => {
-        fetch(`http://localhost:5000/clinic_visits?fromdate=${dateRange.from_date}&todate=${dateRange.to_date}`)
+        fetch(`${API_BASE_URL}/clinic_visits?fromdate=${dateRange.from_date}&todate=${dateRange.to_date}`)
         .then(res => res.json())
         .then(data => setVisitLogs(data))
     }, [])
 
     React.useEffect(() => {
-         fetch(`http://localhost:5000/clinic_visits?fromdate=${dateRange.from_date}&todate=${dateRange.to_date}`)
+         fetch(`${API_BASE_URL}/clinic_visits?fromdate=${dateRange.from_date}&todate=${dateRange.to_date}`)
         .then(res => res.json())
         .then(data => setVisitLogs(data))
     }, [dateRange])

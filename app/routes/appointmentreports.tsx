@@ -1,4 +1,6 @@
 import React from "react";
+import {API_BASE_URL} from '../config'
+
 
 export default function AppointmentReport() {
   const boxStyle = {
@@ -63,7 +65,7 @@ export default function AppointmentReport() {
   // Fetch appointments initially and whenever dateRange changes
   React.useEffect(() => {
     fetch(
-      `http://localhost:5000/getapptlogs?fromdate=${dateRange.from_date}&todate=${dateRange.to_date}`
+      `${API_BASE_URL}/getapptlogs?fromdate=${dateRange.from_date}&todate=${dateRange.to_date}`
     )
       .then((res) => res.json())
       .then((data) => setApptLogs(data));
