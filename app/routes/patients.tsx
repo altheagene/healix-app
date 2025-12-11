@@ -3,6 +3,7 @@ import '../app.css'
 import AddPatient from '~/components/addpatient'
 import React from 'react'
 import { useNavigate } from 'react-router'
+import {API_BASE_URL} from '../config'
 
 export default function Patients() {
     const navigate = useNavigate()
@@ -11,13 +12,13 @@ export default function Patients() {
     const [searchTerm, setSearchTerm] = React.useState("")
 
     React.useEffect(() => {
-        fetch(`http://localhost:5000/getallpatients`)
+        fetch(`${API_BASE_URL}/getallpatients`)
             .then(res => res.json())
             .then(data => setAllPatients(data))
     }, [])
 
     function refetchPatients() {
-        fetch(`http://localhost:5000/getallpatients`)
+        fetch(`${API_BASE_URL}/getallpatients`)
             .then(res => res.json())
             .then(data => setAllPatients(data))
     }

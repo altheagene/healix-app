@@ -1,4 +1,6 @@
 import React from "react";
+import {API_BASE_URL} from '../config'
+
 
 export default function InventoryReport(){
 
@@ -56,13 +58,13 @@ export default function InventoryReport(){
     console.log(itemInOut)
     
         React.useEffect(() => {
-            fetch(`http://localhost:5000/getinvlogs?fromdate=${dateRange.from_date}&todate=${dateRange.to_date}`)
+            fetch(`${API_BASE_URL}/getinvlogs?fromdate=${dateRange.from_date}&todate=${dateRange.to_date}`)
             .then(res => res.json())
             .then(data => setInvLogs(data))
         }, [])
 
         React.useEffect(() => {
-                fetch(`http://localhost:5000/getinvlogs?fromdate=${dateRange.from_date}&todate=${dateRange.to_date}`)
+                fetch(`${API_BASE_URL}/getinvlogs?fromdate=${dateRange.from_date}&todate=${dateRange.to_date}`)
             .then(res => res.json())
             .then(data => setInvLogs(data))
         }, [dateRange])

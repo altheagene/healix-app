@@ -8,6 +8,8 @@ import { useParams } from 'react-router';
 import { useNavigate } from 'react-router'
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import user from '../images/user.png'
+import {API_BASE_URL} from '../config'
+
 
 
 export default function PatientDetails(){
@@ -25,29 +27,29 @@ export default function PatientDetails(){
     const [clinicLogs, setClinicLogs]= React.useState<any[]>();
 
     React.useEffect(() => {
-        fetch(`http://localhost:5000/getpatient?idnum=${id}`).then
+        fetch(`${API_BASE_URL}/getpatient?idnum=${id}`).then
         (res => res.json()).then(data => setStudentData(data[0]))
 
-        fetch(`http://localhost:5000/getpatientcliniclogs?idnum=${id}`)
+        fetch(`${API_BASE_URL}/getpatientcliniclogs?idnum=${id}`)
         .then(res => res.json())
         .then(data => setClinicLogs(data))
     }, [])
 
      React.useEffect(() => {
-        fetch(`http://localhost:5000/getpatientallergies?idnum=${id}`).then
+        fetch(`${API_BASE_URL}/getpatientallergies?idnum=${id}`).then
         (res => res.json()).then(data => setAllergies(data))
     }, [])
 
     React.useEffect(() => {
-        fetch(`http://localhost:5000/getpatientconditions?idnum=${id}`).then
+        fetch(`${API_BASE_URL}/getpatientconditions?idnum=${id}`).then
         (res => res.json()).then(data => setConditions(data))
     }, [])
 
     async function refetch(){
-        await fetch(`http://localhost:5000/getpatient?idnum=${id}`).then
+        await fetch(`${API_BASE_URL}/getpatient?idnum=${id}`).then
         (res => res.json()).then(data => setStudentData(data[0]))
 
-         fetch(`http://localhost:5000/getpatientallergies?idnum=${id}`).then
+         fetch(`${API_BASE_URL}/getpatientallergies?idnum=${id}`).then
         (res => res.json()).then(data => setAllergies(data))
     }
 

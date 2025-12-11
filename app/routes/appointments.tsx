@@ -5,6 +5,8 @@ import React from 'react'
 import { useNavigate } from 'react-router'
 import 'bootstrap-icons/font/bootstrap-icons.css'
 import EditAppointment from '~/components/editappointment'
+import {API_BASE_URL} from '../config'
+
 
 export default function Appointments() {
     const [apptStatus, setApptStatus] = React.useState('All Appointments')
@@ -19,21 +21,21 @@ export default function Appointments() {
 
     // Fetch appointments
     React.useEffect(() => {
-        fetch(`http://localhost:5000/getallappointments`) 
+        fetch(`${API_BASE_URL}/getallappointments`) 
             .then(res => res.json())
             .then(data => setAppointments(data))
     }, [])
 
     // Refetch appointments
     function refetchAppts() {
-        fetch(`http://localhost:5000/getallappointments`) 
+        fetch(`${API_BASE_URL}/getallappointments`) 
             .then(res => res.json())
             .then(data => setAppointments(data))
     }
 
     // Mark completed
     async function markCompleted(appointment_id: any) {
-        await fetch(`http://localhost:5000/updateappointment`, {
+        await fetch(`${API_BASE_URL}/updateappointment`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ appointment_id, status: 'Completed' })
@@ -43,7 +45,7 @@ export default function Appointments() {
 
     // Cancel appointment
     async function cancelAppt(appointment_id: any) {
-        await fetch(`http://localhost:5000/updateappointment`, {
+        await fetch(`${API_BASE_URL}/updateappointment`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ appointment_id, status: 'Cancelled' })
