@@ -4,6 +4,7 @@ import '../home.css'
 import React from "react";
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { API_BASE_URL } from "./api";
 
 
 
@@ -33,19 +34,19 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AA46BE', '#FF4C4C'
 
 
   React.useEffect(() => {
-    fetch(`http://localhost:5000/getallpatients`)
+    fetch(`${API_BASE_URL}/getallpatients`)
     .then(res => res.json())
     .then(data => setPatients(data))
 
-    fetch(`http://localhost:5000/getappointmentstoday`)
+    fetch(`${API_BASE_URL}/getappointmentstoday`)
     .then(res => res.json())
     .then(data => setAppointments(data))
 
-    fetch(`http://localhost:5000/getallsupplies`)
+    fetch(`${API_BASE_URL}/getallsupplies`)
     .then(res => res.json())
     .then(data => setSupplies(data))
 
-    fetch(`http://localhost:5000/getall?table=staff`)
+    fetch(`${API_BASE_URL}/getall?table=staff`)
     .then(res => res.json())
     .then(data => setStaff(data))
   }, [])
