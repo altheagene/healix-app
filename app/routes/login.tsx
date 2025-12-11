@@ -10,7 +10,7 @@ export default function LoginPage(props:any){
 
 
  async function handleSubmit(){
-  const response = await fetch(`${API_BASE_URL}/validateuser`, {
+  const response = await fetch(`/validateuser`, {
     method: 'POST',
     headers: {
       'Content-Type' : 'application/json'
