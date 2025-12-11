@@ -109,22 +109,26 @@ export default function App() {
   const [showNavbar, setShowNavBar] = React.useState(true);
   const [flashMessage, setFlashMessage] = React.useState("");
 
-  const [validUser, setValidUser] = React.useState(() => {
-    return localStorage.getItem("loggedIn") === "true";
-  });
+  const [validUser, setValidUser] = React.useState(false);
 
-  function validate(){
-    localStorage.setItem("loggedIn", "true");
-    setValidUser(true);
+// Only access localStorage after component mounts
+React.useEffect(() => {
+  const loggedIn = localStorage.getItem("loggedIn") === "true";
+  setValidUser(loggedIn);
+}, []);
 
-    setFlashMessage("Logged in successfully!");
-    setTimeout(() => setFlashMessage(""), 3000);
-  }
+function validate() {
+  localStorage.setItem("loggedIn", "true");
+  setValidUser(true);
 
-  function logout(){
-    setValidUser(false);
-    localStorage.setItem("loggedIn", "false");
-  }
+  setFlashMessage("Logged in successfully!");
+  setTimeout(() => setFlashMessage(""), 3000);
+}
+
+function logout() {
+  setValidUser(false);
+  localStorage.setItem("loggedIn", "false");
+}
 
   return (
     <>
