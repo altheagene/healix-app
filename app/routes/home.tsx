@@ -4,7 +4,7 @@ import '../home.css'
 import React from "react";
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { API_BASE_URL } from "./api";
+import { API_BASE_URL } from '../config.js'
 
 
 
