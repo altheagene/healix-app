@@ -148,7 +148,7 @@ def getallmedicine():
             COALESCE(SUM(b.stock_level), 0) AS available_stock
             FROM Supplies s
             LEFT JOIN batch b ON b.supply_id = s.supply_id
-            WHERE s.category_id = 1
+            WHERE s.category_id = 1 AND s.is_active = true
             GROUP BY s.supply_id;
             '''
     data = getprocess(sql, [])
@@ -359,6 +359,7 @@ def getallsupplies():
        SELECT
             s.supply_id,
             s.supply_name,
+            s.is_active,
             sc.category_name,
             SUM(b.stock_level) AS total_stock,
             MAX(i.inv_date) AS last_updated
@@ -461,6 +462,7 @@ def updateappointment(appointment_id, **kwargs):
             WHERE `appointment_id` = {appointment_id}
            '''
     return postprocess(sql, values)
+
 
 def deletemedical(table, **kwargs):
     keys = list(kwargs.keys())

@@ -23,6 +23,7 @@ export default function LoginPage(props:any){
   console.log(success)
 
   if(success.success.length > 0){
+    localStorage.setItem('userid', success.success[0].staff_id)
     props.validate()
   }else{
     props.setFlash()

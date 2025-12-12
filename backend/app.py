@@ -187,6 +187,14 @@ def validate_user():
     print(success)
     return ({'success' : success})
 
+@app.route('/findstaff', methods =['GET'])
+def find_staff():
+    id = request.args.get('id')
+    print(id)
+    staff = getrecord('staff', staff_id=id)
+
+    return jsonify(staff)
+
 # ----------------------INSERT QUERIES----------------------------
 
 @app.route('/addnewallergy', methods=['POST'])
@@ -323,6 +331,38 @@ def add_appointment():
 
     return jsonify({'success' : success})
 
+@app.route('/updatestaff', methods=['POST'])
+def update_staff():
+    data = request.get_json()
+    # staff_kwargs = {
+    #     'staff_id': data['staff_id'],
+    #     'first_name': data['first_name'],
+    #     'last_name': data['last_name'],
+    #     'staff_category_id': data['staff_category_id'],
+    #     'sex': data['sex'],
+    #     'phone': data['phone'],
+    #     'email': data['email'],
+    #     'username': data['username'],
+    #     'password': data['password']
+    # }
+
+    # Suppose `data` is a dictionary from your database query
+    staff_id = data['staff_id']
+    first_name = data['first_name']
+    last_name = data['last_name']
+    staff_category_id = data['staff_category_id']
+    sex = data['sex']
+    phone = data['phone']
+    email = data['email']
+    username = data['username']
+    password = data['password']
+
+
+
+    success = updaterecord('staff', staff_id=staff_id, first_name=first_name, last_name=last_name, staff_category_id=staff_category_id, sex=sex, phone=phone, email=email, username=username, password=password)
+
+    return jsonify({'success' : success})
+
 @app.route('/updatepatient', methods=['POST'])
 def update_patient():
     data = request.get_json()
@@ -350,6 +390,14 @@ def getstaffandcateg():
     return jsonify(data)
 
 # -----------------------------------DELETE----------------------------
+
+@app.route('/deleteitem', methods=['POST'])
+def delete_item():
+    data = request.get_json()
+    
+    success = updaterecord('supplies', **data)
+
+    return jsonify({'success' : success})
 
 @app.route('/deletepatientallergies', methods=['POST'])
 def delete_patient_allergies():

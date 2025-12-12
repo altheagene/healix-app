@@ -69,8 +69,13 @@ export default function ItemDetails(){
     const [showEditDetails, setShowEditDetails] = React.useState(false);
     const [showEditStock, setShowEditStock] = React.useState(false);
     const [showEditBatch, setShowEditBatch] = React.useState(false)
+    const [chosenActive, setChosenActive] = React.useState(true)
 
-    console.log(id)
+    console.log(batches)
+
+
+
+    
 
     React.useEffect(() => {
         fetch(`${API_BASE_URL}/getsupplydetails?idnum=${id}`).
@@ -110,6 +115,10 @@ export default function ItemDetails(){
         then(data => setItemDetails(data[0]))
     }
 
+    const filteredBatches = batches.filter(batch => 
+        batch.is_active == chosenActive
+    )
+    console.log(filteredBatches)
     return(
         <div className="route-page">
             <div id="item-details-div">
@@ -147,6 +156,10 @@ export default function ItemDetails(){
                             <span><button id='add-new-batch-btn' onClick={() => setShowAddBatch(true)}> Add new batch</button></span>
                         </p>
                         <div  id='batches-table-container'  className='table-container'>
+                            <div>
+                                <button onClick={() => setChosenActive(true)}>Active Supplies</button>
+                                <button onClick={() => setChosenActive(false)}>Deleted Supplies</button>
+                            </div>
                             <table id='batches-table'>
                                 <tr>
                                     <th>Batch No.</th>
@@ -157,7 +170,7 @@ export default function ItemDetails(){
                                     <th>Actions</th>
                                 </tr>
 
-                                {batches.length > 0 ?batches.map((batch) => {
+                                {filteredBatches.length > 0 ? filteredBatches.map((batch) => {
                                     return(
                                         <tr>
                                             <td>{batch.batch_number}</td>
@@ -175,6 +188,11 @@ export default function ItemDetails(){
                                                         onClick={() => editBtnClick(batch)}>
                                                     <i className='bi bi-three-dots-vertical'></i>
                                                 </button>
+
+                                                {chosenActive ?
+                                                    <button>Deactivate</button>
+                                                    : <button>Reactivate</button>
+                                                }
                                             </td>
                                         </tr>
                                     )
