@@ -476,6 +476,48 @@ def refresh_batches():
         print(e)
     
     return jsonify({'success': success})
+from flask import Response
+import io
+import csv
+
+@app.route('/generateclinicreport', methods=['GET'])
+def generate_clinic_visit_report():
+    from_date = request.args.get("fromdate")
+    to_date = request.args.get("todate")
+    visits = getclinicvisits(from_date=from_date, to_date=to_date)
+
+    headers = [
+        'Visit ID',
+        'Visit Datetime',
+        'Notes',
+        'Service ID',
+        'Service Name',
+        'Patient ID',
+        'Patient Name',
+        'Staff ID',
+        'Staff Name'
+    ]
+
+    # Return CSV as response (so browser can download it)
+    def generate():
+        yield ','.join(headers) + '\n'
+        for visit in visits:
+            row = [
+                str(visit['visit_id']),
+                str(visit['visit_datetime']),
+                visit['notes'] or '',
+                str(visit['service_id']),
+                visit['service_name'] or '',
+                str(visit['patient_id']),
+                visit['patient_name'] or '',
+                str(visit['staff_id']),
+                visit['staff_name'] or ''
+            ]
+            yield ','.join(row) + '\n'
+
+    return Response(generate(), mimetype='text/csv',
+        headers={"Content-Disposition": "attachment;filename=clinic_visit_report.csv"})
+
 
 
 @app.route('/download/appointments', methods=['GET'])
@@ -509,6 +551,100 @@ def download_appointments():
     # Return as a downloadable CSV
     return Response(generate(), mimetype='text/csv',
         headers={"Content-Disposition": "attachment;filename=appointments_report.csv"})
+
+
+@app.route('/download/appointmentlogs', methods=['GET'])
+def download_appointment_logs():
+    # Get query parameters
+    from_date = request.args.get("fromdate")
+    to_date = request.args.get("todate")
+
+    # Fetch data from DB
+    logs = getappointmentlogs(from_date=from_date, to_date=to_date)
+
+    # CSV headers
+    headers = [
+        'Appointment ID',
+        'Service ID',
+        'Service Name',
+        'Appointment Date',
+        'Start Time',
+        'Status',
+        'Patient ID',
+        'Patient Name'
+    ]
+
+    # Generator to stream CSV rows
+    def generate():
+        yield ','.join(headers) + '\n'
+        for log in logs:
+            row = [
+                str(log['appointment_id']),
+                str(log['service_id']),
+                log['service_name'] or '',
+                str(log['appointment_date']),
+                str(log['start_time']),
+                log['status'] or '',
+                str(log['patient_id']),
+                log['patient_name'] or ''
+            ]
+            # Quote fields that contain commas
+            row = [f'"{col}"' if ',' in col else col for col in row]
+            yield ','.join(row) + '\n'
+
+    # Return as downloadable CSV
+    return Response(generate(), mimetype='text/csv',
+        headers={"Content-Disposition": "attachment;filename=appointment_logs.csv"})
+
+
+
+@app.route('/download/inventorylogs', methods=['GET'])
+def download_inventory_logs():
+    # Get query parameters
+    from_date = request.args.get("fromdate")
+    to_date = request.args.get("todate")
+
+    # Fetch inventory log data
+    logs = getinventorylogs(from_date=from_date, to_date=to_date)
+
+    # CSV headers
+    headers = [
+        'Inventory ID',
+        'Inventory Date',
+        'Batch ID',
+        'Batch Number',
+        'Expiration Date',
+        'Supply ID',
+        'Supply Name',
+        'Item In',
+        'Item Out',
+        'Auto Update'
+    ]
+
+    # Generator to stream CSV rows
+    def generate():
+        yield ','.join(headers) + '\n'
+        for log in logs:
+            row = [
+                str(log['inv_id']),
+                str(log['inv_date']),
+                str(log['batch_id']),
+                log['batch_number'] or '',
+                str(log['expiration_date']),
+                str(log['supply_id']),
+                log['supply_name'] or '',
+                str(log['item_in']),
+                str(log['item_out']),
+                str(log['auto_update'])
+            ]
+            # Quote any fields containing commas
+            row = [f'"{col}"' if ',' in col else col for col in row]
+            yield ','.join(row) + '\n'
+
+    # Return as downloadable CSV
+    return Response(generate(), mimetype='text/csv',
+                    headers={"Content-Disposition": "attachment;filename=inventory_logs.csv"})
+
 
 if __name__=="__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))

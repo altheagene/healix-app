@@ -149,6 +149,21 @@ export default function PatientReports()
         .then(data => setVisitLogs(data))
     }, [dateRange])
 
+    function downloadReports(){
+        fetch(`${API_BASE_URL}/generateclinicreport?fromdate=${dateRange.from_date}&todate=${dateRange.to_date}`)
+    }`${API_BASE_URL}/generateclinicreport?fromdate=${dateRange.from_date}&todate=${dateRange.to_date}`
+
+   const downloadReport = async () => {
+    const url = `${API_BASE_URL}/generateclinicreport?fromdate=${encodeURIComponent(dateRange.from_date)}&todate=${encodeURIComponent(dateRange.to_date)}`;
+    const response = await fetch(url);
+    const blob = await response.blob();
+    const link = document.createElement('a');
+    link.href = window.URL.createObjectURL(blob);
+    link.download = "clinic_visit_report.csv";
+    link.click();
+}
+
+    
     const colors = ["#4e79a7", "#f28e2b", "#e15759", "#76b7b2", "#59a14f", "#edc949"];
 
     console.log(visitLogs)
@@ -190,6 +205,7 @@ export default function PatientReports()
             <p className="route-header">Clinic Visit Reports</p>
             <p className="route-page-desc">Track clinic visits, demographics, and health trends</p>
 
+                <button onClick={downloadReport}>Hello</button>
             <div style={{margin: '2rem 0', display: 'flex', gap: '2rem'}}>
                 <label htmlFor="">From
                     <input type="date" value={dateRange?.from_date} onChange={(e) => setDateRange({...dateRange, from_date: e.target.value})}/>
