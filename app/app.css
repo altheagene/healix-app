@@ -625,6 +625,13 @@ input[type='text'], input[type='number'], input[type='date'], textarea, select{
   background-color: rgb(240, 240, 240);
 }
 
+input[type='radio']{
+  width: 30px;
+  display: inline;
+  margin: 0;
+
+}
+
 
 .dropdown{
   max-height: 150px;

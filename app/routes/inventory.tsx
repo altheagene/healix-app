@@ -1,6 +1,5 @@
 import Searchbar from "~/components/searchbar"
 import '../inventory.css'
-import '../app.css'
 import AddItem from "~/components/additem"
 import ItemDetails from "./itemdetails"
 import React from "react"
@@ -13,12 +12,41 @@ export default function Inventory() {
   const [showAddItem, setShowAddItem] = React.useState(false);
   const [supplies, setSupplies] = React.useState<any[]>([]);
   const [searchTerm, setSearchTerm] = React.useState("");
+  const [chosenActive, setChosenActive] = React.useState(true)
 
   React.useEffect(() => {
     fetch(`${API_BASE_URL}/getallsupplies`)
       .then(res => res.json())
       .then(data => setSupplies(data));
   }, []);
+
+  async function removeItem( id:any){
+    const responses = await fetch(`${API_BASE_URL}/deleteitem`, {
+      method: 'POST',
+      headers: {
+        'Content-Type' : 'application/json'
+      },
+      body: JSON.stringify({supply_id: id , is_active: false})
+    })
+
+    const result = await responses.json()
+    console.log(result);
+    refetchSupplies();
+  }
+
+  async function reactivateItem( id:any){
+    const responses = await fetch(`${API_BASE_URL}/deleteitem`, {
+      method: 'POST',
+      headers: {
+        'Content-Type' : 'application/json'
+      },
+      body: JSON.stringify({supply_id: id , is_active: true})
+    })
+
+    const result = await responses.json()
+    console.log(result);
+    refetchSupplies();
+  }
 
   function refetchSupplies() {
     fetch(`${API_BASE_URL}/getallsupplies`)
@@ -28,8 +56,10 @@ export default function Inventory() {
 
   // Filtered supplies based on search term
   const filteredSupplies = supplies.filter(supply =>
-    supply.supply_name.toLowerCase().includes(searchTerm.toLowerCase())
+    supply.supply_name.toLowerCase().includes(searchTerm.toLowerCase()) && supply.is_active == chosenActive
   );
+
+  console.log(supplies)
 
   return (
     <div className="route-page">
@@ -68,6 +98,11 @@ export default function Inventory() {
           </select>
         </div>
 
+        <div>
+          <button onClick={() => setChosenActive(true)}>Active Supplies</button>
+          <button onClick={() => setChosenActive(false)}>Deleted Supplies</button>
+        </div>
+
         <div style={{ display: "flex", justifyContent: "space-between", marginTop: "1rem" }}>
           <div id="filter-by-category" style={{ visibility: "hidden" }}>
             <button className="category-filter">All Items</button>
@@ -90,11 +125,12 @@ export default function Inventory() {
                 <th>Total Stock</th>
                 <th>Status</th>
                 <th>Last Updated</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredSupplies.map((supply) => (
-                <tr key={supply.supply_id} onClick={() => navigate(`/itemdetails/${supply.supply_id}`)}>
+                <tr key={supply.supply_id}>
                   <td>{supply.supply_name}</td>
                   <td>{supply.category_name}</td>
                   <td>{supply.total_stock > 0 ? supply.total_stock : 0}</td>
@@ -125,6 +161,18 @@ export default function Inventory() {
                     </p>
                   </td>
                   <td>{supply.last_updated || "None"}</td>
+                  {supply.is_active ? 
+                    <td>
+                      <button onClick={() => navigate(`/itemdetails/${supply.supply_id}`)}><i className="bi bi-eye"></i></button>
+                      <button title='Delete Supply' onClick={(e) => removeItem(supply.supply_id)}><i className="bi bi-trash"></i></button>
+                    </td> 
+                    : 
+                    <td>
+                      <button onClick={() => navigate(`/itemdetails/${supply.supply_id}`)}><i className="bi bi-eye"></i></button>
+                      <button title='Reactivate Supply' onClick={(e) => reactivateItem(supply.supply_id)}><i className="bi bi-arrow-clockwise"></i></button>
+                    </td> 
+                    }
+                    
                 </tr>
               ))}
             </tbody>
