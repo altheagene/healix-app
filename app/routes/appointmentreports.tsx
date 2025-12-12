@@ -39,6 +39,17 @@ export default function AppointmentReport() {
     cancelled: 0,
   });
 
+  
+  const downloadReport = async () => {
+      const url = `${API_BASE_URL}/download/inventorylogs?fromdate=${encodeURIComponent(dateRange.from_date)}&todate=${encodeURIComponent(dateRange.to_date)}`;
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const link = document.createElement('a');
+      link.href = window.URL.createObjectURL(blob);
+      link.download = "clinic_visit_report.csv";
+      link.click();
+  }
+
   // Calculate totals based on status
   React.useEffect(() => {
     const summary = apptLogs.reduce(
@@ -74,7 +85,7 @@ export default function AppointmentReport() {
   return (
     <div className="route-page">
       <h1 className="route-header">Appointment Reports</h1>
-
+      
       <div style={{ margin: "2rem 0", display: "flex", gap: "2rem" }}>
         <label>
           From
@@ -98,7 +109,7 @@ export default function AppointmentReport() {
           />
         </label>
       </div>
-
+      <button onClick={downloadReport}>Click</button>
       <div style={containerStyle}>
         <div style={boxStyle}>
           <div>Total Appointments</div>

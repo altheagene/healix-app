@@ -28,17 +28,7 @@ export default function Appointments() {
         
     }, [])
 
-    const downloadAppointments = () => {
-    window.location.href = `${API_BASE_URL}/download/appointments`;
-}
-
-// In JSX
-
-
-    //Reports
-    function downloadReport(){
-        fetch(`${API_BASE_URL}/download/appointments`)
-    }
+   
     // Refetch appointments
     function refetchAppts() {
         fetch(`${API_BASE_URL}/getallappointments`) 

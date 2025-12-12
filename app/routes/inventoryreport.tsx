@@ -26,6 +26,16 @@ export default function InventoryReport(){
     margin: "10px 0",
   };
 
+  const downloadReport = async () => {
+        const url = `${API_BASE_URL}/download/inventorylogs?fromdate=${encodeURIComponent(dateRange.from_date)}&todate=${encodeURIComponent(dateRange.to_date)}`;
+        const response = await fetch(url);
+        const blob = await response.blob();
+        const link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.download = "clinic_visit_report.csv";
+        link.click();
+    }
+
     const [dateRange, setDateRange] = React.useState({
             from_date: new Date().toISOString().split("T")[0], 
             to_date: new Date().toISOString().split("T")[0]
@@ -53,6 +63,8 @@ export default function InventoryReport(){
         }
 
     }, [invLogs])
+
+    
     
     console.log(invLogs)
     console.log(itemInOut)
@@ -72,7 +84,7 @@ export default function InventoryReport(){
     return(
         <div className="route-page">
             <h1 className="route-header">Inventory Report</h1>
-
+<button onClick={downloadReport}>Download</button>
             <div style={{margin: '2rem 0', display: 'flex', gap: '2rem'}}>
                 <label htmlFor="">From
                     <input type="date" value={dateRange?.from_date} onChange={(e) => setDateRange({...dateRange, from_date: e.target.value})}/>

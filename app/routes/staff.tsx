@@ -2,7 +2,9 @@ import Searchbar from "~/components/searchbar"
 import AddStaff from "~/components/addstaff"
 import EditStaff from "~/components/editstaff"
 import React from "react"
+import '../app.css'
 import {API_BASE_URL} from '../config'
+import 'bootstrap-icons/font/bootstrap-icons.css'
 
 
 
