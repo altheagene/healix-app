@@ -109,10 +109,12 @@ export default function Navbar(props:any){
         )
     })
     return(
-        <nav id="navbar" className={`${props.showNavbar ? "show-navbar" : "hide-navbar"} ${width < 1000 ? "navbar-mobile" : ""}`} 
-                         style={{
-                            transform: props.showNavbar ? 'translateX(0%)' : 'translateX(-100%)'
-                         }}>
+        <nav id="navbar" 
+                // className={`${props.showNavbar ? "show-navbar" : "hide-navbar"} ${width < 1000 ? "navbar-mobile" : ""}`} 
+                style={{
+                    transform: props.showNavbar ? 'translateX(0%)' : 'translateX(-100%)',
+                    position: width < 1000 ? 'absolute' : 'relative'
+                }}>
             <ul> 
                 {navListComponents}
             </ul>

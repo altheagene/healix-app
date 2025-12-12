@@ -104,6 +104,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 //   )
 // }
 
+import { API_BASE_URL} from './config'
 export default function App() {
 
   const [showNavbar, setShowNavBar] = React.useState(true);
@@ -115,6 +116,9 @@ export default function App() {
 React.useEffect(() => {
   const loggedIn = localStorage.getItem("loggedIn") === "true";
   setValidUser(loggedIn);
+
+  fetch(`${API_BASE_URL}/refreshbatches`)
+  .then(res => res.json())
 }, []);
 
 function validate() {

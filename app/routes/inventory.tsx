@@ -120,7 +120,7 @@ export default function Inventory() {
           <table id="inventory-table">
             <thead>
               <tr>
-                <th>Name</th>
+                <th>Supply Name</th>
                 <th>Category</th>
                 <th>Total Stock</th>
                 <th>Status</th>
@@ -129,7 +129,7 @@ export default function Inventory() {
               </tr>
             </thead>
             <tbody>
-              {filteredSupplies.map((supply) => (
+              {filteredSupplies.length > 0 ? filteredSupplies.map((supply) => (
                 <tr key={supply.supply_id}>
                   <td>{supply.supply_name}</td>
                   <td>{supply.category_name}</td>
@@ -174,7 +174,11 @@ export default function Inventory() {
                     }
                     
                 </tr>
-              ))}
+              )) : <tr>
+                          <td colSpan={7} style={{ textAlign: 'center', padding: '15px' }}>
+                              No Supplies found
+                          </td>
+                      </tr>}
             </tbody>
           </table>
         </div>

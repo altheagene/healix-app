@@ -70,7 +70,7 @@ export default function AddAppointment() {
         setSaving(true)
 
         try {
-            const res = await fetch('${API_BASE_URL}/addappointment', {
+            const res = await fetch(`${API_BASE_URL}/addappointment`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(appointmentDetails)

@@ -1,5 +1,6 @@
 import React from "react"
 import CancelSaveBtn from "./cancelsavebtn"
+import {API_BASE_URL} from '../config'
 
 export default function EditBatch(props:any){
 
@@ -21,12 +22,14 @@ export default function EditBatch(props:any){
             }
         )
 
-        console.log(response.json())
+        console.log(await 
+            response.json())
+            response.json()
 
         props.refetch()
     }
 
-    
+    console.log(batchDetails)
 
     return(
         <div className='modal-form-div'>
@@ -57,7 +60,7 @@ export default function EditBatch(props:any){
                         <input type="text" />
                     </label>
                 </div>
-                <CancelSaveBtn hideForm={props.hideForm} submit={handleSubmit}></CancelSaveBtn>
+                <CancelSaveBtn hideForm={props.hideForm} submit={() => handleSubmit()}></CancelSaveBtn>
             </div>
         </div>
     )
