@@ -1,10 +1,11 @@
-from flask import Flask, jsonify, redirect, url_for, request
+from flask import Flask, jsonify, redirect, url_for, request, Response
 from flask_cors import CORS
 import sys
 sys.path.insert(0, '/db')
 from db.dbhelper import *
-from datetime import date 
+from datetime import date, datetime
 import os
+
 
 app = Flask(__name__)
 # CORS(app, resources={r"/*" : {"origins":"*"}} )
@@ -452,6 +453,62 @@ def update_supply():
     success = updaterecord('supplies', **data)
 
     return jsonify({'success' : success})
+
+@app.route('/refreshbatches', methods=['GET'])
+def refresh_batches():
+    try:
+        batches = getall('batch')
+        datenow = date.today()
+        success = True
+
+        for batch in batches:
+            print(batch['expiration_date'])
+            if batch['expiration_date'] != '':
+                exp = batch['expiration_date']
+
+                # convert "YYYY-MM-DD" → date object
+                if isinstance(exp, str):
+                    exp = datetime.strptime(exp, "%Y-%m-%d").date()
+
+                if exp < datenow:
+                    updaterecord('batch', batch_id=batch['batch_id'], is_active=False)
+    except Exception as e:
+        print(e)
+    
+    return jsonify({'success': success})
+
+
+@app.route('/download/appointments', methods=['GET'])
+def download_appointments():
+    # Get the appointment data
+    appointments = getappointments()
+
+    # Create a CSV in memory
+    def generate():
+        # CSV header
+        header = ['Appointment ID', 'Date', 'Start Time', 'Status', 'Notes', 'Service ID', 'Service Name', 'Patient ID', 'Patient Name']
+        yield ','.join(header) + '\n'
+
+        # CSV rows
+        for appt in appointments:
+            row = [
+                str(appt['appointment_id']),
+                str(appt['appointment_date']),
+                str(appt['start_time']),
+                appt['status'] or '',
+                appt['Notes'] or '',
+                str(appt['service_id']),
+                appt['service_name'] or '',
+                str(appt['patient_id']),
+                appt['patient_name'] or ''
+            ]
+            # Escape commas in text
+            row = [f'"{col}"' if ',' in col else col for col in row]
+            yield ','.join(row) + '\n'
+
+    # Return as a downloadable CSV
+    return Response(generate(), mimetype='text/csv',
+        headers={"Content-Disposition": "attachment;filename=appointments_report.csv"})
 
 if __name__=="__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))

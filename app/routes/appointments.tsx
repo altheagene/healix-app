@@ -24,8 +24,21 @@ export default function Appointments() {
         fetch(`${API_BASE_URL}/getallappointments`) 
             .then(res => res.json())
             .then(data => setAppointments(data))
+
+        
     }, [])
 
+    const downloadAppointments = () => {
+    window.location.href = `${API_BASE_URL}/download/appointments`;
+}
+
+// In JSX
+
+
+    //Reports
+    function downloadReport(){
+        fetch(`${API_BASE_URL}/download/appointments`)
+    }
     // Refetch appointments
     function refetchAppts() {
         fetch(`${API_BASE_URL}/getallappointments`) 
@@ -70,6 +83,7 @@ export default function Appointments() {
 
     return (
         <div className="route-page">
+            {/* <button onClick={downloadAppointments}>Download CSV</button> */}
             {showEdit ? <EditAppointment appt={apptID} hideForm={() => setShowEdit(false)} refetch={refetchAppts}/> : null}
             <h1 className="route-header">Appointments</h1>
             <p className='route-page-desc'>Manage your clinic's appointments and schedules.</p>

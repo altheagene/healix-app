@@ -147,8 +147,10 @@ def getallmedicine():
             s.auto_deduct,
             COALESCE(SUM(b.stock_level), 0) AS available_stock
             FROM Supplies s
-            LEFT JOIN batch b ON b.supply_id = s.supply_id
-            WHERE s.category_id = 1 AND s.is_active = true
+            LEFT JOIN batch b 
+                ON b.supply_id = s.supply_id
+                AND b.is_active = 1
+            WHERE s.category_id = 1 AND s.is_active = true AND SUM(b.stock_level) > 0
             GROUP BY s.supply_id;
             '''
     data = getprocess(sql, [])

@@ -149,7 +149,7 @@ li:hover{
 
 
 .hide-navbar{
-  display: none;
+   transform: translateX(-100%);
   width: 0px;
 }
 
