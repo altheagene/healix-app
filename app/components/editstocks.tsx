@@ -29,6 +29,8 @@ export default function EditStock(props:any){
         item_in: 0,
         item_out: 0
     })
+
+    console.log(batchDetails)
     return(
         <div className='modal-form-div'>
             <div className='gray-bg'></div>
