@@ -1,11 +1,11 @@
 import { NavLink } from "react-router";
 import React from "react";
-
-import { index } from "@react-router/dev/routes";
+import { useNavigate } from "react-router";
 
 
 export default function Navbar(props:any){
     const [width, setWidth] = React.useState(0)
+    const navigate = useNavigate()
 
     React.useEffect(() => {
     // Safe: window exists ONLY in the browser
@@ -45,7 +45,7 @@ export default function Navbar(props:any){
             icon: 'bi bi-people'
         },
         {
-            route: "",
+            route: "#",
             text: 'Reports' ,
             icon: 'bi bi-file-earmark',
             subroutes: [
@@ -74,19 +74,26 @@ export default function Navbar(props:any){
         const subroutesElements = subroutes ? subroutes.map(subroute => {
             return(
                 <li>
-                    <NavLink to={subroute.route}>{subroute.text}</NavLink>
+                    <NavLink to={subroute.route}
+                            className={({ isActive }) =>
+                                isActive ? "nav-active" : "nav-inactive"
+                            }>
+                        {subroute.text}</NavLink>
                 </li>
             )
         }) : null
 
         return(
-            <li>
-                <div className="navlist-bg" style={{backgroundColor: routeChosen === obj.text ? '#b1c1ffac' : 'transparent',
-                                                    width: routeChosen === obj.text ? '100%' : '0px'
-                }}>
+            <li >
+                <div className="navlist-bg" 
+                    style={{backgroundColor: routeChosen === obj.text ? '#b1c1ffac' : 'transparent',
+                                                    width: routeChosen === obj.text ? '100%' : '0px',
+                    }}
+                    >
                     <NavLink 
                         to={obj.route ||'#'} 
-                        onClick={() => setRouteChosen(obj.text)}>
+                        onClick={() => {setRouteChosen(obj.text); navigate(obj.route)}}
+                        >
                         <i 
                             className={obj.icon} 
                             style={{
@@ -101,8 +108,9 @@ export default function Navbar(props:any){
                 </div>
 
                 {subroutes ? 
-                <div id="subroute-div" style={{height: routeChosen === obj.text ? '300px' : '0px',
-                                             margin: routeChosen === obj.text ? '1rem 0 1rem 2.5rem' : '0 0 0  2.5rem'
+                <div id="subroute-div" 
+                    style={{height: routeChosen === obj.text ? '300px' : '0px',
+                                             margin: routeChosen === obj.text ? '1rem 0 1rem 2rem' : '0 0 0  2.5rem'
                 }}>
                     <ul>
                         {subroutesElements}
@@ -115,12 +123,12 @@ export default function Navbar(props:any){
     return(
         <nav id="navbar" 
                 // className={`${props.showNavbar ? "show-navbar" : "hide-navbar"} ${width < 1000 ? "navbar-mobile" : ""}`} 
-                className={width < 1000 ? 'navbar-mobile' : ''}
+                className={width < 1300 ? 'navbar-mobile' : ''}
                 style={{
                     // transform: props.showNavbar ? 'translateX(0%)' : 'translateX(-100%)',
-                    position: width < 1000 ? 'absolute' : 'relative',
+                    position: width < 1300 ? 'absolute' : 'relative',
                     display: props.showNavbar ? 'block' : 'none',
-                    zIndex: width < 1000 ? '4' : '2'
+                    zIndex: width < 1300 ? '4' : '2'
                 }}>
             <ul> 
                 {navListComponents}

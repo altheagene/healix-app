@@ -21,7 +21,9 @@ export default function AddStaff(props:any){
             !staffData?.sex ||
             !staffData?.staff_category_id ||
             !staffData?.email ||
-            !staffData?.phone
+            !staffData?.phone||
+            !staffData?.username ||
+            !staffData?.password
         ) {
             alert("Please fill out all required fields.");
             return;
@@ -49,7 +51,7 @@ export default function AddStaff(props:any){
     return(
         <div id="add-staff-div" className="modal-form-div">
             <div className="gray-bg"></div>
-            <div className="modal-form" id="edit-details-div" style={{width: 500}}>
+            <div className="modal-form"  style={{width: 500}}>
                 <div className="modal-header-div">
                     <p className="modal-header">Add Staff</p>
                 </div>
@@ -87,12 +89,12 @@ export default function AddStaff(props:any){
                     <label style={{ display: 'block' }}>Sex
                         <div id='gender-div'>
                         <div>
-                            <input type="radio" name="gender" id='female' />
+                            <input type="radio" name="gender" id='female' onChange={(e) => setStaffData({...staffData, sex: e.target.value})}/>
                             <label htmlFor="female">Female</label>
                         </div>
                         <div>
-                            <input type="radio" name="gender" id="male"/>
-                            <label htmlFor="male">Male</label>
+                            <input type="radio" name="gender" id="male"  onChange={(e) => setStaffData({...staffData, sex: e.target.value})}/>
+                            <label htmlFor="male" >Male</label>
                         </div>
                         </div>
                     </label>
@@ -114,6 +116,14 @@ export default function AddStaff(props:any){
 
                     <label htmlFor="phone">Phone
                         <input type="text" id='phone' value={staffData?.phone} onChange={(e)  => setStaffData({...staffData, phone: e.target.value})}/>
+                    </label>
+
+                    <label htmlFor="username">Username
+                        <input type="text" id='username' value={staffData?.username} onChange={(e)  => setStaffData({...staffData, username: e.target.value})}/>
+                    </label>
+
+                    <label htmlFor="password">Password
+                        <input type="password" id='password' value={staffData?.password} onChange={(e)  => setStaffData({...staffData, password: e.target.value})}/>
                     </label>
                 </div>
 

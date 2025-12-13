@@ -9,6 +9,8 @@ export default function AddRecord(props:any){
     const now = new Date()
     const [services, setServices] = React.useState<any[]>()
     const [staff, setStaff] = React.useState<any[]>()
+    const [newService, setNewService] = React.useState("");
+
     const [recordDetails, setRecordDetails] = React.useState({
         patient_id: id,
         appointment_id: null,
@@ -41,6 +43,34 @@ export default function AddRecord(props:any){
         setRecordDetails({...recordDetails,staff_id: staff[0].staff_id});
     }
     }, [staff]);
+
+    async function addServiceInline() {
+        if (!newService.trim()) return;
+
+        const res = await fetch("http://localhost:5000/addservice", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ service_name: newService.trim() })
+        });
+
+        const result = await res.json();
+
+        // reload services
+        const refreshed = await fetch("http://localhost:5000/getall?table=services")
+            .then(r => r.json());
+
+        setServices(refreshed);
+
+        // auto-select newly added service (assuming backend returns id)
+        if (result?.service_id) {
+            setRecordDetails({
+                ...recordDetails,
+                service_id: result.service_id
+            });
+        }
+
+        setNewService("");
+    }
 
     async function handleSubmit(){
         const response = await fetch(`http://localhost:5000/addvisitlog`,
@@ -116,15 +146,36 @@ export default function AddRecord(props:any){
                         <input type="date" value={new Date().toISOString().split("T")[0]} style={{width: '70%'}}/>
                     </label>
 
-                    <label htmlFor="">Reason
-                        <select name="" id="" style={{display: 'block', width: '70%', marginTop: '0.3rem'}} value={recordDetails?.service_id} onChange={(e) => setRecordDetails({...recordDetails, service_id: parseInt(e.target.value)})}>
-                            {services?.map(service => {
-                                return(
-                                    <option value={service.service_id}>{service.service_name}</option> 
-                                )
-                            })}
-                        </select>
-                    </label>
+                    <label>Reason</label>
+                    <select
+                        style={{ display: "block", width: "70%", marginTop: "0.3rem" }}
+                        value={recordDetails.service_id}
+                        onChange={(e) =>
+                            setRecordDetails({
+                                ...recordDetails,
+                                service_id: parseInt(e.target.value)
+                            })
+                        }
+                    >
+                        {services?.map(service => (
+                            <option key={service.service_id} value={service.service_id}>
+                                {service.service_name}
+                            </option>
+                        ))}
+                    </select>
+
+{/* Inline add service */}
+<div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem", width: "70%" }}>
+    <input
+        type="text"
+        placeholder="Add new service"
+        value={newService}
+        onChange={(e) => setNewService(e.target.value)}
+    />
+    <button type="button" onClick={addServiceInline}>
+        +
+    </button>
+</div>
 
                     <div style={{display: 'flex', width: '100%', gap: '1rem'}}>
                         <label htmlFor="weight">Weight

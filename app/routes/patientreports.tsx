@@ -205,18 +205,35 @@ export default function PatientReports()
             <p className="route-header">Clinic Visit Reports</p>
             <p className="route-page-desc">Track clinic visits, demographics, and health trends</p>
 
-                <button onClick={downloadReport}>Hello</button>
-            <div style={{margin: '2rem 0', display: 'flex', gap: '2rem'}}>
-                <label htmlFor="">From
-                    <input type="date" value={dateRange?.from_date} onChange={(e) => setDateRange({...dateRange, from_date: e.target.value})}/>
+            <div className="date-range-picker">
+                <label>
+                From
+                <input
+                    type="date"
+                    value={dateRange?.from_date}
+                    onChange={(e) =>
+                    setDateRange({ ...dateRange, from_date: e.target.value })
+                    }
+                />
                 </label>
-                
-                <label htmlFor="">To
-                    <input type="date"  value={dateRange?.to_date} onChange={(e) => setDateRange({...dateRange, to_date: e.target.value})}></input>
-                </label>
-                
-            </div>
 
+                <label>
+                To
+                <input
+                    type="date"
+                    value={dateRange?.to_date}
+                    onChange={(e) =>
+                    setDateRange({ ...dateRange, to_date: e.target.value })
+                    }
+                />
+                </label>
+            </div>
+            <button 
+                onClick={downloadReport} 
+                className="download-btn">
+                <i className="bi bi-box-arrow-down"></i>
+                Download
+            </button>
             <div style={{display: 'flex'}} >
                 <div style={containerStyle}>
                     <div style={boxStyle}>
@@ -254,13 +271,15 @@ export default function PatientReports()
               
             <div className="table-container">
                 <table>
-                    <tr>
-                        <th>Patient</th>
-                        <th>Type</th>
-                        <th>Date</th>
-                        <th>Attending</th>
-                        <th>Notes</th>
-                    </tr>
+                    <thead>
+                        <tr>
+                            <th>Patient</th>
+                            <th>Type</th>
+                            <th>Date</th>
+                            <th>Attending</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
                     {visitLogs?.map(visit => {
                         return(
                             <tr>

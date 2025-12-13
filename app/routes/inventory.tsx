@@ -75,7 +75,7 @@ export default function Inventory() {
 
         {/* Searchbar */}
         <input type="text"
-          id="inventory-searchbar"
+          id="searchbar"
           placeholder="Search item"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -119,7 +119,7 @@ export default function Inventory() {
                   style={{backgroundColor: !chosenActive ? 'white' : 'transparent'}}>Deleted Supplies</button>
           </div>
 
-          <button id="add-item-btn" onClick={() => setShowAddItem(true)}>
+          <button className="add-button" onClick={() => setShowAddItem(true)}>
             + Add Item
           </button>
         </div>
@@ -169,17 +169,30 @@ export default function Inventory() {
                     </p>
                   </td>
                   <td>{supply.last_updated || "None"}</td>
-                  {supply.is_active ? 
-                    <td>
-                      <button onClick={() => navigate(`/itemdetails/${supply.supply_id}`)}><i className="bi bi-eye"></i></button>
-                      <button title='Delete Supply' onClick={(e) => removeItem(supply.supply_id)}><i className="bi bi-trash"></i></button>
-                    </td> 
-                    : 
-                    <td>
-                      <button onClick={() => navigate(`/itemdetails/${supply.supply_id}`)}><i className="bi bi-eye"></i></button>
-                      <button title='Reactivate Supply' onClick={(e) => reactivateItem(supply.supply_id)}><i className="bi bi-arrow-clockwise"></i></button>
-                    </td> 
-                    }
+                  <td className="action-cell">
+  <div className="action-menu">
+    <button className="action-trigger">
+      <i className="bi bi-three-dots-vertical"></i>
+    </button>
+
+    <div className="action-dropdown">
+      <button onClick={() => navigate(`/itemdetails/${supply.supply_id}`)}>
+        <i className="bi bi-eye"></i> View
+      </button>
+
+      {supply.is_active ? (
+        <button onClick={() => removeItem(supply.supply_id)}>
+          <i className="bi bi-trash"></i> Delete
+        </button>
+      ) : (
+        <button onClick={() => reactivateItem(supply.supply_id)}>
+          <i className="bi bi-arrow-clockwise"></i> Reactivate
+        </button>
+      )}
+    </div>
+  </div>
+</td>
+
                     
                 </tr>
               )) : <tr>

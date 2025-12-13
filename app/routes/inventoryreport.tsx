@@ -84,17 +84,30 @@ export default function InventoryReport(){
     return(
         <div className="route-page">
             <h1 className="route-header">Inventory Report</h1>
-<button onClick={downloadReport}>Download</button>
-            <div style={{margin: '2rem 0', display: 'flex', gap: '2rem'}}>
-                <label htmlFor="">From
-                    <input type="date" value={dateRange?.from_date} onChange={(e) => setDateRange({...dateRange, from_date: e.target.value})}/>
+            <div className="date-range-picker">
+                <label>
+                From
+                <input
+                    type="date"
+                    value={dateRange?.from_date}
+                    onChange={(e) =>
+                    setDateRange({ ...dateRange, from_date: e.target.value })
+                    }
+                />
                 </label>
-                
-                <label htmlFor="">To
-                    <input type="date"  value={dateRange?.to_date} onChange={(e) => setDateRange({...dateRange, to_date: e.target.value})}></input>
-                </label>  
-            </div>
 
+                <label>
+                To
+                <input
+                    type="date"
+                    value={dateRange?.to_date}
+                    onChange={(e) =>
+                    setDateRange({ ...dateRange, to_date: e.target.value })
+                    }
+                />
+                </label>
+            </div>
+            <button onClick={downloadReport} className="download-btn" ><i className="bi bi-box-arrow-down"></i>Download</button>
             <div style={containerStyle}>
                 <div style={boxStyle}>
                     <div>Total Item In</div>
