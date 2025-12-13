@@ -105,6 +105,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 // }
 
 import { API_BASE_URL} from './config'
+import './routepages.css'
 export default function App() {
 
   const [showNavbar, setShowNavBar] = React.useState(true);
@@ -131,6 +132,8 @@ function validate() {
 
 function logout() {
   setValidUser(false);
+  setFlashMessage("Logged out!");
+  setTimeout(() => setFlashMessage(""), 3000);
   localStorage.setItem("loggedIn", "false");
 }
 

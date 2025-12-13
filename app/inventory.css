@@ -276,3 +276,27 @@ option:hover{
     min-height: 400px;
     z-index: 4;
 }
+
+/* ---------------------------------------------------------------- */
+
+.status-bar{
+    
+    min-width: 250px;
+    width: 60%;
+    height: 40px;
+    display: flex;
+    background-color: rgb(230, 230, 230);
+    padding: 0.3rem;
+    border: 1px solid rgba(128, 128, 128, 0.385);
+    border-radius: 10px;
+    gap: 1rem
+}
+
+.status-btn{
+    flex: 1;
+    height: 100%;
+    border: none;
+    background-color: white;
+    border-radius: 5px;
+    transition: ease-in-out 0.1s;
+}

@@ -74,6 +74,7 @@
     background-color: white;
     margin-right: 1rem;
     padding: 1.5rem;
+    position: relative;
 }
 
 #add-appointment-div > div{
@@ -158,31 +159,6 @@ a{
     transition: all 0.2s ease;
 }
 
-@media (max-width: 800px){
-    #add-appointment-div > div{
-        grid-template-columns: 1fr;
-        grid-template-rows: 1fr 1fr;
-        height: 80%;
-        row-gap: 1rem;
-    }
-
-    #appointment-details{
-        grid-column: 1/2;
-        grid-row: 1/2;
-        width: 100%;
-        min-height: 450px;
-    }
-
-    #appointment-details label, #appointment-details input{
-        width: 100%;
-    }
-
-    #appointment-patient{
-        grid-column: 1/2;
-        grid-row: 2/3;
-        width: 100%;
-    }
-}
 
 #register-patient-btn{
     background-color: white;
@@ -323,4 +299,41 @@ a{
 .selected-patient .sid {
   font-size: 0.85rem;
   color: #555;
+}
+
+
+@media (max-width: 800px){
+    .appointment-flex{
+      flex-direction: column;
+    }
+
+    .primary-btn{
+      position: relative;
+      width: 100%;
+      right: 0;
+      margin-top: 1rem;
+    }
+    #add-appointment-div > div{
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr 1fr;
+        height: 80%;
+        row-gap: 1rem;
+    }
+
+    #appointment-details{
+        grid-column: 1/2;
+        grid-row: 1/2;
+        width: 100%;
+        min-height: 450px;
+    }
+
+    #appointment-details label, #appointment-details input{
+        width: 100%;
+    }
+
+    #appointment-patient{
+        grid-column: 1/2;
+        grid-row: 2/3;
+        width: 100%;
+    }
 }
