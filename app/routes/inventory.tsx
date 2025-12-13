@@ -98,11 +98,6 @@ export default function Inventory() {
           </select>
         </div>
 
-        <div>
-          <button onClick={() => setChosenActive(true)}>Active Supplies</button>
-          <button onClick={() => setChosenActive(false)}>Deleted Supplies</button>
-        </div>
-
         <div style={{ display: "flex", justifyContent: "space-between", marginTop: "1rem" }}>
           <div id="filter-by-category" style={{ visibility: "hidden" }}>
             <button className="category-filter">All Items</button>
@@ -110,11 +105,24 @@ export default function Inventory() {
             <button className="category-filter">Medical Supplies</button>
             <button className="category-filter">Equipment</button>
           </div>
+        </div>
+
+        <div style={{ display: "flex", justifyContent: "space-between", marginTop: "1rem" }} >
+          <div className="status-bar">
+            <button 
+                onClick={() => setChosenActive(true)} 
+                className="status-btn"
+                style={{backgroundColor: chosenActive ? 'white' : 'transparent'}}>Active Supplies</button>
+            <button 
+                  onClick={() => setChosenActive(false)}
+                  className="status-btn"
+                  style={{backgroundColor: !chosenActive ? 'white' : 'transparent'}}>Deleted Supplies</button>
+          </div>
+
           <button id="add-item-btn" onClick={() => setShowAddItem(true)}>
             + Add Item
           </button>
         </div>
-
         {/* Inventory Table */}
         <div id="inventory-table-container" className="table-container">
           <table id="inventory-table">

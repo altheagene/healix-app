@@ -87,3 +87,24 @@ padding: 10px 0;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.12);
 }
+
+@media (max-width: 800px){
+  .cards-row{
+    flex-direction: column;
+  }
+
+  .stat-card{
+    flex: 1;
+    width: 100%;
+    display: flex;
+    align-items: center;
+  }
+
+  .value{
+    margin-left: 0.5rem;
+  }
+
+  .label{
+    margin-left: 0.2rem;
+  }
+}

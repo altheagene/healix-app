@@ -9,9 +9,9 @@ import {API_BASE_URL} from '../config'
 
 
 export default function Appointments() {
-    const [apptStatus, setApptStatus] = React.useState('All Appointments')
+    const [apptStatus, setApptStatus] = React.useState('All')
     const [apptID, setApptId] = React.useState();
-    const apptStatuses = ['All Appointments', 'Today', 'Upcoming', 'Completed', 'Cancelled']
+    const apptStatuses = ['All', 'Today', 'Upcoming', 'Completed', 'Cancelled']
     const [appointments, setAppointments] = React.useState<any[]>([])
     const [searchQuery, setSearchQuery] = React.useState('')
     const [showEdit, setShowEdit] = React.useState(false);
@@ -58,7 +58,7 @@ export default function Appointments() {
 
     // Filter appointments by status
     const filteredByStatus = appointments.filter(appt => {
-        if (apptStatus === 'All Appointments') return true
+        if (apptStatus === 'All') return true
         if (apptStatus === 'Today') return appt.appointment_date === today
         return appt.status === apptStatus
     })

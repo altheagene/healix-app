@@ -392,6 +392,13 @@ def getstaffandcateg():
 
 # -----------------------------------DELETE----------------------------
 
+@app.route('/updatebatchactive', methods=['POST'])
+def update_batch_active():
+    data = request.get_json()
+    success = updaterecord('batch', **data)
+
+    return jsonify({'success' : success})
+
 @app.route('/deleteitem', methods=['POST'])
 def delete_item():
     data = request.get_json()

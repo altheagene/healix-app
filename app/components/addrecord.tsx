@@ -72,7 +72,7 @@ export default function AddRecord(props:any){
     console.log(staff)
 
     function addMedication() {
-            setMedications([...medications, { supply_id: medicines[0].supply_id, auto_deduct: medicines[0].auto_deduct, quantity: 1 }]
+            setMedications([...medications, { supply_id: medicines[0]?.supply_id, auto_deduct: medicines[0]?.auto_deduct, quantity: 1 }]
         );
     }
 

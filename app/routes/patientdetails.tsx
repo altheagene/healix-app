@@ -82,7 +82,7 @@ export default function PatientDetails(){
                                 width: '80px',
                                 backgroundColor: 'transparent', // nice blue
                                 borderRadius: '10px',
-                                color: '#334FBD',
+                                color: 'white',
                                 border: '1px solid #ccc',
                                 cursor: 'pointer',
                                 fontWeight: '700',
@@ -110,43 +110,48 @@ export default function PatientDetails(){
                         </div>
                         <div id='medical-info'  className='info-div'>
                             <p className='patient-info'><i className='bi bi-heart-pulse-fill' style={{marginRight: '0.5rem'}}></i>Medical Information</p>
-                            <div > <p>Allergies:</p>
-                                <span style={{display: 'flex', gap: '0.5rem'}}>
-                                        {allergies?.map(allergy => {
-                                            return(
-                                                <div style={{padding: '0.3rem', 
-                                                             backgroundColor: '#6dc3ba5d',
-                                                            fontSize: '0.8rem', 
-                                                            borderRadius: '10px',
-                                                            border: '1px solid #ccc',
-                                                            width: 'fit-content',
-                                                        flexWrap: 'wrap'}}>{allergy.allergy_name}</div>
-                                            )
-                                        })}
-                                </span>
-                            </div>
-                            <div><p>Conditions:</p>
-                                <span style={{display: 'flex', gap: '0.5rem'}}>
-                                        {conditions?.map(condition => {
-                                            return(
-                                                <div style={{padding: '0.3rem', 
-                                                            backgroundColor: '#6dc3ba5d',
-                                                            fontSize: '0.8rem', 
-                                                            borderRadius: '10px',
-                                                            border: '1px solid #ccc',
-                                                            width: 'fit-content'}}>{condition.condition_name}</div>
-                                            )
-                                        })}
-                                </span>
-                            </div>
+                            <div className='patient-info-div'>
+                                <div> <p>Allergies:</p>
+                                    <span style={{display: 'flex', gap: '0.5rem'}}>
+                                            {allergies?.map(allergy => {
+                                                return(
+                                                    <div style={{padding: '0.3rem', 
+                                                                backgroundColor: '#6dc3ba5d',
+                                                                fontSize: '0.8rem', 
+                                                                borderRadius: '10px',
+                                                                border: '1px solid #ccc',
+                                                                width: 'fit-content',
+                                                            flexWrap: 'wrap'}}>{allergy.allergy_name}</div>
+                                                )
+                                            })}
+                                    </span>
+                                </div>
+                                <div><p>Conditions:</p>
+                                    <span style={{display: 'flex', gap: '0.5rem'}}>
+                                            {conditions?.map(condition => {
+                                                return(
+                                                    <div style={{padding: '0.3rem', 
+                                                                backgroundColor: '#6dc3ba5d',
+                                                                fontSize: '0.8rem', 
+                                                                borderRadius: '10px',
+                                                                border: '1px solid #ccc',
+                                                                width: 'fit-content'}}>{condition.condition_name}</div>
+                                                )
+                                            })}
+                                    </span>
+                                </div>
 
-                            <p>Notes: {studentData?.notes}</p>
+                                <p>Notes: {studentData?.notes}</p>
+                            </div>
                         </div>
                         <div id='emergency-contact'  className='info-div'>
                             <p className='patient-info'><i className='bi bi-telephone-fill' style={{marginRight: '0.5rem'}}></i>Emergency Contact</p>
-                            <p>Name: <span>{studentData?.emergency_contact_name}</span></p>
-                            {/* <p>Relationship: </p> */}
-                            <p>Contact no: <span>{studentData?.emergency_contact_phone}</span></p>
+                            <div className='patient-info-div'>
+                                <p>Name: <span>{studentData?.emergency_contact_name}</span></p>
+                                {/* <p>Relationship: </p> */}
+                                <p>Contact no: <span>{studentData?.emergency_contact_phone}</span></p>
+                            </div>
+                          
                         </div>
                     </div>
                 </div>

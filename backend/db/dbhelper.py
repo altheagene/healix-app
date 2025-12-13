@@ -140,22 +140,24 @@ def getstaffandcategories():
 #     return data
 
 def getallmedicine():
-    sql = f'''
-            SELECT 
+    sql = '''
+        SELECT 
             s.supply_id,
             s.supply_name,
             s.auto_deduct,
             COALESCE(SUM(b.stock_level), 0) AS available_stock
-            FROM Supplies s
-            LEFT JOIN batch b 
-                ON b.supply_id = s.supply_id
-                AND b.is_active = 1
-            WHERE s.category_id = 1 AND s.is_active = true AND SUM(b.stock_level) > 0
-            GROUP BY s.supply_id;
-            '''
+        FROM supplies s
+        LEFT JOIN batch b 
+            ON b.supply_id = s.supply_id
+            AND b.is_active = 1
+        WHERE s.category_id = 1 
+          AND s.is_active = 1
+        GROUP BY s.supply_id, s.supply_name, s.auto_deduct
+        HAVING COALESCE(SUM(b.stock_level), 0) > 0;
+    '''
     data = getprocess(sql, [])
-
     return data
+
 
 def updatestock(table, **kwargs):
     keys = list(kwargs.keys())

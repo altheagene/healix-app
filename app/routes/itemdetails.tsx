@@ -115,6 +115,34 @@ export default function ItemDetails(){
         then(data => setItemDetails(data[0]))
     }
 
+     async function removeBatch( id:any){
+        const responses = await fetch(`${API_BASE_URL}/updatebatchactive`, {
+          method: 'POST',
+          headers: {
+            'Content-Type' : 'application/json'
+          },
+          body: JSON.stringify({batch_id: id , is_active: false})
+        })
+    
+        const result = await responses.json()
+        console.log(result);
+        refetchBatches();
+      }
+    
+      async function reactivateBatch( id:any){
+        const responses = await fetch(`${API_BASE_URL}/updatebatchactive`, {
+          method: 'POST',
+          headers: {
+            'Content-Type' : 'application/json'
+          },
+          body: JSON.stringify({batch_id: id , is_active: true})
+        })
+    
+        const result = await responses.json()
+        console.log(result);
+        refetchBatches();
+      }
+
     const filteredBatches = batches.filter(batch => 
         batch.is_active == chosenActive
     )
@@ -156,10 +184,16 @@ export default function ItemDetails(){
                             <span><button id='add-new-batch-btn' onClick={() => setShowAddBatch(true)}> Add new batch</button></span>
                         </p>
                         <div  id='batches-table-container'  className='table-container'>
-                            <div>
-                                <button onClick={() => setChosenActive(true)}>Active Supplies</button>
-                                <button onClick={() => setChosenActive(false)}>Deleted Supplies</button>
-                            </div>
+                            <div className="status-bar">
+                                    <button 
+                                        onClick={() => setChosenActive(true)} 
+                                        className="status-btn"
+                                        style={{backgroundColor: chosenActive ? 'white' : 'transparent'}}>Active Supplies</button>
+                                    <button 
+                                        onClick={() => setChosenActive(false)}
+                                        className="status-btn"
+                                        style={{backgroundColor: !chosenActive ? 'white' : 'transparent'}}>Deleted Supplies</button>
+                                </div>
                             <table id='batches-table'>
                                 <tr>
                                     <th>Batch No.</th>
@@ -190,8 +224,8 @@ export default function ItemDetails(){
                                                 </button>
 
                                                 {chosenActive ?
-                                                    <button>Deactivate</button>
-                                                    : <button>Reactivate</button>
+                                                    <button onClick={() => removeBatch(batch.batch_id)}>Deactivate</button>
+                                                    : <button onClick={() => reactivateBatch(batch.batch_id)}>Reactivate</button>
                                                 }
                                             </td>
                                         </tr>

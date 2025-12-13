@@ -45,13 +45,13 @@ export default function Navbar(props:any){
             icon: 'bi bi-people'
         },
         {
-            route: "/reports",
+            route: "",
             text: 'Reports' ,
             icon: 'bi bi-file-earmark',
             subroutes: [
                 {
                     route: '/patientreport',
-                    text: 'Patient Reports'
+                    text: 'Clinic Visit Reports'
                 },
                 {
                     route: '/inventoryreport',
@@ -63,11 +63,8 @@ export default function Navbar(props:any){
                 }
 
             ]
-        },
-        {
-            route: '/inventory',
-            text: 'Test'
         }
+    
     ]
 
     const navListComponents = navbarObj.map((obj) => {
@@ -87,8 +84,15 @@ export default function Navbar(props:any){
                 <div className="navlist-bg" style={{backgroundColor: routeChosen === obj.text ? '#b1c1ffac' : 'transparent',
                                                     width: routeChosen === obj.text ? '100%' : '0px'
                 }}>
-                    <NavLink to={obj.route} onClick={() => setRouteChosen(obj.text)}>
-                        <i className={obj.icon} style={{marginRight: '1.3rem', fontSize: '1.3rem', fontWeight: 700, color:  routeChosen === obj.text ? '#1c1c1c' : '#2b2b2bdb'}}></i>
+                    <NavLink 
+                        to={obj.route ||'#'} 
+                        onClick={() => setRouteChosen(obj.text)}>
+                        <i 
+                            className={obj.icon} 
+                            style={{
+                                marginRight: '1.3rem', 
+                                fontSize: '1.3rem', 
+                                fontWeight: 700, color:  routeChosen === obj.text ? '#1c1c1c' : '#2b2b2bdb'}}></i>
                         <p 
                             // style={{color:  routeChosen === obj.text ? '#1c1c1c' : '#2b2b2bb0'}}
                             >
@@ -111,9 +115,12 @@ export default function Navbar(props:any){
     return(
         <nav id="navbar" 
                 // className={`${props.showNavbar ? "show-navbar" : "hide-navbar"} ${width < 1000 ? "navbar-mobile" : ""}`} 
+                className={width < 1000 ? 'navbar-mobile' : ''}
                 style={{
-                    transform: props.showNavbar ? 'translateX(0%)' : 'translateX(-100%)',
-                    position: width < 1000 ? 'absolute' : 'relative'
+                    // transform: props.showNavbar ? 'translateX(0%)' : 'translateX(-100%)',
+                    position: width < 1000 ? 'absolute' : 'relative',
+                    display: props.showNavbar ? 'block' : 'none',
+                    zIndex: width < 1000 ? '4' : '2'
                 }}>
             <ul> 
                 {navListComponents}
