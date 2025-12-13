@@ -5,6 +5,8 @@ import React from "react"
 import '../app.css'
 import {API_BASE_URL} from '../config'
 import 'bootstrap-icons/font/bootstrap-icons.css'
+import '../staff.css'
+import ViewStaff from "~/components/viewstaff"
 
 
 
@@ -13,6 +15,8 @@ export default function Staff() {
     const [searchQuery, setSearchQuery] = React.useState('')
     const [showStaff, setShowStaff] = React.useState(false)
     const [showEdit, setShowEdit] = React.useState(false)
+    const [chosenStaff, setChosenStaff] = React.useState();
+    const [showStaffInfo, setShowStaffInfo] = React.useState(false)
 
     // Fetch staff on mount
     React.useEffect(() => {
@@ -30,6 +34,7 @@ export default function Staff() {
             console.log('ACCESS DENIED! YOU CANNOT EDIT THIS USER!')
         }
     }
+    console.log(staff)
 
     // Filter staff based on search query
     const filteredStaff = staff.filter(person => {
@@ -44,18 +49,19 @@ export default function Staff() {
     return (
         <div className="route-page">
             {showStaff && <AddStaff hideForm={() => setShowStaff(false)} />}
+            {showStaffInfo && <ViewStaff staffInfo={chosenStaff} />}
             <h1 className="route-header">Staff</h1>
             <p className="route-page-desc">Manage clinic staff, roles, and permissions</p>
             {showEdit ? <EditStaff hideForm={() => setShowEdit(false)}/> : null}
             {/* Searchbar */}
             <input type="text"
-                id='staff-searchbar'
+                id='searchbar'
                 placeholder='Search staff by name, role, email or phone'
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
             />
 
-            <button onClick={() => setShowStaff(true)}>+ Add Staff</button>
+            <button onClick={() => setShowStaff(true)} className="add-button">+ Add Staff</button>
 
             <div 
                 //id="staff-table-container"
@@ -79,10 +85,23 @@ export default function Staff() {
                                 <td>{person.category_name}</td>
                                 <td>{person.phone}</td>
                                 <td>{person.email}</td>
-                                <td>
-                                    <button><i className="bi bi-eye"></i></button>
-                                    <button onClick={() => handleEdit(person.staff_id)}><i className="bi bi-pencil"></i></button>
-                                </td>
+                                <td className="action-cell">
+                                    <div className="action-menu">
+                                        <button className="action-trigger">
+                                        <i className="bi bi-three-dots-vertical"></i>
+                                        </button>
+
+                                        <div className="action-dropdown">
+                                        <button onClick={() => {setShowStaffInfo(true); setChosenStaff(person)}}>
+                                            <i className="bi bi-eye"></i> View
+                                        </button>
+
+                                        <button onClick={() => handleEdit(person.staff_id)}>
+                                            <i className="bi bi-pencil"></i> Edit
+                                        </button>
+                                        </div>
+                                    </div>
+                                    </td>
                             </tr>
                         )) : (
                             <tr>

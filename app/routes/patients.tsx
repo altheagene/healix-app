@@ -7,6 +7,17 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import {API_BASE_URL} from '../config'
 
 export default function Patients() {
+    const [width, setWidth] = React.useState(0)
+
+    React.useEffect(() => {
+    // Safe: window exists ONLY in the browser
+    const handleResize = () => setWidth(window.innerWidth);
+
+    handleResize(); // set initial width
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+    }, []);
     const navigate = useNavigate()
     const [showForm, setShowForm] = React.useState(false)
     const [allPatients, setAllPatients] = React.useState<any[]>([])
@@ -38,20 +49,25 @@ export default function Patients() {
             {/* Searchbar */}
             <input
                 type="text"
-                id='patient-searchbar'
+                id='searchbar'
                 placeholder='Search patient'
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
             />
 
             {/* Add Patient Button */}
-            <button id='add-patient-btn' onClick={() => setShowForm(true)}>+ Add new patient</button>
+            <div style={{width: '100%', position: 'relative', height: '40px', padding: '0 2rem'
+            }}>
+                <button id='add-patient-btn' 
+                    style={{position: width < 600 ? 'relative' : 'absolute', right: width > 600 && '2rem' }} 
+                    onClick={() => setShowForm(true)}>+ Add new patient</button>
+            </div>
 
             {/* Add Patient Form */}
             {showForm && <AddPatient hideForm={() => setShowForm(false)} refetchPatients={refetchPatients}/>}
 
             {/* Patients Table */}
-            <div id='patients-table-container' className='table-container'>
+            <div  className='table-container'>
                 <table id='patients-table'>
                     <thead>
                         <tr>

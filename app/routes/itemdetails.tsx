@@ -10,6 +10,9 @@ import EditStock from '~/components/editstocks';
 import EditBatch from '~/components/editbatch';
 import { useNavigate } from 'react-router';
 import {API_BASE_URL} from '../config'
+import rxsymbol from '../images/rxsymbol.png'
+import equipment from '../images/equipment.png'
+import supplies from '../images/supply.png'
 
 
 // function EditBatch(props:any){
@@ -149,7 +152,6 @@ export default function ItemDetails(){
     console.log(filteredBatches)
     return(
         <div className="route-page">
-            <div id="item-details-div">
                 {showEditBatch ? <EditBatch hideForm={() => setShowEditBatch(false)} batch={currentBatch} refetch={refetchBatches}/> : null}
                 {showEditStock ? <EditStock hideForm={hideform} batch={currentBatch} refetch={refetchBatches}/> : null}
                 {showEditDetails ? <EditItem  hideForm={() => setShowEditDetails(false)} itemDetails={itemDetails} refetch={refetchDetails}/> : null}
@@ -165,35 +167,38 @@ export default function ItemDetails(){
                 </div>
 
                 <div id="item-information-div">
-                    <img id="item-img"></img>
-                    <p id="item-name">{itemDetails?.supply_name}</p>
-                    <p id="item-categ">{itemDetails?.category_name}</p>
-                    <p id="item-brand">Brand: {itemDetails?.brand}</p>
-                    <p id="item-desc">Description: {itemDetails?.description}</p>
-                    {/* <p id="item-added-by">Added by: Melanie Hamilton, RN</p> */}
+                    {/* <img id="item-img" src={itemDetails?.category_name === 'Medicine' ? rxsymbol : itemDetails?.category_name === 'Equipment' ? equipment : supplies} /> */}
+                    <div id="item-text">
+                        <p id="item-name">{itemDetails?.supply_name}</p>
+                        <p id="item-categ">{itemDetails?.category_name}</p>
+                        <p id="item-brand">Brand: {itemDetails?.brand}</p>
+                        <p id="item-desc">Description: {itemDetails?.description}</p>
+                    </div>
                     <div id="item-edit-button-div">
                         <button id='edit-details-btn' onClick={() => setShowEditDetails(true)}>Edit Details</button>
-                        {/* <button id='add-new-batch-btn' onClick={() => setShowAddBatch(true)}> Add new batch</button> */}
                     </div>
                 </div>
 
                 <div>
                    
-                    <div style={{maxWidth: '1400px'}}>
-                        <p style={{fontSize: '1.5rem', fontWeight: '500', display: 'flex', justifyContent: 'space-between'}}>Batches 
-                            <span><button id='add-new-batch-btn' onClick={() => setShowAddBatch(true)}> Add new batch</button></span>
+                        <p style={{fontSize: '1.5rem', fontWeight: '500', display: 'flex', justifyContent: 'space-between', marginBottom: '1rem'}}>Batches 
+                            <span></span>
                         </p>
-                        <div  id='batches-table-container'  className='table-container'>
+
+                        <div style={{fontSize: '1.5rem', fontWeight: '500', display: 'flex', justifyContent: 'space-between', flexDirection: window.innerWidth < 600 ? 'column-reverse' : 'row'}}>
                             <div className="status-bar">
-                                    <button 
-                                        onClick={() => setChosenActive(true)} 
-                                        className="status-btn"
-                                        style={{backgroundColor: chosenActive ? 'white' : 'transparent'}}>Active Supplies</button>
-                                    <button 
-                                        onClick={() => setChosenActive(false)}
-                                        className="status-btn"
-                                        style={{backgroundColor: !chosenActive ? 'white' : 'transparent'}}>Deleted Supplies</button>
-                                </div>
+                                <button 
+                                    onClick={() => setChosenActive(true)} 
+                                    className="status-btn"
+                                    style={{backgroundColor: chosenActive ? 'white' : 'transparent'}}>Active Supplies</button>
+                                <button 
+                                    onClick={() => setChosenActive(false)}
+                                    className="status-btn"
+                                    style={{backgroundColor: !chosenActive ? 'white' : 'transparent'}}>Inactive Supplies</button>
+                            </div>
+                            <button id='add-new-batch-btn' className='add-button' onClick={() => setShowAddBatch(true)}> Add new batch</button>
+                        </div>
+                        <div  id='batches-table-container'  className='table-container'>
                             <table id='batches-table'>
                                 <tr>
                                     <th>Batch No.</th>
@@ -212,22 +217,34 @@ export default function ItemDetails(){
                                             <td>{batch.expiration_date === '' ? 'None' : batch.expiration_date}</td>
                                             <td>{new Date(batch.expiration_date) < new Date() ? 'Expired' :batch.stock_level > 20 ? <p className='in-stock'>In Stock</p> : 'Low-Stock'}</td>
                                             <td></td>
-                                            <td>
-                                                <button style={{fontWeight: '600', fontSize: '1rem', color: 'gray',backgroundColor: 'transparent', border: 'none'}}
-                                                        onClick={() => editStockClick(batch)}>
-                                                    <i className='bi bi-pen-fill'></i>
-                                                </button>
-                                                
-                                                <button style={{fontWeight: '600', fontSize: '1rem', color: 'gray',backgroundColor: 'transparent', border: 'none'}}
-                                                        onClick={() => editBtnClick(batch)}>
-                                                    <i className='bi bi-three-dots-vertical'></i>
-                                                </button>
+                                            <td className="action-cell">
+                                                <div className="action-menu">
+                                                    <button className="action-trigger">
+                                                    <i className="bi bi-three-dots-vertical"></i>
+                                                    </button>
 
-                                                {chosenActive ?
-                                                    <button onClick={() => removeBatch(batch.batch_id)}>Deactivate</button>
-                                                    : <button onClick={() => reactivateBatch(batch.batch_id)}>Reactivate</button>
-                                                }
-                                            </td>
+                                                    <div className="action-dropdown">
+                                                    <button onClick={() => editStockClick(batch)}>
+                                                        <i className="bi bi-pen-fill"></i> Edit Stock
+                                                    </button>
+
+                                                    <button onClick={() => editBtnClick(batch)}>
+                                                        <i className="bi bi-pencil-square"></i> Edit Batch
+                                                    </button>
+
+                                                    {chosenActive ? (
+                                                        <button onClick={() => removeBatch(batch.batch_id)}>
+                                                        <i className="bi bi-trash"></i> Deactivate
+                                                        </button>
+                                                    ) : (
+                                                        <button onClick={() => reactivateBatch(batch.batch_id)}>
+                                                        <i className="bi bi-arrow-clockwise"></i> Reactivate
+                                                        </button>
+                                                    )}
+                                                    </div>
+                                                </div>
+                                                </td>
+
                                         </tr>
                                     )
                                 }) : 
@@ -241,7 +258,5 @@ export default function ItemDetails(){
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
     )
 }

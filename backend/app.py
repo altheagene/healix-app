@@ -248,6 +248,13 @@ def add_staff():
 
     return jsonify({'success' : success})
 
+@app.route('/addservice', methods=['POST'])
+def add_service():
+    data = request.get_json()
+    success = addrecord('services', **data)
+
+    return jsonify({'success' : success})
+
 @app.route('/addpatientconditions', methods=['POST'])
 def add_patient_conditions():
     data = request.get_json()

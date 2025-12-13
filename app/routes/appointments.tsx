@@ -9,6 +9,15 @@ import {API_BASE_URL} from '../config'
 
 
 export default function Appointments() {
+    const [width, setWidth] = React.useState(0)
+    
+        React.useEffect(() => {
+        // Safe: window exists ONLY in the browser
+        const handleResize = () => setWidth(window.innerWidth);
+    
+        handleResize(); // set initial width
+        window.addEventListener("resize", handleResize);})
+        
     const [apptStatus, setApptStatus] = React.useState('All')
     const [apptID, setApptId] = React.useState();
     const apptStatuses = ['All', 'Today', 'Upcoming', 'Completed', 'Cancelled']
@@ -80,29 +89,29 @@ export default function Appointments() {
 
             {/* Searchbar */}
             <input type='text'
-                id='appointments-searchbar'
+                id='searchbar'
                 placeholder='Search by patient or service'
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
             />
 
-            {/* Add Appointment Button */}
-            <button id='add-appointment-btn' onClick={() => navigate('/addappointment')}>
-                + Add Appointment
-            </button>
-
             {/* Status Buttons */}
-            <div id='today-appointment-status-bar'>
-                {apptStatuses.map(status => (
-                    <button
-                        key={status}
-                        className='appointment-status-btn'
-                        onClick={() => setApptStatus(status)}
-                        style={{ backgroundColor: apptStatus === status ? 'white' : ' rgb(230, 230, 230)' }}
-                    >
-                        {status}
-                    </button>
-                ))}
+
+            <div className="appointments-controls">
+                <div id="today-appointment-status-bar">
+                    {apptStatuses.map(status => (
+                        <button
+                            key={status}
+                            className={`appointment-status-btn ${apptStatus === status ? 'active' : ''}`}
+                            onClick={() => setApptStatus(status)}
+                        >
+                            {status}
+                        </button>
+                    ))}
+                </div>
+                <button className='add-button' onClick={() => navigate('/addappointment')}>
+                    + Add Appointment
+                </button>
             </div>
 
             {/* Appointments Table */}

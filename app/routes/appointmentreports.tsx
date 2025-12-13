@@ -86,7 +86,7 @@ export default function AppointmentReport() {
     <div className="route-page">
       <h1 className="route-header">Appointment Reports</h1>
       
-      <div style={{ margin: "2rem 0", display: "flex", gap: "2rem" }}>
+      <div className="date-range-picker">
         <label>
           From
           <input
@@ -109,7 +109,13 @@ export default function AppointmentReport() {
           />
         </label>
       </div>
-      <button onClick={downloadReport}>Click</button>
+
+      <button 
+        onClick={downloadReport} 
+        className="download-btn">
+          <i className="bi bi-box-arrow-down"></i>
+          Download
+      </button>
       <div style={containerStyle}>
         <div style={boxStyle}>
           <div>Total Appointments</div>

@@ -1,0 +1,103 @@
+/* Overlay background */
+.staff-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* semi-transparent background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* Modal card */
+.staff-card {
+  background-color: #fff;
+  border-radius: 12px;
+  max-width: 500px;
+  width: 90%;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  position: relative;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+/* Header */
+.staff-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.staff-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #333;
+}
+
+/* Close button */
+.close-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  color: #555;
+  transition: color 0.2s;
+}
+
+.close-btn:hover {
+  color: #000;
+}
+
+/* Body */
+.staff-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Staff info rows */
+.staff-info div {
+  font-size: 1rem;
+  color: #444;
+  line-height: 1.5;
+}
+
+.staff-info strong {
+  color: #222;
+}
+
+/* Scrollbar for long content */
+.staff-card::-webkit-scrollbar {
+  width: 6px;
+}
+
+.staff-card::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+/* Fade-in animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Responsive tweaks */
+@media (max-width: 400px) {
+  .staff-card {
+    padding: 1rem;
+  }
+  .staff-header h2 {
+    font-size: 1.2rem;
+  }
+  .staff-info div {
+    font-size: 0.9rem;
+  }
+}

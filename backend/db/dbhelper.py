@@ -119,8 +119,10 @@ def getstaffandcategories():
             SELECT 
             s.staff_id,
             s.first_name,
+            s.middle_name
             s.last_name,
             s.staff_category_id,
+            s.birthday,
             sc.category_name,
             s.sex,
             s.phone,
