@@ -14,6 +14,9 @@ import "./app.css";
 import Navbar from "./components/navbar";
 import React from "react";
 import LoginPage from "./routes/login";
+import open from './open.png'
+import close from './close.png'
+
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -152,7 +155,8 @@ function logout() {
           <div id='header'>
             <div>
               <button onClick={() => setShowNavBar(prev => !prev)}>
-                <i className={showNavbar ? 'bi bi-caret-left-fill' : 'bi bi-caret-right-fill'}></i>
+                <i className={showNavbar ? 'bi bi-box-arrow-left' : 'bi bi-box-arrow-right'}></i>
+                
               </button>
               <h1>Healix</h1>
             </div>
