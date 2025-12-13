@@ -119,7 +119,7 @@ def getstaffandcategories():
             SELECT 
             s.staff_id,
             s.first_name,
-            s.middle_name
+            s.middle_name,
             s.last_name,
             s.staff_category_id,
             s.birthday,
@@ -149,7 +149,7 @@ def getallmedicine():
             s.auto_deduct,
             COALESCE(SUM(b.stock_level), 0) AS available_stock
         FROM supplies s
-        LEFT JOIN batch b 
+        LEFT JOIN batches b 
             ON b.supply_id = s.supply_id
             AND b.is_active = 1
         WHERE s.category_id = 1 
@@ -199,7 +199,7 @@ def deductbatch(supply_id, quantity):
     # Get all batches with stock > 0, ordered by earliest expiration
     cursor.execute("""
         SELECT batch_id, stock_level
-        FROM batch
+        FROM batches
         WHERE supply_id = ? AND stock_level > 0
         ORDER BY expiration_date ASC
     """, (supply_id,))
@@ -214,7 +214,7 @@ def deductbatch(supply_id, quantity):
             break
         take = min(stock, remaining)
         cursor.execute("""
-            UPDATE batch
+            UPDATE batches
             SET stock_level = stock_level - ?
             WHERE batch_id = ?
         """, (take, batch_id))
@@ -298,7 +298,7 @@ def getinventorylogs(**kwargs):
         i.item_out,
         i.auto_update
     FROM inventory i
-    JOIN batch b ON i.batch_id = b.batch_id
+    JOIN batches b ON i.batch_id = b.batch_id
     JOIN supplies s ON b.supply_id = s.supply_id
     WHERE DATE(i.inv_date) BETWEEN ? AND ?
     ORDER BY i.inv_date DESC;
@@ -371,7 +371,7 @@ def getallsupplies():
             MAX(i.inv_date) AS last_updated
         FROM supplies s
         JOIN supplies_categories sc ON sc.category_id = s.category_id
-        LEFT JOIN batch b ON b.supply_id = s.supply_id
+        LEFT JOIN batches b ON b.supply_id = s.supply_id
         LEFT JOIN inventory i ON i.batch_id = b.batch_id
         GROUP BY s.supply_id, s.supply_name, sc.category_name
         ORDER BY s.supply_name;
@@ -481,6 +481,16 @@ def deletemedical(table, **kwargs):
 
     return postprocess(sql, values)
 
+def deleterecord(table, **kwargs):
+    keys = list(kwargs.keys())
+    values = list(kwargs.values())
+
+    sql = f'''
+        DELETE from {table}
+        WHERE `{keys[0]}` = ?
+    '''
+
+    return postprocess(sql, values)
 
 def getprocess(sql, values) -> list:
     try:

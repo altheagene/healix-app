@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router'
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import user from '../images/user.png'
 import {API_BASE_URL} from '../config'
+import EditRecord from '~/components/editrecord'
 
 
 
@@ -19,6 +20,8 @@ export default function PatientDetails(){
     const [showAddRecord, setShowAddRecord] = React.useState(false)
     const [showEdit, setShowEdit] = React.useState(false)
     const [showVisit, setShowVisit] = React.useState(false)
+    const [showEditRecord, setShowEditRecord] = React.useState(false)
+    const [recordToEdit, setRecordToEdit] = React.useState()
     const [visitChosen, setVisitChosen] = React.useState(false)
 
     const [studentData, setStudentData] = React.useState()
@@ -46,12 +49,31 @@ export default function PatientDetails(){
     }, [])
 
     async function refetch(){
+        fetch(`${API_BASE_URL}/getpatientcliniclogs?idnum=${id}`)
+        .then(res => res.json())
+        .then(data => setClinicLogs(data))
+
         await fetch(`${API_BASE_URL}/getpatient?idnum=${id}`).then
         (res => res.json()).then(data => setStudentData(data[0]))
 
          fetch(`${API_BASE_URL}/getpatientallergies?idnum=${id}`).then
         (res => res.json()).then(data => setAllergies(data))
     }
+
+    function isBeyond24Hours(dateStr: string | null | undefined): boolean {
+        if (!dateStr) return false;
+
+        const inputDate = new Date(dateStr);
+
+        // guard against invalid date strings
+        if (isNaN(inputDate.getTime())) return false;
+
+        const now = new Date();
+        const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
+
+        return now.getTime() - inputDate.getTime() > TWENTY_FOUR_HOURS;
+    }
+
 
     console.log(clinicLogs)
     return(
@@ -65,12 +87,12 @@ export default function PatientDetails(){
                     </button>  
                 <h1 className='route-header'>Patient Details</h1>
             </div>
+            {showEditRecord && <EditRecord record={recordToEdit} hideForm={() => setShowEditRecord(false)} refetch={refetch}/>}
             {showVisit && visitChosen? <ViewVisit visit={visitChosen} hideForm={() => setShowVisit(false)}/> : null}
             {showEdit ? <EditPatient studentData={studentData} allergies={allergies} conditions={conditions} refetch={refetch} hideForm={() => setShowEdit(false)}/> : null}
             {showAddRecord ? <AddRecord hideForm={() => setShowAddRecord(false)}/> : null}
 
             <div>
-
                 <div id="patient-overview-div">
                     <div id="photo-name-div" style={{position: 'relative'}}>
                         <img src={user}></img>
@@ -184,6 +206,14 @@ export default function PatientDetails(){
                                             <button style={{backgroundColor: 'transparent', border: 'none', fontSize: '1.2rem'}}
                                                     onClick={() => {setShowVisit(true); setVisitChosen(log)}}>
                                                 <i className='bi bi-eye'></i>
+                                            </button>
+
+                                            <button 
+                                                onClick={() => {setShowEditRecord(true); setRecordToEdit(log)}}
+                                                style={{backgroundColor: 'transparent', border: 'none', fontSize: '1.2rem'}}
+                                                disabled={isBeyond24Hours(log?.visit_datetime)}
+                                                    >
+                                                <i className='bi bi-pencil'></i>
                                             </button>
                                         </td>
                                     </tr>

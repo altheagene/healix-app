@@ -1,21 +1,33 @@
 import { NavLink } from "react-router";
 import React from "react";
 import { useNavigate } from "react-router";
+import {API_BASE_URL} from '../config'
+import img  from '../images/user.png'
 
 
 export default function Navbar(props:any){
     const [width, setWidth] = React.useState(0)
     const navigate = useNavigate()
+    const [user, setUser] = React.useState<any[]>()
+    const id = localStorage.getItem('userid')
+
+    console.log(user)
 
     React.useEffect(() => {
-    // Safe: window exists ONLY in the browser
-    const handleResize = () => setWidth(window.innerWidth);
+        // Safe: window exists ONLY in the browser
+        const handleResize = () => setWidth(window.innerWidth);
 
-    handleResize(); // set initial width
-    window.addEventListener("resize", handleResize);
+        handleResize(); // set initial width
+        window.addEventListener("resize", handleResize);
 
-    return () => window.removeEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
     }, []);
+
+    React.useEffect(() => {
+        fetch(`${API_BASE_URL}/finduser?id=${id}`)
+        .then(res => res.json())
+        .then(data => setUser(data[0]))
+    }, [])
 
     const [routeChosen, setRouteChosen] = React.useState('Dashboard')
     const navbarObj = [
@@ -121,18 +133,26 @@ export default function Navbar(props:any){
         )
     })
     return(
-        <nav id="navbar" 
+        <nav id="navbar"
                 // className={`${props.showNavbar ? "show-navbar" : "hide-navbar"} ${width < 1000 ? "navbar-mobile" : ""}`} 
                 className={width < 1300 ? 'navbar-mobile' : ''}
                 style={{
                     // transform: props.showNavbar ? 'translateX(0%)' : 'translateX(-100%)',
                     position: width < 1300 ? 'absolute' : 'relative',
                     display: props.showNavbar ? 'block' : 'none',
-                    zIndex: width < 1300 ? '4' : '2'
+                    zIndex: width < 1300 ? '4' : '2',
+                    
                 }}>
             <ul> 
                 {navListComponents}
             </ul>
+            <div style={{display: 'flex', gap: '1rem', alignItems: 'center', position: 'absolute', bottom: '1rem', left: '0.5rem'}}>
+                <div style={{height: 50, width: 50, overflow:"hidden", borderRadius: '50%'}}>
+                    <img style={{objectFit: 'cover', height: 'auto', width: '100%'}} src={img}></img>
+                </div>
+                
+                <p style={{fontWeight: '600'}}>{user?.first_name} {user?.last_name}</p>
+            </div>
         </nav>
     )
 }

@@ -120,25 +120,25 @@ export default function AppointmentReport() {
         <div style={boxStyle}>
           <div>Total Appointments</div>
           <div style={numberStyle}>
-            <p style={{ color: "#6EC207" }}>{apptLogs?.length}</p>
+            <p >{apptLogs?.length}</p>
           </div>
         </div>
         <div style={boxStyle}>
           <div>Total Upcoming Appointments</div>
           <div style={numberStyle}>
-            <p style={{ color: "orange" }}>{totals.upcoming}</p>
+            <p >{totals.upcoming}</p>
           </div>
         </div>
         <div style={boxStyle}>
           <div>Total Completed Appointments</div>
           <div style={numberStyle}>
-            <p style={{ color: "green" }}>{totals.completed}</p>
+            <p >{totals.completed}</p>
           </div>
         </div>
         <div style={boxStyle}>
           <div>Total Cancelled Appointments</div>
           <div style={numberStyle}>
-            <p style={{ color: "red" }}>{totals.cancelled}</p>
+            <p >{totals.cancelled}</p>
           </div>
         </div>
       </div>

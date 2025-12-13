@@ -11,6 +11,13 @@ app = Flask(__name__)
 # CORS(app, resources={r"/*" : {"origins":"*"}} )
 CORS(app)
 
+@app.route('/finduser', methods = ['GET'])
+def find_user():
+    data = request.args.get('id')
+    user = getrecord('staff', staff_id = data)
+
+    return jsonify(user)
+    
 
 @app.route('/findstudent', methods=['GET'])
 def find_student():
@@ -42,7 +49,7 @@ def update_appointment():
 @app.route('/getbatches', methods=['GET'])
 def get_batches():
     supply_id = request.args.get('idnum')
-    data = getrecord('batch', supply_id=supply_id)
+    data = getrecord('batches', supply_id=supply_id)
 
     return jsonify(data)
 
@@ -278,10 +285,10 @@ def add_item():
 @app.route('/addbatch', methods=['POST'])
 def add_batch():
     data = request.get_json()
-    success = addrecord('batch', **data)
+    success = addrecord('batches', **data)
 
     #get the latest and max batch id
-    max_batch_id = getmaxid('batch', 'batch_id')
+    max_batch_id = getmaxid('batches', 'batch_id')
     batch_id = max_batch_id[0]['last_id']
     # batch_id = 30
     item_in = data['stock_level']
@@ -309,7 +316,7 @@ def edit_stock_batch():
 @app.route('/editbatch', methods=['POST'])
 def edit_batch():
     data = request.get_json()
-    success = updaterecord('batch', **data)
+    success = updaterecord('batches', **data)
     
     return jsonify({'success' : success})
 
@@ -402,7 +409,7 @@ def getstaffandcateg():
 @app.route('/updatebatchactive', methods=['POST'])
 def update_batch_active():
     data = request.get_json()
-    success = updaterecord('batch', **data)
+    success = updaterecord('batches', **data)
 
     return jsonify({'success' : success})
 
@@ -471,7 +478,7 @@ def update_supply():
 @app.route('/refreshbatches', methods=['GET'])
 def refresh_batches():
     try:
-        batches = getall('batch')
+        batches = getall('batches')
         datenow = date.today()
         success = True
 
@@ -485,7 +492,7 @@ def refresh_batches():
                     exp = datetime.strptime(exp, "%Y-%m-%d").date()
 
                 if exp < datenow:
-                    updaterecord('batch', batch_id=batch['batch_id'], is_active=False)
+                    updaterecord('batches', batch_id=batch['batch_id'], is_active=False)
     except Exception as e:
         print(e)
     
@@ -659,6 +666,42 @@ def download_inventory_logs():
     return Response(generate(), mimetype='text/csv',
                     headers={"Content-Disposition": "attachment;filename=inventory_logs.csv"})
 
+@app.route("/updatevisitlog", methods=["POST"])
+def update_visit_log():
+    data = request.get_json()
+    visit_id = data.get("visit_id")
+    weight = data.get("weight")
+    temperature = data.get("temperature")
+    service_id = data.get("service_id")
+    staff_id = data.get("staff_id")
+    notes = data.get("notes")
+
+    success = updaterecord('visit_logs', visit_id=visit_id, weight=weight, temperature=temperature, service_id=service_id, staff_id=staff_id, notes=notes)
+
+    return jsonify({"success": True})
+
+@app.route("/updatemedicationdetails", methods=["POST"])
+def update_medication_details():
+    data = request.get_json()
+    visit_id = data.get("visit_id")
+    medications = data.get("medications", [])
+
+    if not visit_id:
+        return jsonify({"error": "visit_id is required"}), 400
+
+    # Delete existing medications for this visit
+    success = deleterecord('medication_details', visit_id=visit_id)
+
+    # Insert updated medications
+    for med in medications:
+        supply_id = med.get("supply_id")
+        quantity = med.get("quantity", 0)
+        auto_deduct = 1 if med.get("auto_deduct") else 0
+
+        success = addrecord('medication_details', visit_id=visit_id, supply_id=supply_id, quantity=quantity)
+
+    
+    return jsonify({"success": True})
 
 if __name__=="__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
