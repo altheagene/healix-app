@@ -146,12 +146,12 @@ export default function AddRecord(props:any){
                 <div className="main-form-content">
 
                     <label htmlFor="">Date
-                        <input type="date" value={new Date().toISOString().split("T")[0]} style={{width: '70%'}}/>
+                        <input type="date" value={new Date().toISOString().split("T")[0]} style={{width: '100%'}}/>
                     </label>
 
                     <label>Reason</label>
                     <select
-                        style={{ display: "block", width: "70%", marginTop: "0.3rem" }}
+                        style={{ display: "block", width: "100%", marginTop: "0.3rem" }}
                         value={recordDetails.service_id}
                         onChange={(e) =>
                             setRecordDetails({
@@ -197,16 +197,18 @@ export default function AddRecord(props:any){
                         {medications.map((med, index) => (
                             <div key={index} style={{display: 'flex', gap: '1rem', marginTop: '0.5rem'}}>
                                 
-                               
-                                    <select value={med.supply_id ?? ""} 
-                                            onChange={(e) => updateMedication(index, 'supply_id', e.target.value)}
-                                            style={{display: 'block'}}>
-                                        {medicines?.map(med => {
-                                            return(
-                                                <option value={med.supply_id}>{med.supply_name}</option>
-                                            )
-                                        })}
-                                    </select>
+
+                                    <label htmlFor=""> Medicine
+                                        <select value={med.supply_id ?? ""} 
+                                                onChange={(e) => updateMedication(index, 'supply_id', e.target.value)}
+                                                style={{display: 'block'}}>
+                                            {medicines?.map(med => {
+                                                return(
+                                                    <option value={med.supply_id}>{med.supply_name}</option>
+                                                )
+                                            })}
+                                        </select>
+                                    </label>
                               
 
                                 {med.auto_deduct && 
@@ -225,7 +227,7 @@ export default function AddRecord(props:any){
 
                                 <button type="button"
                                         onClick={() => removeMedication(index)}
-                                        style={{border: 'none'}}>
+                                        style={{border: 'none', backgroundColor: 'transparent', color: 'red'}}>
                                     X
                                 </button>
                             </div>
@@ -233,7 +235,7 @@ export default function AddRecord(props:any){
 
                         <button 
                             type="button"
-                            style={{ marginTop: "0.5rem" , display: 'block'}}
+                            style={{ marginTop: "0.5rem" , display: 'block', border: 'none', backgroundColor: 'transparent'}}
                             onClick={addMedication}
                         >
                             + Add medication
@@ -241,7 +243,7 @@ export default function AddRecord(props:any){
                     </div>
 }
                     <label htmlFor="">Staff
-                        <select name="" id="" style={{display: 'block', width: '70%', marginTop: '0.3rem'}} value={recordDetails?.staff_id} onChange={(e) => setRecordDetails({...recordDetails, staff_id: parseInt(e.target.value)})}>
+                        <select name="" id="" style={{display: 'block', width: '100%', marginTop: '0.3rem'}} value={recordDetails?.staff_id} onChange={(e) => setRecordDetails({...recordDetails, staff_id: parseInt(e.target.value)})}>
                             {staff?.map(person => {
                                 return(
                                     <option value={person.staff_id}>{person.first_name} {person.last_name}</option>
