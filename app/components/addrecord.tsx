@@ -187,6 +187,7 @@ export default function AddRecord(props:any){
                         </label>
                     </div>
 
+                    {medicines?.length > 0 &&
                     <div style={{ width: '100%' }}>
                         <label>Medications</label>
 
@@ -235,7 +236,7 @@ export default function AddRecord(props:any){
                             + Add medication
                         </button>
                     </div>
-
+}
                     <label htmlFor="">Staff
                         <select name="" id="" style={{display: 'block', width: '70%', marginTop: '0.3rem'}} value={recordDetails?.staff_id} onChange={(e) => setRecordDetails({...recordDetails, staff_id: parseInt(e.target.value)})}>
                             {staff?.map(person => {

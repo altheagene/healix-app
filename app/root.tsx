@@ -3,6 +3,7 @@ import {
   Links,
   Meta,
   Outlet,
+  replace,
   Scripts,
   ScrollRestoration,
 } from "react-router";
@@ -107,8 +108,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
 import { API_BASE_URL} from './config'
 import './routepages.css'
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import { useNavigate } from "react-router";
 export default function App() {
-
+  const navigate = useNavigate()
   const [showNavbar, setShowNavBar] = React.useState(true);
   const [flashMessage, setFlashMessage] = React.useState("");
 
@@ -132,6 +134,7 @@ function validate() {
 }
 
 function logout() {
+  navigate('/', {replace :true})
   setValidUser(false);
   setFlashMessage("Logged out!");
   setTimeout(() => setFlashMessage(""), 3000);
