@@ -90,7 +90,7 @@ export default function PatientDetails(){
             {showEditRecord && <EditRecord record={recordToEdit} hideForm={() => setShowEditRecord(false)} refetch={refetch}/>}
             {showVisit && visitChosen? <ViewVisit visit={visitChosen} hideForm={() => setShowVisit(false)}/> : null}
             {showEdit ? <EditPatient studentData={studentData} allergies={allergies} conditions={conditions} refetch={refetch} hideForm={() => setShowEdit(false)}/> : null}
-            {showAddRecord ? <AddRecord hideForm={() => setShowAddRecord(false)}/> : null}
+            {showAddRecord ? <AddRecord hideForm={() => setShowAddRecord(false)} refetch={refetch} /> : null}
 
             <div>
                 <div id="patient-overview-div">
@@ -203,7 +203,7 @@ export default function PatientDetails(){
                                         <td>{log.staff_name}</td>
                                         <td>{log.notes}</td>
                                         <td>
-                                            <button style={{backgroundColor: 'transparent', border: 'none', fontSize: '1.2rem'}}
+                                            <button style={{backgroundColor: 'transparent', border: 'none', fontSize: '1.2rem', marginRight: '1rem'}}
                                                     onClick={() => {setShowVisit(true); setVisitChosen(log)}}>
                                                 <i className='bi bi-eye'></i>
                                             </button>

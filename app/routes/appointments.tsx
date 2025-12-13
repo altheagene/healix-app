@@ -1,78 +1,88 @@
 import '../routepages.css'
 import '../appointments.css'
-import Searchbar from '~/components/searchbar'
 import React from 'react'
 import { useNavigate } from 'react-router'
 import 'bootstrap-icons/font/bootstrap-icons.css'
 import EditAppointment from '~/components/editappointment'
 import {API_BASE_URL} from '../config'
 
-
 export default function Appointments() {
     const [width, setWidth] = React.useState(0)
     
-        React.useEffect(() => {
-        // Safe: window exists ONLY in the browser
-        const handleResize = () => setWidth(window.innerWidth);
-    
-        handleResize(); // set initial width
-        window.addEventListener("resize", handleResize);})
+    React.useEffect(() => {
+        const handleResize = () => setWidth(window.innerWidth)
+        handleResize()
+        window.addEventListener("resize", handleResize)
+        return () => window.removeEventListener("resize", handleResize)
+    }, [])
         
     const [apptStatus, setApptStatus] = React.useState('All')
-    const [apptID, setApptId] = React.useState();
+    const [apptID, setApptId] = React.useState()
     const apptStatuses = ['All', 'Today', 'Upcoming', 'Completed', 'Cancelled']
     const [appointments, setAppointments] = React.useState<any[]>([])
     const [searchQuery, setSearchQuery] = React.useState('')
-    const [showEdit, setShowEdit] = React.useState(false);
+    const [showEdit, setShowEdit] = React.useState(false)
+    const [flashMessage, setFlashMessage] = React.useState<{type: 'success' | 'error', message: string} | null>(null)
 
     const navigate = useNavigate()
     const today = new Date().toISOString().split('T')[0]
 
     // Fetch appointments
     React.useEffect(() => {
-        fetch(`${API_BASE_URL}/getallappointments`) 
-            .then(res => res.json())
-            .then(data => setAppointments(data))
-
-        
+        refetchAppts()
     }, [])
 
-   
-    // Refetch appointments
     function refetchAppts() {
         fetch(`${API_BASE_URL}/getallappointments`) 
             .then(res => res.json())
             .then(data => setAppointments(data))
     }
 
+    // Show flash message
+    const showFlash = (type: 'success' | 'error', message: string) => {
+        setFlashMessage({ type, message })
+        setTimeout(() => setFlashMessage(null), 2000)
+    }
+
     // Mark completed
     async function markCompleted(appointment_id: any) {
-        await fetch(`${API_BASE_URL}/updateappointment`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ appointment_id, status: 'Completed' })
-        })
-        refetchAppts()
+        try {
+            await fetch(`${API_BASE_URL}/updateappointment`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ appointment_id, status: 'Completed' })
+            })
+            refetchAppts()
+            showFlash('success', 'Appointment marked as Completed')
+        } catch (err) {
+            console.error(err)
+            showFlash('error', 'Failed to update appointment')
+        }
     }
 
     // Cancel appointment
     async function cancelAppt(appointment_id: any) {
-        await fetch(`${API_BASE_URL}/updateappointment`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ appointment_id, status: 'Cancelled' })
-        })
-        refetchAppts()
+        try {
+            await fetch(`${API_BASE_URL}/updateappointment`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ appointment_id, status: 'Cancelled' })
+            })
+            refetchAppts()
+            showFlash('success', 'Appointment Cancelled')
+        } catch (err) {
+            console.error(err)
+            showFlash('error', 'Failed to update appointment')
+        }
     }
 
-    // Filter appointments by status
+    // Filter appointments
     const filteredByStatus = appointments.filter(appt => {
         if (apptStatus === 'All') return true
         if (apptStatus === 'Today') return appt.appointment_date === today
         return appt.status === apptStatus
     })
 
-    // Filter by search query (patient name or service)
     const filteredAppointments = filteredByStatus.filter(appt => {
         const patientName = appt.patient_name?.toLowerCase() || ''
         const serviceName = appt.service_name?.toLowerCase() || ''
@@ -82,20 +92,30 @@ export default function Appointments() {
 
     return (
         <div className="route-page">
-            {/* <button onClick={downloadAppointments}>Download CSV</button> */}
-            {showEdit ? <EditAppointment appt={apptID} hideForm={() => setShowEdit(false)} refetch={refetchAppts}/> : null}
+            {flashMessage && (
+                <div style={{
+                    padding: '10px 15px',
+                    borderRadius: '5px',
+                    margin: '10px 0',
+                    color: flashMessage.type === 'success' ? 'green' : 'red',
+                    backgroundColor: flashMessage.type === 'success' ? '#d4edda' : '#f8d7da',
+                    border: flashMessage.type === 'success' ? '1px solid #c3e6cb' : '1px solid #f5c6cb'
+                }}>
+                    {flashMessage.message}
+                </div>
+            )}
+
+            {showEdit && <EditAppointment appt={apptID} hideForm={() => setShowEdit(false)} refetch={refetchAppts} />}
+            
             <h1 className="route-header">Appointments</h1>
             <p className='route-page-desc'>Manage your clinic's appointments and schedules.</p>
 
-            {/* Searchbar */}
             <input type='text'
                 id='searchbar'
                 placeholder='Search by patient or service'
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
             />
-
-            {/* Status Buttons */}
 
             <div className="appointments-controls">
                 <div id="today-appointment-status-bar">
@@ -114,10 +134,8 @@ export default function Appointments() {
                 </button>
             </div>
 
-            {/* Appointments Table */}
-            <div className=' table-container'>
-                <table 
-                    className='appointments-table'>
+            <div className='table-container'>
+                <table className='appointments-table'>
                     <thead>
                         <tr>
                             <th>Patient</th>
@@ -147,9 +165,7 @@ export default function Appointments() {
                                         backgroundColor: appt.status === 'Completed' ? '#6EC207' :
                                                          appt.status === 'Cancelled' ? '#ed3e27' :
                                                          '#799EFF'
-                                    }}>
-                                        {appt.status}
-                                    </p>
+                                    }}>{appt.status}</p>
                                 </td>
                                 <td>
                                     <div style={{ display: 'flex', gap: '1rem' }}>
@@ -158,24 +174,20 @@ export default function Appointments() {
                                             title="Mark as Completed"
                                             disabled={appt.status === 'Completed'}
                                             onClick={() => markCompleted(appt.appointment_id)}
-                                        >
-                                            <i className='bi bi-check-circle-fill'></i>
-                                        </button>
+                                        ><i className='bi bi-check-circle-fill'></i></button>
+
                                         <button
                                             style={{ background: 'white', border: 'none', fontSize: '1.2rem', color: '#ED3F27' }}
                                             title="Cancel Appointment"
                                             disabled={appt.status === 'Cancelled'}
                                             onClick={() => cancelAppt(appt.appointment_id)}
-                                        >
-                                            <i className='bi bi-x-circle-fill'></i>
-                                        </button>
+                                        ><i className='bi bi-x-circle-fill'></i></button>
+
                                         <button
                                             style={{ background: 'white', border: 'none', fontSize: '1.2rem', color: 'orange' }}
                                             title='Edit Appointment'
                                             onClick={() => {setApptId(appt); setShowEdit(true)}}
-                                        >
-                                            <i className='bi bi-pen'></i>
-                                        </button>
+                                        ><i className='bi bi-pen'></i></button>
                                     </div>
                                 </td>
                             </tr>
