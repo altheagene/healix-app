@@ -106,6 +106,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 import { API_BASE_URL} from './config'
 import './routepages.css'
+import 'bootstrap-icons/font/bootstrap-icons.css';
 export default function App() {
 
   const [showNavbar, setShowNavBar] = React.useState(true);

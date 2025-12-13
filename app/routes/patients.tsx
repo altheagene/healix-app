@@ -3,6 +3,7 @@ import '../app.css'
 import AddPatient from '~/components/addpatient'
 import React from 'react'
 import { useNavigate } from 'react-router'
+import 'bootstrap-icons/font/bootstrap-icons.css';
 import {API_BASE_URL} from '../config'
 
 export default function Patients() {
