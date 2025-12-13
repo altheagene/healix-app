@@ -1,5 +1,5 @@
-// import '../routepages.css'
-// import '../app.css'
+import '../routepages.css'
+import '../app.css'
 import AddPatient from '~/components/addpatient'
 import React from 'react'
 import { useNavigate } from 'react-router'
