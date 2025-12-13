@@ -167,18 +167,18 @@ export default function AddRecord(props:any){
                         ))}
                     </select>
 
-{/* Inline add service */}
-<div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem", width: "70%" }}>
-    <input
-        type="text"
-        placeholder="Add new service"
-        value={newService}
-        onChange={(e) => setNewService(e.target.value)}
-    />
-    <button type="button" onClick={addServiceInline}>
-        +
-    </button>
-</div>
+
+            {/* <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem", width: "70%" }}>
+                <input
+                    type="text"
+                    placeholder="Add new service"
+                    value={newService}
+                    onChange={(e) => setNewService(e.target.value)}
+                />
+                <button type="button" onClick={addServiceInline}>
+                    +
+                </button>
+            </div> */}
 
                     <div style={{display: 'flex', width: '100%', gap: '1rem'}}>
                         <label htmlFor="weight">Weight
