@@ -11,7 +11,8 @@ export default function AddBatch(props:any){
         supply_id: id,
         batch_number: '',
         expiration_date: '',
-        stock_level: 0
+        stock_level: 0,
+        is_active : true
     })
 
     async function handleSubmit(){
