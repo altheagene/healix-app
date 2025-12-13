@@ -11,6 +11,17 @@ import ViewStaff from "~/components/viewstaff"
 
 
 export default function Staff() {
+    const [width, setWidth] = React.useState(0)
+    
+        React.useEffect(() => {
+        // Safe: window exists ONLY in the browser
+        const handleResize = () => setWidth(window.innerWidth);
+    
+        handleResize(); // set initial width
+        window.addEventListener("resize", handleResize);
+    
+        return () => window.removeEventListener("resize", handleResize);
+        }, []);
     const [staff, setStaff] = React.useState<any[]>([])
     const [searchQuery, setSearchQuery] = React.useState('')
     const [showStaff, setShowStaff] = React.useState(false)
@@ -49,7 +60,7 @@ export default function Staff() {
     return (
         <div className="route-page">
             {showStaff && <AddStaff hideForm={() => setShowStaff(false)} />}
-            {showStaffInfo && <ViewStaff staffInfo={chosenStaff} />}
+            {showStaffInfo && <ViewStaff staff={chosenStaff} hideForm={() => setShowStaffInfo(false)}/>}
             <h1 className="route-header">Staff</h1>
             <p className="route-page-desc">Manage clinic staff, roles, and permissions</p>
             {showEdit ? <EditStaff hideForm={() => setShowEdit(false)}/> : null}
@@ -61,8 +72,14 @@ export default function Staff() {
                 onChange={(e) => setSearchQuery(e.target.value)}
             />
 
-            <button onClick={() => setShowStaff(true)} className="add-button">+ Add Staff</button>
-
+            < div style={{width: '100%', position: 'relative', height: '40px', padding: '0 2rem'
+                }}>
+                <button id='add-patient-btn' 
+                className="add-button"
+                    style={{position: width < 600 ? 'relative' : 'absolute', right: width > 600 && '2rem' }} 
+                    onClick={() => setShowStaff(true)}>+ Add Staff</button>
+            </div>
+            
             <div 
                 //id="staff-table-container"
                 className='table-container'>

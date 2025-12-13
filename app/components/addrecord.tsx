@@ -95,7 +95,10 @@ export default function AddRecord(props:any){
 
         console.log(await response.json())
         console.log(medications)
+        props.hideForm()
+        props.refetch()
     }
+
     console.log(services)
     console.log(medications)
     console.log(medicines)

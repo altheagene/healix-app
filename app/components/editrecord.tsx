@@ -86,29 +86,32 @@ export default function EditRecord(props: any) {
 
   /* ------------------ SUBMIT UPDATE ------------------ */
   async function handleUpdate() {
-    const response = await fetch(`http://localhost:5000/updatevisitlog`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(recordDetails)
-      })
+    try {
+        const response = await fetch(`http://localhost:5000/updatevisitlog`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(recordDetails)
+        })
+        const result = await response.json()
 
-    const result = await response.json()
+        const response2 = await fetch(`http://localhost:5000/updatemedicationdetails`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                visit_id: recordDetails.visit_id,
+                medications
+            })
+        })
+        const result2 = await response2.json()  // ✅ fixed
 
-    const response2 = await fetch(`http://localhost:5000/updatemedicationdetails`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        visit_id: recordDetails.visit_id,
-        medications
-      })
-    })
-
-    const result2 = await response.json()
-
-    console.log(result2)
-    props.refetch()
-    props.hideForm()
-  }
+        console.log(result2)
+        props.refetch()
+        props.hideForm()
+    } catch (err) {
+        console.error(err)
+        alert("Failed to update record")
+    }
+}
 
   if (!recordDetails) return null
 

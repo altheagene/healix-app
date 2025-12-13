@@ -55,8 +55,8 @@ export default function Inventory() {
   }
 
   // Filtered supplies based on search term
-  const filteredSupplies = supplies.filter(supply =>
-    supply.supply_name.toLowerCase().includes(searchTerm.toLowerCase()) && supply.is_active == chosenActive
+  const filteredSupplies = supplies.filter(supply => 
+    (supply.supply_name.toLowerCase().includes(searchTerm.toLowerCase()) && supply.is_active == chosenActive)
   );
 
   console.log(supplies)
@@ -82,7 +82,7 @@ export default function Inventory() {
         />
 
         {/* Filters (optional) */}
-        <div id="filter-div">
+        {/* <div id="filter-div">
           <select>
             <option value="all">All Items</option>
             <option value="medications">Medications</option>
@@ -96,7 +96,7 @@ export default function Inventory() {
             <option value="lowstock">Low Stock</option>
             <option value="out-of-stock">Out of Stock</option>
           </select>
-        </div>
+        </div> */}
 
         <div style={{ display: "flex", justifyContent: "space-between", marginTop: "1rem" }}>
           <div id="filter-by-category" style={{ visibility: "hidden" }}>
