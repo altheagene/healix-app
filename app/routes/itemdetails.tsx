@@ -116,6 +116,9 @@ export default function ItemDetails(){
         fetch(`${API_BASE_URL}/getsupplydetails?idnum=${id}`).
         then(res => res.json()).
         then(data => setItemDetails(data[0]))
+
+        fetch(`${API_BASE_URL}/refreshbatches`)
+                .then(res => res.json())
     }
 
      async function removeBatch( id:any){
@@ -152,8 +155,8 @@ export default function ItemDetails(){
     console.log(filteredBatches)
     return(
         <div className="route-page">
-                {showEditBatch ? <EditBatch hideForm={() => setShowEditBatch(false)} batch={currentBatch} refetch={refetchBatches}/> : null}
-                {showEditStock ? <EditStock hideForm={hideform} batch={currentBatch} refetch={refetchBatches}/> : null}
+                {showEditBatch ? <EditBatch hideForm={() => setShowEditBatch(false)} batch={currentBatch} refetch={refetchBatches}  refetchDetails={refetchDetails}/> : null}
+                {showEditStock ? <EditStock hideForm={hideform} batch={currentBatch} refetch={refetchBatches} refetchDetails={refetchDetails}/> : null}
                 {showEditDetails ? <EditItem  hideForm={() => setShowEditDetails(false)} itemDetails={itemDetails} refetch={refetchDetails}/> : null}
                 {showUpdateStock ? <UpdateStocks hideForm={() => setShowUpdateStock(false)}/> : null}
                 {showAddBatch ? <AddBatch hideForm={() => setShowAddBatch(false)} name={itemDetails?.supply_name} refetch={refetchBatches}/> : null}

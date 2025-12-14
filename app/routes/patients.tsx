@@ -77,7 +77,7 @@ export default function Patients() {
                             <th>Department</th>
                             <th>Level</th>
                             <th>Sex</th>
-                            <th>Last Record</th>
+                            {/* <th>Last Record</th> */}
                         </tr>
                     </thead>
                     <tbody>
@@ -89,7 +89,7 @@ export default function Patients() {
                                 <td>{patient.department}</td>
                                 <td>{patient.level}</td>
                                 <td>{patient.sex}</td>
-                                <td></td>
+                                {/* <td></td> */}
                             </tr>
                         ))}
                     </tbody>

@@ -140,7 +140,7 @@ export default function Navbar(props:any){
                     // transform: props.showNavbar ? 'translateX(0%)' : 'translateX(-100%)',
                     position: width < 1300 ? 'absolute' : 'relative',
                     display: props.showNavbar ? 'block' : 'none',
-                    zIndex: width < 1300 ? '4' : '2',
+                    zIndex: width < 1300 ? '2' : 0,
                     
                 }}>
             <ul> 

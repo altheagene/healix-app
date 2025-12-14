@@ -18,6 +18,9 @@ export default function Inventory() {
     fetch(`${API_BASE_URL}/getallsupplies`)
       .then(res => res.json())
       .then(data => setSupplies(data));
+
+      fetch(`${API_BASE_URL}/refreshbatches`)
+        .then(res => res.json())
   }, []);
 
   async function removeItem( id:any){
@@ -56,8 +59,10 @@ export default function Inventory() {
 
   // Filtered supplies based on search term
   const filteredSupplies = supplies.filter(supply => 
-    (supply.supply_name.toLowerCase().includes(searchTerm.toLowerCase()) && supply.is_active == chosenActive)
-  );
+  (supply.supply_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+   supply.category_name.toLowerCase().includes(searchTerm.toLowerCase())) && 
+  supply.is_active == chosenActive
+);
 
   console.log(supplies)
 

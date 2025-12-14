@@ -42,7 +42,7 @@ export default function Staff() {
             console.log('YES YOU CAN EDIT!');
             setShowEdit(true);
         }else{
-            console.log('ACCESS DENIED! YOU CANNOT EDIT THIS USER!')
+            alert('You are not authorized to edit this')
         }
     }
     console.log(staff)

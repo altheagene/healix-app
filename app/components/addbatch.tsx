@@ -11,7 +11,7 @@ export default function AddBatch(props:any){
         supply_id: id,
         batch_number: '',
         expiration_date: '',
-        stock_level: 0,
+        stock_level: 1,
         is_active : true
     })
 
@@ -86,7 +86,7 @@ export default function AddBatch(props:any){
                     
 
                     <label htmlFor="addstock">Add Stocks
-                        <input type="number" min='0' id="addstock" value={batchDetails.stock_level} onChange={(e) => setBatchDetails({...batchDetails, stock_level:parseInt(e.target.value)})}/>
+                        <input type="number" min='1' id="addstock" value={batchDetails.stock_level} onChange={(e) => setBatchDetails({...batchDetails, stock_level: parseInt(e.target.value) <= 0 ? 1 : parseInt(e.target.value)})}/>
                     </label>
 
                 </div>

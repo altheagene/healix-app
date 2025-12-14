@@ -5,6 +5,8 @@ sys.path.insert(0, '/db')
 from db.dbhelper import *
 from datetime import date, datetime
 import os
+import io
+import csv
 
 
 app = Flask(__name__)
@@ -229,7 +231,8 @@ def add_visitlog():
 @app.route('/addpatient', methods=['POST'])
 def add_patient():
     data = request.get_json()
-    del data['Id']
+    if 'Id' in data:
+        del data['Id']
     success = addrecord('patients', **data)
 
     return jsonify({'success' : success})
@@ -309,7 +312,7 @@ def edit_stock_batch():
     item_out = data['item_out']
     update_value = item_in - item_out
     success = addrecord('inventory', batch_id=batch_id, inv_date=inv_date, item_in=item_in, item_out=item_out)
-    updatestock('batch', update_value=update_value,  batch_id=batch_id)
+    updatestock('batches', update_value=update_value,  batch_id=batch_id)
 
     return jsonify({'success' : success})
 
@@ -497,9 +500,7 @@ def refresh_batches():
         print(e)
     
     return jsonify({'success': success})
-from flask import Response
-import io
-import csv
+
 
 @app.route('/generateclinicreport', methods=['GET'])
 def generate_clinic_visit_report():

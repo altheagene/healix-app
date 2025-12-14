@@ -108,7 +108,7 @@
     border-radius: 12px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     transition: transform 0.2s ease;
-    z-index: 2;
+    /* z-index: 2; */
 }
 
 #photo-name-div:hover {

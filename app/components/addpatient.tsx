@@ -540,7 +540,7 @@ export default function AddPatient(props: any) {
     const response = await fetch('http://localhost:5000/addpatient', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(studentData)
+      body: JSON.stringify({...studentData, is_student: true})
     });
 
     const success = await response.json();
@@ -938,37 +938,37 @@ export default function AddPatient(props: any) {
                     type="text" 
                     id="firstname" 
                     value={studentData?.first_name || ''}
-                    onChange={(e) => setStudentData({...studentData, first_name: e.target.value})}  />
+                    onChange={(e) => setStudentData({...studentData, first_name: e.target.value})} required />
               </label>
               <label htmlFor="middlename">Middle Name
                 <input 
                     type="text" 
                     id="middlename" 
                     value={studentData?.middle_name || ''}
-                    onChange={(e) => setStudentData({...studentData, middle_name: e.target.value})}  />
+                    onChange={(e) => setStudentData({...studentData, middle_name: e.target.value})}  required/>
               </label>
               <label htmlFor="lastname">Last Name
                 <input 
                     type="text" 
                     id="lastname" 
                     value={studentData?.last_name || ''} 
-                    onChange={(e) => setStudentData({...studentData, last_name: e.target.value})} />
+                    onChange={(e) => setStudentData({...studentData, last_name: e.target.value})} required/>
               </label>
             </div>
 
             <div>
               <label htmlFor="birthdate">Birthdate
-                <input type="date" id='birthdate' value={studentData?.birthday} onChange={(e)  => setStudentData({...studentData, birthday: e.target.value})}/>
+                <input type="date" id='birthdate' value={studentData?.birthday} onChange={(e)  => setStudentData({...studentData, birthday: e.target.value})} required/>
               </label>
 
               <label style={{ display: 'block' }}>Sex
                 <div id='gender-div'>
                   <div>
-                    <input type="radio" name="gender" id='female' checked={studentData?.sex === 'Female'} />
+                    <input type="radio" name="gender" id='female' checked={studentData?.sex === 'Female'} value='Female' onChange={(e)  => setStudentData({...studentData, sex: e.target.value})} required/>
                     <label htmlFor="female">Female</label>
                   </div>
                   <div>
-                    <input type="radio" name="gender" id="male" checked={studentData?.sex === 'Male'} />
+                    <input type="radio" name="gender" id="male" checked={studentData?.sex === 'Male'} value='Male' onChange={(e)  => setStudentData({...studentData, sex: e.target.value})} required/>
                     <label htmlFor="male">Male</label>
                   </div>
                 </div>
