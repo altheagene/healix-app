@@ -9,7 +9,8 @@ export default function AddItem(props: any) {
     brand: '',
     description: '',
     category_id: 1,
-    auto_deduct: false
+    auto_deduct: false,
+    is_active : true,
   })
   const [flashMessage, setFlashMessage] = React.useState<string | null>(null)
 

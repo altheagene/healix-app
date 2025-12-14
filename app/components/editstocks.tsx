@@ -1,5 +1,6 @@
 import CancelSaveBtn from "./cancelsavebtn"
 import React from "react"
+import {API_BASE_URL} from '../config'
 
 export default function EditStock(props:any){
 
@@ -8,7 +9,7 @@ export default function EditStock(props:any){
             return
         }
 
-        const response = await fetch(`http://localhost:5000/editstockbatch`,
+        const response = await fetch(`${API_BASE_URL}/editstockbatch`,
             {
             method: 'POST',
             headers: {
@@ -19,6 +20,8 @@ export default function EditStock(props:any){
         )
 
         console.log(response.json())
+        fetch(`${API_BASE_URL}/refreshbatches`)
+                .then(res => res.json())
         props.refetch();
     }
 

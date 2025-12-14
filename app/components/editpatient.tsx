@@ -282,11 +282,11 @@ export default function EditPatient(props: any) {
               <label style={{ display: 'block' }}>Sex
                 <div id='gender-div'>
                   <div>
-                    <input type="radio" name="gender" id='female' checked={studentData?.sex === 'Female'} />
+                    <input type="radio" name="gender" id='female' checked={studentData?.sex === 'Female'} value='Female' onChange={(e)  => setStudentData({...studentData, sex: e.target.value})} />
                     <label htmlFor="female">Female</label>
                   </div>
                   <div>
-                    <input type="radio" name="gender" id="male" checked={studentData?.sex === 'Male'} />
+                    <input type="radio" name="gender" id="male" checked={studentData?.sex === 'Male'} value='Male' onChange={(e)  => setStudentData({...studentData, sex: e.target.value})} />
                     <label htmlFor="male">Male</label>
                   </div>
                 </div>

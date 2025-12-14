@@ -15,7 +15,7 @@ export default function Appointments() {
         window.addEventListener("resize", handleResize)
         return () => window.removeEventListener("resize", handleResize)
     }, [])
-        
+    const today = new Date().toISOString().split('T')[0]
     const [apptStatus, setApptStatus] = React.useState('All')
     const [apptID, setApptId] = React.useState()
     const apptStatuses = ['All', 'Today', 'Upcoming', 'Completed', 'Cancelled']
@@ -23,9 +23,11 @@ export default function Appointments() {
     const [searchQuery, setSearchQuery] = React.useState('')
     const [showEdit, setShowEdit] = React.useState(false)
     const [flashMessage, setFlashMessage] = React.useState<{type: 'success' | 'error', message: string} | null>(null)
+    const [selectedDate, setSelectedDate] = React.useState(); // default to today
+
 
     const navigate = useNavigate()
-    const today = new Date().toISOString().split('T')[0]
+    
 
     // Fetch appointments
     React.useEffect(() => {
@@ -83,12 +85,29 @@ export default function Appointments() {
         return appt.status === apptStatus
     })
 
-    const filteredAppointments = filteredByStatus.filter(appt => {
-        const patientName = appt.patient_name?.toLowerCase() || ''
-        const serviceName = appt.service_name?.toLowerCase() || ''
-        const query = searchQuery.toLowerCase()
-        return patientName.includes(query) || serviceName.includes(query)
+    const filteredAppointments = appointments
+    .filter(appt => {
+        // Filter by selected date
+        if (selectedDate) {
+            return appt.appointment_date === selectedDate;
+        }
+        return true;
     })
+    .filter(appt => {
+        // Filter by status
+        if (apptStatus === 'All') return true;
+        return appt.status === apptStatus;
+    })
+    .filter(appt => {
+        // Filter by search query
+        const patientName = appt.patient_name?.toLowerCase() || '';
+        const serviceName = appt.service_name?.toLowerCase() || '';
+        const query = searchQuery.toLowerCase();
+        return patientName.includes(query) || serviceName.includes(query);
+    });
+
+
+    
 
     return (
         <div className="route-page">
@@ -116,7 +135,12 @@ export default function Appointments() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
             />
-
+            <input 
+                type="date" 
+                value={selectedDate} 
+                onChange={(e) => setSelectedDate(e.target.value)} 
+                style={{ marginLeft: '10px', padding: '5px', borderRadius: '5px' }}
+            />
             <div className="appointments-controls">
                 <div id="today-appointment-status-bar">
                     {apptStatuses.map(status => (

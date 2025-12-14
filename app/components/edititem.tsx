@@ -1,5 +1,6 @@
 import CancelSaveBtn from "./cancelsavebtn"
 import React from "react"
+import {API_BASE_URL} from '../config'
 
 export default function EditItem(props:any){
 
@@ -7,29 +8,36 @@ export default function EditItem(props:any){
 
     const [itemDetails, setItemDetails] = React.useState({
         supply_id : details?.supply_id,
-        supply_name : details?.supply_name,
-        description: details?.description,
-        brand: details?.brand,
+        supply_name : details?.supply_name.trim(),
+        description: details?.description.trim(),
+        brand: details?.brand.trim(),
         auto_deduct: details?.auto_deduct
     })
 
-    async function handleSubmit(){
-        const response = await fetch(`http://localhost:5000/updatesupply`,
-            {
-                method: 'POST',
-                headers: {
-                    'Content-Type' : 'application/json'
-                },
-                body: JSON.stringify(itemDetails)
-            }
-        )
+    async function handleSubmit() {
+    // Trim the text fields before validation
+    const { supply_name, brand, description } = itemDetails;
 
-        const success = await response.json()
-        if (success.success) {
-            alert('Successfully updated supply!')
-            props.refetch()
-        }
+    if (!supply_name.trim() || !brand.trim() || !description.trim()) {
+        alert("Please fill in all fields before saving!");
+        return;
     }
+
+    const response = await fetch(`${API_BASE_URL}/updatesupply`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(itemDetails),
+    });
+
+    const success = await response.json();
+    if (success.success) {
+        alert("Successfully updated supply!");
+        props.refetch();
+        props.hideForm(); // optionally hide the form after successful update
+    }
+}
 
 
      
@@ -46,19 +54,19 @@ export default function EditItem(props:any){
                         <input type="text" 
                                 id="edit-item-name" 
                                 value={itemDetails?.supply_name}
-                                onChange={(e) => setItemDetails({...itemDetails, supply_name: e.target.value.trim()})}/>
+                                onChange={(e) => setItemDetails({...itemDetails, supply_name: e.target.value})}/>
                     </label>
 
                     <label htmlFor="">Item Brand
                         <input type="text" 
                                 value={itemDetails?.brand}
-                                onChange={(e) => setItemDetails({...itemDetails, brand: e.target.value.trim()})}/>
+                                onChange={(e) => setItemDetails({...itemDetails, brand: e.target.value})}/>
                     </label>
 
                     <label htmlFor="">Description
                         <input type="text" 
                                 value={itemDetails?.description}
-                                onChange={(e) => setItemDetails({...itemDetails, description: e.target.value.trim()})}/>
+                                onChange={(e) => setItemDetails({...itemDetails, description: e.target.value})}/>
                     </label>
 
                     <label>

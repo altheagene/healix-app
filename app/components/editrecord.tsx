@@ -26,6 +26,7 @@ export default function EditRecord(props: any) {
       .then(res => res.json())
       .then(setMedicines)
   }, [])
+  
 
   /* ------------------ LOAD RECORD DATA ------------------ */
   React.useEffect(() => {

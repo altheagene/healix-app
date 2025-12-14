@@ -122,6 +122,7 @@ export default function PatientDetails(){
                         <div id="student-info" className='info-div'>
                             <p className='patient-info'><i className='bi bi-person-fill' style={{marginRight: '0.5rem'}}></i>Student Information</p>
                             <div className='patient-info-div'>
+                                <p>Sex: <span>{studentData?.sex}</span></p>
                                 <p>Level: <span>{studentData?.level}</span></p>
                                 <p>ID Number: <span>{studentData?.student_id}</span></p>
                                 <p>Department: <span>{studentData?.department}</span></p>
@@ -208,13 +209,13 @@ export default function PatientDetails(){
                                                 <i className='bi bi-eye'></i>
                                             </button>
 
-                                            <button 
+                                            {/* <button 
                                                 onClick={() => {setShowEditRecord(true); setRecordToEdit(log)}}
                                                 style={{backgroundColor: 'transparent', border: 'none', fontSize: '1.2rem'}}
                                                 disabled={isBeyond24Hours(log?.visit_datetime)}
                                                     >
                                                 <i className='bi bi-pencil'></i>
-                                            </button>
+                                            </button> */}
                                         </td>
                                     </tr>
                                 )

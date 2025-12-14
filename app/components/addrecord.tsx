@@ -73,6 +73,10 @@ export default function AddRecord(props:any){
     }
 
     async function handleSubmit(){
+        if (recordDetails?.notes.trim() === '' || recordDetails?.notes.trim() === undefined || recordDetails?.notes.trim() === null  ){
+            alert('Please fill out notes!')
+            return;
+        }
         const response = await fetch(`http://localhost:5000/addvisitlog`,
             {
                 method: 'POST',
@@ -149,7 +153,7 @@ export default function AddRecord(props:any){
                         <input type="date" value={new Date().toISOString().split("T")[0]} style={{width: '100%'}}/>
                     </label>
 
-                    <label>Reason</label>
+                    <label>Service
                     <select
                         style={{ display: "block", width: "100%", marginTop: "0.3rem" }}
                         value={recordDetails.service_id}
@@ -166,6 +170,7 @@ export default function AddRecord(props:any){
                             </option>
                         ))}
                     </select>
+                    </label>
 
             
             <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem", width: "70%" }}>

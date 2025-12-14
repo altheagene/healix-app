@@ -12,7 +12,7 @@ export default function EditBatch(props:any){
     })
 
     async function handleSubmit(){
-        const response = await fetch(`http://localhost:5000/editbatch`, 
+        const response = await fetch(`${API_BASE_URL}/editbatch`, 
             {
                 method: 'POST',
                 headers: {
@@ -25,8 +25,11 @@ export default function EditBatch(props:any){
         console.log(await 
             response.json())
             response.json()
-
+            
         props.refetch()
+        fetch(`${API_BASE_URL}/refreshbatches`)
+                        .then(res => res.json())
+                props.refetch();
     }
 
     console.log(batchDetails)

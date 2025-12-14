@@ -33,17 +33,23 @@ def getrecord(table, **kwargs):
     return data
 
 def getstudent(**kwargs):
-    keys = list(kwargs.keys())
-    values = list(kwargs.values())
-    
-    sql = f'SELECT * FROM students WHERE `{keys[0]}` = ?'
-    conn = connect(studentdb)
-    conn.row_factory = Row
-    cursor = conn.cursor()
-    cursor.execute(sql, values)
-    data = cursor.fetchall()
-    cursor.close()
-    # conn.close()
+
+    try:
+        keys = list(kwargs.keys())
+        values = list(kwargs.values())
+        
+        sql = f'SELECT * FROM students WHERE `{keys[0]}` = ?'
+        conn = connect(studentdb)
+        conn.row_factory = Row
+        cursor = conn.cursor()
+        cursor.execute(sql, values)
+        data = cursor.fetchall()
+        cursor.close()
+        conn.close()
+    except Exception as e:
+        cursor.close()
+        conn.close()
+        print(e)
 
     return [dict(row) for row in data]
     
@@ -89,7 +95,7 @@ def getallappointmentstoday():
     sql = f'''
         SELECT *
         FROM appointments
-        WHERE date(appointment_datetime) = date('now');
+        WHERE appointment_date LIKE date('now');
     '''
 
     return getprocess(sql, [])
@@ -200,7 +206,7 @@ def deductbatch(supply_id, quantity):
     cursor.execute("""
         SELECT batch_id, stock_level
         FROM batches
-        WHERE supply_id = ? AND stock_level > 0
+        WHERE supply_id = ? AND stock_level > 0 AND is_active = true
         ORDER BY expiration_date ASC
     """, (supply_id,))
     
@@ -220,16 +226,17 @@ def deductbatch(supply_id, quantity):
         """, (take, batch_id))
         remaining -= take
 
-        cursor.execute(f'''
-                        INSERT INTO INVENTORY (inv_date, batch_id, item_in, item_out)
-                       values ({date.today()}, {batch_id}, 0, {take})
-                       ''')
+        cursor.execute("""
+            INSERT INTO inventory (inv_date, batch_id, item_in, item_out)
+            VALUES (?, ?, ?, ?)
+        """, (date.today(), batch_id, 0, take))
 
     if remaining > 0:
         print(f"Warning: Not enough stock for supply_id {supply_id}, {remaining} remaining!")
 
     conn.commit()
     cursor.close()
+    conn.close()
 
 def getappointments():
 
@@ -367,14 +374,22 @@ def getallsupplies():
             s.supply_name,
             s.is_active,
             sc.category_name,
-            SUM(b.stock_level) AS total_stock,
-            MAX(i.inv_date) AS last_updated
+            COALESCE(b.total_stock, 0) AS total_stock,
+            i.last_updated
         FROM supplies s
         JOIN supplies_categories sc ON sc.category_id = s.category_id
-        LEFT JOIN batches b ON b.supply_id = s.supply_id
-        LEFT JOIN inventory i ON i.batch_id = b.batch_id
-        GROUP BY s.supply_id, s.supply_name, sc.category_name
+        LEFT JOIN (
+            SELECT supply_id, SUM(stock_level) AS total_stock, batch_id
+            FROM batches
+            GROUP BY supply_id, batch_id
+        ) b ON b.supply_id = s.supply_id
+        LEFT JOIN (
+            SELECT batch_id, MAX(inv_date) AS last_updated
+            FROM inventory
+            GROUP BY batch_id
+        ) i ON i.batch_id = b.batch_id
         ORDER BY s.supply_name;
+
             """
 
     data = getprocess(sql, [])
@@ -519,14 +534,16 @@ def postprocess(sql, values) -> bool:
 
         rowcount = cursor.rowcount
 
-        cursor.close()
-        conn.close()
-
+       
         return rowcount > 0   # success if at least 1 row affected
 
     except Exception as e:
         print("POST error:", e)
         return False          # failure
+    finally: 
+        cursor.close()
+        conn.close()
+
 
 def main(): pass
     # data = getallstudents('students')
