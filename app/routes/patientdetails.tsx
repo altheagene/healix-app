@@ -58,6 +58,9 @@ export default function PatientDetails(){
 
          fetch(`${API_BASE_URL}/getpatientallergies?idnum=${id}`).then
         (res => res.json()).then(data => setAllergies(data))
+
+          fetch(`${API_BASE_URL}/getpatientconditions?idnum=${id}`).then
+        (res => res.json()).then(data => setConditions(data))
     }
 
     function isBeyond24Hours(dateStr: string | null | undefined): boolean {

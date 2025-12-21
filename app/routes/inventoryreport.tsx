@@ -47,22 +47,23 @@ export default function InventoryReport(){
         item_out: 0
     })
 
-    let totalItemIn = 0;
-    let totalItemOut = 0;
+    
 
     React.useEffect(() => {
-        
+        let totalItemIn = 0;
+        let totalItemOut = 0;
+
         if(invLogs?.length > 0){
             for(const item of invLogs){
+                console.log(item.item_in)
                 totalItemIn += item.item_in;
                 totalItemOut += item.item_out
                 console.log(totalItemIn)
             }
-
-        setItemInOut({...itemInOut, item_in: totalItemIn, item_out: totalItemOut})
         }
+        setItemInOut({...itemInOut, item_in: totalItemIn, item_out: totalItemOut})
 
-    }, [invLogs])
+    }, [invLogs, dateRange])
 
     
     

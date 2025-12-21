@@ -11,8 +11,6 @@ export default function Navbar(props:any){
     const [user, setUser] = React.useState<any[]>()
     const id = localStorage.getItem('userid')
 
-    console.log(user)
-
     React.useEffect(() => {
         // Safe: window exists ONLY in the browser
         const handleResize = () => setWidth(window.innerWidth);
@@ -140,7 +138,7 @@ export default function Navbar(props:any){
                     // transform: props.showNavbar ? 'translateX(0%)' : 'translateX(-100%)',
                     position: width < 1300 ? 'absolute' : 'relative',
                     display: props.showNavbar ? 'block' : 'none',
-                    zIndex: width < 1300 ? '2' : 0,
+                    zIndex: width < 1300 ? '1' : 0,
                     
                 }}>
             <ul> 

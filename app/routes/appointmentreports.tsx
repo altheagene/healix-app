@@ -41,7 +41,7 @@ export default function AppointmentReport() {
 
   
   const downloadReport = async () => {
-      const url = `${API_BASE_URL}/download/inventorylogs?fromdate=${encodeURIComponent(dateRange.from_date)}&todate=${encodeURIComponent(dateRange.to_date)}`;
+      const url = `${API_BASE_URL}/download/appointmentlogs?fromdate=${encodeURIComponent(dateRange.from_date)}&todate=${encodeURIComponent(dateRange.to_date)}`;
       const response = await fetch(url);
       const blob = await response.blob();
       const link = document.createElement('a');

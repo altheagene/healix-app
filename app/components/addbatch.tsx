@@ -34,7 +34,7 @@ export default function AddBatch(props:any){
         }
 
         if (!success){
-            console.log('Please fill out all form fields!')
+           alert('Please fill out all form fields!')
             return
         }else{
             const response = await fetch('http://localhost:5000/addbatch', {
@@ -45,7 +45,14 @@ export default function AddBatch(props:any){
                 body: JSON.stringify(batchDetails)
             })
 
-            console.log(response.json())
+            const success = await response.json()
+            console.log(success)
+
+            if(success.success){
+                alert('Batch added successfully!')
+            }else{
+                alert('This batch number already exists!')
+            }
 
             props.refetch()
         }
@@ -62,16 +69,16 @@ export default function AddBatch(props:any){
                 </div>
                 
                 <div className="main-form-content">
-                    <label htmlFor="">Supply Name
+                    <label htmlFor="">Supply Name <span style={{ color: 'red' }}>*</span>
                         <input type="text" value={props.name} />
                     </label>
 
-                    <label htmlFor="batch-number">Batch Number
+                    <label htmlFor="batch-number">Batch Number <span style={{ color: 'red' }}>*</span>
                         <input type="text" id="batch-number" value={batchDetails.batch_number} onChange={(e) => setBatchDetails({...batchDetails, batch_number: e.target.value.trim()})}/>
                     </label>
 
                     <div>
-                        <label htmlFor="expiration-date">Expiration Date
+                        <label htmlFor="expiration-date">Expiration Date 
                             <input type="date" onChange={(e) => setBatchDetails({...batchDetails, expiration_date: e.target.value.trim()} )}/>
                         </label>
                         <div style={{display: 'flex', alignItems: 'center', height: '30px'}}>

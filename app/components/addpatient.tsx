@@ -550,6 +550,7 @@ export default function AddPatient(props: any) {
     }
 
     showFlash('Successfully saved new patient!');
+    setTimeout(() => props.hideForm(), 1000)
 
     // ---------- SUBMIT ALLERGIES ----------
     if (selectedAllergy.length > 0) {
@@ -576,7 +577,6 @@ export default function AddPatient(props: any) {
         })
       });
     }
-
     props.refetchPatients();
   }
 
@@ -930,7 +930,7 @@ export default function AddPatient(props: any) {
 
           {/* Student Information */}
           <div id="student-information" className='form-div'>
-            <p className='form-header'>Student Information</p>
+            <p className='form-header'>Student Information <span style={{ color: 'red' }}>*</span></p>
 
             <div>
               <label htmlFor="firstname">First Name
@@ -1003,8 +1003,10 @@ export default function AddPatient(props: any) {
                 <input 
                     type='number' 
                     id='level' 
+                    min = '1'
+                    max = '12'
                     value={studentData?.level || ''}
-                    onChange={(e) => setStudentData({...studentData, level: e.target.value})}  />
+                    onChange={(e) => setStudentData({...studentData, level: parseInt(e.target.value) <= 0 ? 1 : parseInt(e.target.value) > 12 ? 12 : parseInt(e.target.value)})}  />
               </label>
             </div>
           </div>
@@ -1071,7 +1073,7 @@ export default function AddPatient(props: any) {
 
           {/* Emergency Contact */}
           <div id="emergency-contact-information" className='form-div'>
-            <p className='form-header'>Emergency Contact Information</p>
+            <p className='form-header'>Emergency Contact Information <span style={{ color: 'red' }}>*</span></p>
             <div>
               <label htmlFor="ec-fullname">Full Name
                 <input 

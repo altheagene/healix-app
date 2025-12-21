@@ -20,6 +20,9 @@ export default function LoginPage(props: any) {
 
     if (result.success && result.success.length > 0) {
       localStorage.setItem('userid', result.success[0].staff_id);
+      const isAdmin = result.success[0].staff_category_id == 4
+      console.log(result.success[0].staff_category_id)
+      localStorage.setItem('admin', isAdmin.toString())
       props.validate();
     } else {
       setFlashMessage('Invalid username or password'); // Set flash message

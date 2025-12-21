@@ -155,8 +155,8 @@ function logout() {
           <div id='header'>
             <div>
               <button onClick={() => setShowNavBar(prev => !prev)}>
-                <i className={showNavbar ? 'bi bi-box-arrow-left' : 'bi bi-box-arrow-right'}></i>
-                
+                {/* <i className={showNavbar ? 'bi bi-box-arrow-left' : 'bi bi-box-arrow-right'}></i> */}
+                <i className="bi bi-list"></i>
               </button>
               <h1>Healix</h1>
             </div>
