@@ -10,27 +10,33 @@ export default function EditStaff(props:any){
     const [showPass, setShowPass] = useState(false)
 
    async function handleSubmit() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/updatestaff`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(staff)
-        });
+        try {
+            const response = await fetch(`${API_BASE_URL}/updatestaff`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(staff)
+            });
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            if(result.success){
+                alert('Successfully edited the patient!')
+                props.hideForm()
+                props.refetch()
+            }
+            
+        } catch (err) {
+            console.error('Failed to submit:', err);
         }
-
-        const result = await response.json();
-        console.log(result);
-    } catch (err) {
-        console.error('Failed to submit:', err);
-    }
 }
+
     useEffect(() => {
         const fetchStaff = async () => {
             try {
-                const res = await fetch(`${API_BASE_URL}/findstaff?id=${id}`);
+                const res = await fetch(`${API_BASE_URL}/findstaff?id=${props.chosenId}`);
                 const data = await res.json();
                 setStaff(data[0]);
             } catch (err) {

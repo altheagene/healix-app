@@ -7,13 +7,17 @@ export default function EditAppointment(props:any){
         const [patients, setPatients] = React.useState<any[]>([])
         const [appointmentDetails, setAppointmentDetails] = React.useState({
         })
-    
+        const [availableTime, setAvailableTime] = React.useState<string[]>([]);
+        const timeArr = ["9:00 AM", "10:00 AM", "11:00 AM", "1:00 PM", "2:00 PM", "3:00 PM"];
+
         const [patientQuery, setPatientQuery] = React.useState('')
         const [filteredPatients, setFilteredPatients] = React.useState<any[]>([])
         const [selectedPatient, setSelectedPatient] = React.useState<any>(null)
         const [saving, setSaving] = React.useState(false)
+        const [appointments, setAppointments] = React.useState<any[]>([])
         console.log(appointmentDetails)
-    React.useEffect(() => {
+
+        React.useEffect(() => {
             fetch(`http://localhost:5000/getallservices`)
                 .then(res => res.json())
                 .then(data => setServices(data))
@@ -21,6 +25,10 @@ export default function EditAppointment(props:any){
             fetch(`http://localhost:5000/getallpatients`)
                 .then(res => res.json())
                 .then(data => setPatients(data))
+
+            fetch(`http://localhost:5000/getall?table=appointments`)
+                .then(res => res.json())
+                .then(data => setAppointments(data));
 
             setAppointmentDetails(props.appt)
         }, [])
@@ -36,7 +44,32 @@ export default function EditAppointment(props:any){
 
                 setFilteredPatients(matches)
             }, [patientQuery, patients])
-        
+
+             
+            React.useEffect(() => {
+                if (!appointmentDetails.appointment_date) {
+                    setAvailableTime([]);
+                    return;
+                }
+
+                const filteredAppointments = appointments?.filter(
+                    app => app.appointment_date === appointmentDetails.appointment_date && app.appointment_id !== appointmentDetails.appointment_id
+                );
+
+                const available = timeArr.filter(
+                    time => !filteredAppointments?.some(appt => appt.start_time === time && appt.status != 'Cancelled')
+                );
+
+                setAvailableTime(available);
+            }, [appointmentDetails.appointment_date, appointments]);
+
+            // Automatically set first available time if none selected
+            React.useEffect(() => {
+                if (availableTime.length > 0 && !appointmentDetails.start_time) {
+                setAppointmentDetails(prev => ({ ...prev, start_time: availableTime[0] }));
+                }
+            }, [availableTime]);
+                    
         
             const handlePatientSelect = (patient: any) => {
                 setSelectedPatient(patient)
@@ -139,7 +172,7 @@ export default function EditAppointment(props:any){
                         />
                     </label>
 
-                    <label htmlFor="time">Time
+                    {/* <label htmlFor="time">Time
                         <input
                             type="time"
                             min="09:00" 
@@ -147,10 +180,23 @@ export default function EditAppointment(props:any){
                             value={appointmentDetails?.start_time}
                             onChange={(e) => setAppointmentDetails({ ...appointmentDetails, start_time: e.target.value })}
                         />
+                    </label> */}
+
+                    <label>Time
+                        <select
+                        value={appointmentDetails.start_time || ""}
+                        onChange={e => setAppointmentDetails({ ...appointmentDetails, start_time: e.target.value })}
+                        disabled={!appointmentDetails.appointment_date}
+                        >
+                        <option value="" disabled>Select Time</option>
+                        {availableTime.map(time => (
+                            <option key={time} value={time}>{time}</option>
+                        ))}
+                        </select>
                     </label>
 
                     <label htmlFor="">Status
-                        <select name="" id="" onChange={(e) => setAppointmentDetails({...appointmentDetails, status: e.target.value})}>
+                        <select name="" id="" value={appointmentDetails?.status} onChange={(e) => setAppointmentDetails({...appointmentDetails, status: e.target.value})}>
                             <option value='Upcoming'>Upcoming</option>
                             <option value='Completed'>Completed</option>
                             <option value='Cancelled'>Cancelled</option>

@@ -290,6 +290,8 @@ def add_batch():
     data = request.get_json()
     success = addrecord('batches', **data)
 
+    if success == False:
+        return jsonify({'success' : success})
     #get the latest and max batch id
     max_batch_id = getmaxid('batches', 'batch_id')
     batch_id = max_batch_id[0]['last_id']
@@ -299,7 +301,7 @@ def add_batch():
     inv_date = date.today()
 
     success = addrecord('inventory', batch_id=batch_id, item_in=item_in, item_out=item_out, inv_date = inv_date)
-
+    print
     return jsonify({'success' : success})
     
 @app.route('/editstockbatch', methods=['POST'])

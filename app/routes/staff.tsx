@@ -28,6 +28,7 @@ export default function Staff() {
     const [showEdit, setShowEdit] = React.useState(false)
     const [chosenStaff, setChosenStaff] = React.useState();
     const [showStaffInfo, setShowStaffInfo] = React.useState(false)
+    const [chosenId, setChosenId] = React.useState<number>();
 
     // Fetch staff on mount
     React.useEffect(() => {
@@ -36,11 +37,19 @@ export default function Staff() {
             .then(data => setStaff(data))
     }, [])
 
+    function refetch(){
+         fetch(`${API_BASE_URL}/getstaffandcateg`)
+            .then(res => res.json())
+            .then(data => setStaff(data))
+    }
+
     function handleEdit(id:number){
         const userid= localStorage.getItem('userid');
-        if (userid && parseInt(userid) === id){
+        const isAdmin = localStorage.getItem('admin')
+        if (userid && parseInt(userid) === id || isAdmin == 'true'){
             console.log('YES YOU CAN EDIT!');
             setShowEdit(true);
+            setChosenId(id)
         }else{
             alert('You are not authorized to edit this')
         }
@@ -63,7 +72,7 @@ export default function Staff() {
             {showStaffInfo && <ViewStaff staff={chosenStaff} hideForm={() => setShowStaffInfo(false)}/>}
             <h1 className="route-header">Staff</h1>
             <p className="route-page-desc">Manage clinic staff, roles, and permissions</p>
-            {showEdit ? <EditStaff hideForm={() => setShowEdit(false)}/> : null}
+            {showEdit ? <EditStaff hideForm={() => setShowEdit(false)} chosenId={chosenId} refetch={refetch}/> : null}
             {/* Searchbar */}
             <input type="text"
                 id='searchbar'

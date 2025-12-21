@@ -25,9 +25,9 @@ export default function Appointments() {
     const [flashMessage, setFlashMessage] = React.useState<{type: 'success' | 'error', message: string} | null>(null)
     const [selectedDate, setSelectedDate] = React.useState(); // default to today
 
-
-    const navigate = useNavigate()
     
+    const navigate = useNavigate()
+    console.log(today)
 
     // Fetch appointments
     React.useEffect(() => {
@@ -80,8 +80,10 @@ export default function Appointments() {
 
     // Filter appointments
     const filteredByStatus = appointments.filter(appt => {
+        // console.log(appt.appointment_date.trimStart())
+        console.log(selectedDate)
         if (apptStatus === 'All') return true
-        if (apptStatus === 'Today') return appt.appointment_date === today
+        if (apptStatus === 'Today' || selectedDate == undefined) return appt.appointment_date.trimStart() == today
         return appt.status === apptStatus
     })
 
@@ -96,6 +98,7 @@ export default function Appointments() {
     .filter(appt => {
         // Filter by status
         if (apptStatus === 'All') return true;
+        if (apptStatus === 'Today') return appt.appointment_date.trimStart() == today
         return appt.status === apptStatus;
     })
     .filter(appt => {

@@ -302,13 +302,12 @@ def getinventorylogs(**kwargs):
         s.supply_id,
         s.supply_name,
         i.item_in,
-        i.item_out,
-        i.auto_update
+        i.item_out
     FROM inventory i
     JOIN batches b ON i.batch_id = b.batch_id
     JOIN supplies s ON b.supply_id = s.supply_id
     WHERE DATE(i.inv_date) BETWEEN ? AND ?
-    ORDER BY i.inv_date DESC;
+    ORDER BY i.inv_id DESC;
 
     '''
 
@@ -370,25 +369,36 @@ def getpatientcliniclogs(**kwargs):
 def getallsupplies():
     sql = f"""
        SELECT
-            s.supply_id,
-            s.supply_name,
-            s.is_active,
-            sc.category_name,
-            COALESCE(b.total_stock, 0) AS total_stock,
-            i.last_updated
-        FROM supplies s
-        JOIN supplies_categories sc ON sc.category_id = s.category_id
-        LEFT JOIN (
-            SELECT supply_id, SUM(stock_level) AS total_stock, batch_id
-            FROM batches
-            GROUP BY supply_id, batch_id
-        ) b ON b.supply_id = s.supply_id
-        LEFT JOIN (
-            SELECT batch_id, MAX(inv_date) AS last_updated
-            FROM inventory
-            GROUP BY batch_id
-        ) i ON i.batch_id = b.batch_id
-        ORDER BY s.supply_name;
+    s.supply_id,
+    s.supply_name,
+    s.is_active,
+    sc.category_name,
+    COALESCE(b.total_stock, 0) AS total_stock,
+    i.last_updated
+FROM supplies s
+JOIN supplies_categories sc 
+    ON sc.category_id = s.category_id
+
+LEFT JOIN (
+    SELECT
+        supply_id,
+        SUM(stock_level) AS total_stock
+    FROM batches
+    GROUP BY supply_id
+) b ON b.supply_id = s.supply_id
+
+LEFT JOIN (
+    SELECT
+        bt.supply_id,
+        MAX(inv.inv_date) AS last_updated
+    FROM batches bt
+    JOIN inventory inv 
+        ON inv.batch_id = bt.batch_id
+    GROUP BY bt.supply_id
+) i ON i.supply_id = s.supply_id
+
+ORDER BY s.supply_name;
+
 
             """
 

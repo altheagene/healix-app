@@ -15,11 +15,11 @@ export default function ViewStaff(props: any) {
       <div className="staff-card">
         <div className="staff-header">
           <h2>Staff Details</h2>
-          <button className="close-btn" onClick={props.hideForm}>×</button>
+          <button className="close-btn" style={{color: 'red'}} onClick={props.hideForm}>×</button>
         </div>
 
         <div className="staff-body">
-          <div className="staff-info">
+          <div className="staff-info" style={{display: 'flex', flexDirection: 'column', gap: '1rem'}}>
             <div><strong>Name:</strong> {staffInfo.first_name} {staffInfo.middle_name} {staffInfo.last_name}</div>
             <div><strong>Category:</strong> {staffInfo.category_name}</div>
             <div><strong>Birthday:</strong> {staffInfo.birthday}</div>

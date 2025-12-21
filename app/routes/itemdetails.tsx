@@ -257,6 +257,9 @@ export default function ItemDetails(){
                                         </td>
                                     </tr>
                                 }
+                                <tr>
+                                    <td  colSpan={7} style={{ textAlign: 'center', padding: '15px' }}>End of table</td>
+                                </tr>
                             </table>
                         </div>
                     </div>

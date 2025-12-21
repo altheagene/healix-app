@@ -2,6 +2,7 @@
 import { useParams } from "react-router"
 import CancelSaveBtn from "./cancelsavebtn"
 import React from "react"
+import {API_BASE_URL} from '../config'
 
 export default function AddRecord(props:any){
 
@@ -25,15 +26,15 @@ export default function AddRecord(props:any){
     const [medicines, setMedicine] = React.useState<any[]>();
     const [medications, setMedications] = React.useState<{ supply_id: number | null; auto_deduct: false | true; quantity: number }[]>([]);
     React.useEffect(() => {
-        fetch(`http://localhost:5000/getall?table=services`)
+        fetch(`${API_BASE_URL}/getall?table=services`)
         .then(res => res.json())
         .then(data => setServices(data))
 
-        fetch(`http://localhost:5000/getall?table=staff`)
+        fetch(`${API_BASE_URL}/getall?table=staff`)
         .then(res => res.json())
         .then(data => setStaff(data))
 
-        fetch(`http://localhost:5000/getallmedicine`)
+        fetch(`${API_BASE_URL}/getallmedicine`)
         .then(res => res.json())
         .then(data => setMedicine(data))
     }, [])
@@ -44,10 +45,12 @@ export default function AddRecord(props:any){
     }
     }, [staff]);
 
+    console.log(medications)
+
     async function addServiceInline() {
         if (!newService.trim()) return;
 
-        const res = await fetch("http://localhost:5000/addservice", {
+        const res = await fetch(`${API_BASE_URL}/addservice`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ service_name: newService.trim() })
@@ -56,7 +59,7 @@ export default function AddRecord(props:any){
         const result = await res.json();
 
         // reload services
-        const refreshed = await fetch("http://localhost:5000/getall?table=services")
+        const refreshed = await fetch(`${API_BASE_URL}/getall?table=services`)
             .then(r => r.json());
 
         setServices(refreshed);
@@ -77,7 +80,7 @@ export default function AddRecord(props:any){
             alert('Please fill out notes!')
             return;
         }
-        const response = await fetch(`http://localhost:5000/addvisitlog`,
+        const response = await fetch(`${API_BASE_URL}/addvisitlog`,
             {
                 method: 'POST',
                 headers: {
@@ -87,7 +90,7 @@ export default function AddRecord(props:any){
             }
         )
 
-        const addmed = await fetch(`http://localhost:5000/addmedicationdetails`,
+        const addmed = await fetch(`${API_BASE_URL}/addmedicationdetails`,
             {
                 method: 'POST',
                 headers: {
@@ -149,11 +152,11 @@ export default function AddRecord(props:any){
                 
                 <div className="main-form-content">
 
-                    <label htmlFor="">Date
+                    <label htmlFor="">Date <span style={{ color: 'red' }}>*</span>
                         <input type="date" value={new Date().toISOString().split("T")[0]} style={{width: '100%'}}/>
                     </label>
 
-                    <label>Service
+                    <label>Service <span style={{ color: 'red' }}>*</span>
                     <select
                         style={{ display: "block", width: "100%", marginTop: "0.3rem" }}
                         value={recordDetails.service_id}
@@ -198,10 +201,14 @@ export default function AddRecord(props:any){
                     </div>
 
                     {medicines?.length > 0 &&
+                    
                     <div style={{ width: '100%' }}>
                         <label>Medications</label>
 
-                        {medications.map((med, index) => (
+                        {medications.map((med, index) => {
+                        const medicineInfo = medicines?.find(m => m.supply_id === parseInt(med.supply_id))
+                        console.log(medicineInfo)
+                        return(
                             <div key={index} style={{display: 'flex', gap: '1rem', marginTop: '0.5rem'}}>
                                 
 
@@ -223,10 +230,11 @@ export default function AddRecord(props:any){
                                         <input
                                             type="number"
                                             min="1"
+                                            max={medicineInfo?.available_stock}
                                             style={{ width: "100%" }}
                                             value={med.quantity}
                                             // readOnly={med.auto_deduct === false} 
-                                            onChange={(e) => updateMedication(index, "quantity", parseInt(e.target.value))
+                                            onChange={(e) => updateMedication(index, "quantity", parseInt(e.target.value) > medicineInfo?.available_stock ? medicineInfo?.available_stock : parseInt(e.target.value))
                                             }
                                         />
                                     </label>
@@ -238,7 +246,7 @@ export default function AddRecord(props:any){
                                     X
                                 </button>
                             </div>
-                        ))}
+                        )})}
 
                         <button 
                             type="button"
@@ -249,7 +257,7 @@ export default function AddRecord(props:any){
                         </button>
                     </div>
 }
-                    <label htmlFor="">Staff
+                    <label htmlFor="">Staff <span style={{ color: 'red' }}>*</span>
                         <select name="" id="" style={{display: 'block', width: '100%', marginTop: '0.3rem'}} value={recordDetails?.staff_id} onChange={(e) => setRecordDetails({...recordDetails, staff_id: parseInt(e.target.value)})}>
                             {staff?.map(person => {
                                 return(
@@ -259,7 +267,7 @@ export default function AddRecord(props:any){
                         </select>
                     </label>
 
-                    <label htmlFor="reason">Notes
+                    <label htmlFor="reason">Notes <span style={{ color: 'red' }}>*</span>
                         <textarea name="notes" id="notes" rows='5' cols='50' value={recordDetails?.notes} onChange={(e) => setRecordDetails({...recordDetails, notes: e.target.value})}></textarea>
                     </label>
                 </div>

@@ -33,7 +33,7 @@ export default function Inventory() {
     })
 
     const result = await responses.json()
-    console.log(result);
+   
     refetchSupplies();
   }
 
@@ -47,7 +47,6 @@ export default function Inventory() {
     })
 
     const result = await responses.json()
-    console.log(result);
     refetchSupplies();
   }
 
@@ -64,7 +63,6 @@ export default function Inventory() {
   supply.is_active == chosenActive
 );
 
-  console.log(supplies)
 
   return (
     <div className="route-page">

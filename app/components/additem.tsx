@@ -79,7 +79,7 @@ export default function AddItem(props: any) {
         )}
 
         <div className='main-form-content'>
-          <label htmlFor="add-item-name">Item Name
+          <label htmlFor="add-item-name">Item Name <span style={{ color: 'red' }}>*</span>
             <input
               type="text"
               id='add-item-name'
@@ -88,7 +88,7 @@ export default function AddItem(props: any) {
             />
           </label>
 
-          <label htmlFor="add-item-brand">Brand
+          <label htmlFor="add-item-brand">Brand <span style={{ color: 'red' }}>*</span>
             <input
               type="text"
               id='add-item-brand'
@@ -97,7 +97,7 @@ export default function AddItem(props: any) {
             />
           </label>
 
-          <label htmlFor="add-item-desc">Description
+          <label htmlFor="add-item-desc">Description <span style={{ color: 'red' }}>*</span>
             <input
               type="text"
               id='add-item-desc'
@@ -106,7 +106,7 @@ export default function AddItem(props: any) {
             />
           </label>
 
-          <label htmlFor="add-item-category">Category
+          <label htmlFor="add-item-category">Category <span style={{ color: 'red' }}>*</span>
             <select
               name="category"
               id="add-item-category"
