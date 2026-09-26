@@ -1,6 +1,7 @@
 import React from "react"
 import CancelSaveBtn from "./cancelsavebtn"
 import '../app.css'
+import { API_BASE_URL } from "../config"
 
 export default function EditRecord(props: any) {
   const now = new Date()
@@ -14,11 +15,11 @@ export default function EditRecord(props: any) {
 
   /* ------------------ LOAD STATIC DATA ------------------ */
   React.useEffect(() => {
-    fetch(`http://localhost:5000/getall?table=services`)
+    fetch(`${API_BASE_URL}/getallservices`)
       .then(res => res.json())
       .then(setServices)
 
-    fetch(`http://localhost:5000/getall?table=staff`)
+    fetch(`${API_BASE_URL}/getstaffandcateg`)
       .then(res => res.json())
       .then(setStaff)
 

@@ -46,7 +46,7 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AA46BE', '#FF4C4C'
     .then(res => res.json())
     .then(data => setSupplies(data))
 
-    fetch(`${API_BASE_URL}/getall?table=staff`)
+    fetch(`${API_BASE_URL}/getstaffandcateg`)
     .then(res => res.json())
     .then(data => setStaff(data))
   }, [])

@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask
 from flask_cors import CORS
 import os
 
@@ -8,8 +8,6 @@ from controllers.patient_controller import patient_bp
 from controllers.service_controller import service_bp
 from controllers.staff_controller import staff_bp
 from controllers.visit_controller import visit_bp
-from db.dbhelper import getall
-from views.api_view import json_data
 
 
 app = Flask(__name__)
@@ -20,12 +18,6 @@ app.register_blueprint(patient_bp)
 app.register_blueprint(service_bp)
 app.register_blueprint(staff_bp)
 app.register_blueprint(visit_bp)
-
-
-@app.route("/getall", methods=["GET"])
-def get_all():
-    table = request.args.get("table")
-    return json_data(getall(table))
 
 
 if __name__ == "__main__":

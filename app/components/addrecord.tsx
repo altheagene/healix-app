@@ -26,11 +26,11 @@ export default function AddRecord(props:any){
     const [medicines, setMedicine] = React.useState<any[]>();
     const [medications, setMedications] = React.useState<{ supply_id: number | null; auto_deduct: false | true; quantity: number }[]>([]);
     React.useEffect(() => {
-        fetch(`${API_BASE_URL}/getall?table=services`)
+        fetch(`${API_BASE_URL}/getallservices`)
         .then(res => res.json())
         .then(data => setServices(data))
 
-        fetch(`${API_BASE_URL}/getall?table=staff`)
+        fetch(`${API_BASE_URL}/getstaffandcateg`)
         .then(res => res.json())
         .then(data => setStaff(data))
 
@@ -59,7 +59,7 @@ export default function AddRecord(props:any){
         const result = await res.json();
 
         // reload services
-        const refreshed = await fetch(`${API_BASE_URL}/getall?table=services`)
+        const refreshed = await fetch(`${API_BASE_URL}/getallservices`)
             .then(r => r.json());
 
         setServices(refreshed);
@@ -225,7 +225,7 @@ export default function AddRecord(props:any){
                                     </label>
                               
 
-                                {med.auto_deduct && 
+                                {/* {med.auto_deduct &&  */}
                                     <label htmlFor="" style={{width: '150px'}}>Quantity
                                         <input
                                             type="number"
@@ -238,7 +238,7 @@ export default function AddRecord(props:any){
                                             }
                                         />
                                     </label>
-                                }
+                                {/* } */}
 
                                 <button type="button"
                                         onClick={() => removeMedication(index)}

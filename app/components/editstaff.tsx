@@ -4,7 +4,7 @@ import {API_BASE_URL} from '../config'
 
 export default function EditStaff(props:any){
     const id = localStorage.getItem('userid')
-    
+    const [person, setPerson] = useState(props.chosenId);
     const [roles, setRoles] = useState<any[]>()
     const [staff, setStaff] = useState<any[]>()
     const [showPass, setShowPass] = useState(false)
@@ -46,7 +46,7 @@ export default function EditStaff(props:any){
 
         fetchStaff()
 
-        fetch(`${API_BASE_URL}/getall?table=staff_categories`)
+        fetch(`${API_BASE_URL}/getstaffcategories`)
         .then(res => res.json())
         .then(data => setRoles(data))
     }, [])
@@ -58,18 +58,18 @@ export default function EditStaff(props:any){
     return(
         <div className="modal-form-div">
             <div className="gray-bg"></div>
-            <div className="modal-form" style={{maxHeight: 'calc(100vh - 100px)'}}>
+            <div className="modal-form w-[500px]" style={{maxHeight: 'calc(100vh - 100px)'}}>
                 <div className="modal-header-div">
                     <h2>Edit Staff</h2>
                 </div>
                 <div className="main-form-content">
 
                     <label htmlFor="firstname"> First Name
-                        <input type="text" id="firstname" value={staff?.first_name} onChange={(e) => setStaff({...staff, first_name: e.target.value})}/>
+                        <input type="text" id="firstname" value={person?.first_name} onChange={(e) => setStaff({...person, first_name: e.target.value})}/>
                     </label>
 
                     <label htmlFor="lastname"> Last Name
-                        <input type="text" id="lastname" value={staff?.last_name} onChange={(e) => setStaff({...staff, last_name: e.target.value})}/>
+                        <input type="text" id="lastname" value={person?.last_name} onChange={(e) => setStaff({...person, last_name: e.target.value})}/>
                     </label>
 
                     <label htmlFor="sex">
@@ -81,8 +81,8 @@ export default function EditStaff(props:any){
                                     name="gender"
                                     id="male"
                                     value="male"
-                                    onChange={(e) => setStaff({ ...staff, sex: e.target.value })}
-                                    checked={staff?.sex === 'male'}
+                                    onChange={(e) => setStaff({ ...person, sex: e.target.value })}
+                                    checked={person?.sex === 'male'}
                                     />Male
                             </label>
 
@@ -92,14 +92,14 @@ export default function EditStaff(props:any){
                                     name="gender"
                                     id="female"
                                     value="female"
-                                    checked={staff?.sex === 'female'}
-                                    onChange={(e) => setStaff({ ...staff, sex: e.target.value })}
+                                    checked={person?.sex === 'female'}
+                                    onChange={(e) => setStaff({ ...person, sex: e.target.value })}
                                     />Female
                             </label>
                         </div>
                     </label>
 
-                    <select name="" id="" value={staff?.staff_catefory_id} onChange={(e) => setStaff({...staff, staff_category_id : e.target.value})}>
+                    <select name="" id="" value={person?.staff_catefory_id} onChange={(e) => setStaff({...person, staff_category_id : e.target.value})}>
                         {roles?.map((role) => {
                             return(
                                 <option value={role.staff_category_id}>{role.category_name}</option>
@@ -108,19 +108,19 @@ export default function EditStaff(props:any){
                     </select>
                     
                     <label htmlFor="phone">
-                         <input type="text" name="" id="phone" value={staff?.phone} onChange={(e) => setStaff({...staff, phone : e.target.value})}/>
+                         <input type="text" name="" id="phone" value={person?.phone} onChange={(e) => setStaff({...person, phone : e.target.value})}/>
                     </label>
                     
                     <label htmlFor="email">Email
-                        <input type="text" name="" id="email" value={staff?.email} onChange={(e) => setStaff({...staff, email : e.target.value})}/>
+                        <input type="text" name="" id="email" value={person?.email} onChange={(e) => setStaff({...person, email : e.target.value})}/>
                     </label>
 
                     <label htmlFor="username">
-                         <input type="text" name="" id="username" value={staff?.username} onChange={(e) => setStaff({...staff, username : e.target.value})}/>
+                         <input type="text" name="" id="username" value={person?.username} onChange={(e) => setStaff({...person, username : e.target.value})}/>
                     </label>
 
                     <label htmlFor="password">Password
-                        <input type={showPass ? 'text' : 'password'} value={staff?.password} onChange={(e) => setStaff({...staff, password : e.target.value})}/>
+                        <input type={showPass ? 'text' : 'password'} value={person?.password} onChange={(e) => setStaff({...person, password : e.target.value})}/>
                         <button onClick={() => setShowPass(prev => !prev)}><i className="bi bi-eye"></i></button>
                     </label>
 

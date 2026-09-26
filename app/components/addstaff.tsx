@@ -13,11 +13,11 @@ export default function AddStaff(props:any){
 
 
     React.useEffect(() => {
-        fetch(`${API_BASE_URL}/getall?table=staff_categories`)
+        fetch(`${API_BASE_URL}/getstaffcategories`)
         .then(res => res.json())
         .then(data => setRoles(data))
 
-        fetch(`${API_BASE_URL}/getall?table=staff`)
+        fetch(`${API_BASE_URL}/getstaffandcateg`)
         .then(res => res.json())
         .then(data => setStaff(data))
     }, [])
