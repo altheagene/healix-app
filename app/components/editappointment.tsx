@@ -1,5 +1,6 @@
 import CancelSaveBtn from "./cancelsavebtn"
 import React from "react"
+import { API_BASE_URL } from "../config"
 
 export default function EditAppointment(props:any){
 
@@ -26,7 +27,7 @@ export default function EditAppointment(props:any){
                 .then(res => res.json())
                 .then(data => setPatients(data))
 
-            fetch(`http://localhost:5000/getall?table=appointments`)
+            fetch(`${API_BASE_URL}/getallappointments`)
                 .then(res => res.json())
                 .then(data => setAppointments(data));
 

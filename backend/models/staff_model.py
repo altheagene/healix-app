@@ -8,6 +8,14 @@ def find_staff(staff_id):
     return getrecord("staff", staff_id=staff_id)
 
 
+def list_staff_categories():
+    sql = """
+        SELECT staff_category_id, category_name
+        FROM staff_categories
+    """
+    return getprocess(sql, [])
+
+
 def list_staff_with_categories():
     sql = """
             SELECT

@@ -11,7 +11,7 @@ export default function Services() {
   }, []);
 
   function loadServices() {
-    fetch(`${API_BASE_URL}/getall?table=services`)
+    fetch(`${API_BASE_URL}/getallservices`)
       .then(res => res.json())
       .then(data => setServices(data));
   }

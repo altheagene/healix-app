@@ -5,6 +5,7 @@ from flask import Blueprint, request
 from models.staff_model import (
     add_staff,
     find_staff,
+    list_staff_categories,
     list_staff_with_categories,
     update_staff,
     validate_user,
@@ -24,6 +25,11 @@ def find_user():
 def find_staff_route():
     staff_id = request.args.get("id")
     return json_data(find_staff(staff_id))
+
+
+@staff_bp.route("/getstaffcategories", methods=["GET"])
+def get_staff_categories():
+    return json_data(list_staff_categories())
 
 
 @staff_bp.route("/getstaffandcateg", methods=["GET"])

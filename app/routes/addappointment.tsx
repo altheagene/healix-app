@@ -76,7 +76,7 @@ export default function AddAppointment() {
             .then(res => res.json())
             .then(data => setPatients(data))
         
-            fetch(`${API_BASE_URL}/getall?table=appointments`)
+            fetch(`${API_BASE_URL}/getallappointments`)
             .then(res => res.json())
             .then(data => setAppointments(data))
     }, [])
