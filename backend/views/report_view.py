@@ -71,3 +71,34 @@ def appointment_logs_csv(logs):
         for log in logs
     ]
     return _csv_response("appointment_logs.csv", headers, rows)
+
+
+def inventory_logs_csv(logs):
+    headers = [
+        "Inventory ID",
+        "Inventory Date",
+        "Batch ID",
+        "Batch Number",
+        "Expiration Date",
+        "Supply ID",
+        "Supply Name",
+        "Item In",
+        "Item Out",
+        "Auto Update",
+    ]
+    rows = [
+        [
+            str(log["inv_id"]),
+            str(log["inv_date"]),
+            str(log["batch_id"]),
+            log["batch_number"] or "",
+            str(log["expiration_date"]),
+            str(log["supply_id"]),
+            log["supply_name"] or "",
+            str(log["item_in"]),
+            str(log["item_out"]),
+            str(log["auto_update"]),
+        ]
+        for log in logs
+    ]
+    return _csv_response("inventory_logs.csv", headers, rows)
