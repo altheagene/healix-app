@@ -89,9 +89,11 @@ export default function AddAppointment() {
             setFilteredPatients([])
             return
         }
-        const matches = patients.filter(p =>
-            `${p.first_name} ${p.last_name}`.toLowerCase().includes(patientQuery.toLowerCase()) || p.student_id.includes(patientQuery)
-        )
+        const matches = patients.filter(p => {
+            const name = `${p.first_name || ""} ${p.last_name || ""}`.toLowerCase()
+            const studentId = String(p.student_id ?? "")
+            return name.includes(patientQuery.toLowerCase()) || studentId.includes(patientQuery)
+        })
         setFilteredPatients(matches)
     }, [patientQuery, patients])
 

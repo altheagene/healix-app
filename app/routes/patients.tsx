@@ -36,10 +36,12 @@ export default function Patients() {
     }
 
     // Filter patients based on search term
-    const filteredPatients = allPatients.filter(patient =>
-        `${patient.first_name} ${patient.last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        patient.student_id.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+    const filteredPatients = allPatients.filter(patient => {
+        const query = searchTerm.toLowerCase()
+        const name = `${patient.first_name || ""} ${patient.last_name || ""}`.toLowerCase()
+        const studentId = String(patient.student_id ?? "").toLowerCase()
+        return name.includes(query) || studentId.includes(query)
+    })
 
     return (
         <div className="route-page">
