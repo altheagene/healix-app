@@ -3,6 +3,7 @@ from flask_cors import CORS
 import os
 
 from auth import BadSignature, SignatureExpired, read_token
+from passwords import upgrade_plaintext_passwords
 from controllers.appointment_controller import appointment_bp
 from controllers.inventory_controller import inventory_bp
 from controllers.patient_controller import patient_bp
@@ -19,6 +20,7 @@ app.register_blueprint(patient_bp)
 app.register_blueprint(service_bp)
 app.register_blueprint(staff_bp)
 app.register_blueprint(visit_bp)
+upgrade_plaintext_passwords()
 
 OPEN_PATHS = {"/validateuser"}
 

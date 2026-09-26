@@ -3,13 +3,14 @@
 from flask import Blueprint, jsonify, request
 
 from auth import create_token
+from passwords import password_matches
 from models.staff_model import (
     add_staff,
     find_staff,
     list_staff_categories,
     list_staff_with_categories,
     update_staff,
-    validate_user,
+    find_user_by_username,
 )
 from views.api_view import json_data, json_error, json_success
 
@@ -41,8 +42,8 @@ def get_staff_and_categories():
 @staff_bp.route("/validateuser", methods=["POST"])
 def validate_user_route():
     data = request.get_json() or {}
-    rows = validate_user(**data)
-    if not rows:
+    rows = find_user_by_username(data.get("username"))
+    if not rows or not password_matches(rows[0].get("password"), data.get("password")):
         return json_error("Invalid username or password", 401)
 
     user = dict(rows[0])
@@ -73,6 +74,6 @@ def update_staff_route():
         phone=data["phone"],
         email=data["email"],
         username=data["username"],
-        password=data["password"],
+        password=data.get("password"),
     )
     return json_success(success)
