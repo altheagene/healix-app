@@ -49,7 +49,7 @@ export default function Staff() {
         if (userid && parseInt(userid) === id || isAdmin == 'true'){
             console.log('YES YOU CAN EDIT!');
             setShowEdit(true);
-            setChosenId(person)
+            setChosenId(id)
         }else{
             alert('You are not authorized to edit this')
         }

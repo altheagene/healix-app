@@ -3,13 +3,16 @@ import CancelSaveBtn from "./cancelsavebtn"
 import { useEffect, useState } from "react"
 
 export default function EditStaff(props:any){
-    const id = localStorage.getItem('userid')
-    const [person, setPerson] = useState(props.chosenId);
-    const [roles, setRoles] = useState<any[]>()
-    const [staff, setStaff] = useState<any[]>()
+    const [roles, setRoles] = useState<any[]>([])
+    const [staff, setStaff] = useState<any>(null)
     const [showPass, setShowPass] = useState(false)
 
+    function updateField(field: string, value: string) {
+        setStaff((current: any) => ({ ...current, [field]: value }))
+    }
+
    async function handleSubmit() {
+        if (!staff?.staff_id) return
         try {
             const response = await apiFetch(`/updatestaff`, {
                 method: 'POST',
@@ -23,7 +26,7 @@ export default function EditStaff(props:any){
 
             const result = await response.json();
             if(result.success){
-                alert('Successfully edited the patient!')
+                alert('Successfully edited the staff member!')
                 props.hideForm()
                 props.refetch()
             }
@@ -38,9 +41,11 @@ export default function EditStaff(props:any){
             try {
                 const res = await apiFetch(`/findstaff?id=${props.chosenId}`);
                 const data = await res.json();
-                setStaff(data[0]);
+                if (data?.[0]) {
+                    setStaff({ ...data[0], password: "" })
+                }
             } catch (err) {
-                // console.error(err);
+                console.error(err);
             }
         };
 
@@ -49,11 +54,7 @@ export default function EditStaff(props:any){
         apiFetch(`/getstaffcategories`)
         .then(res => res.json())
         .then(data => setRoles(data))
-    }, [])
-
-    console.log(staff)
-    console.log(roles)
-
+    }, [props.chosenId])
 
     return(
         <div className="modal-form-div">
@@ -65,11 +66,11 @@ export default function EditStaff(props:any){
                 <div className="main-form-content">
 
                     <label htmlFor="firstname"> First Name
-                        <input type="text" id="firstname" value={person?.first_name} onChange={(e) => setStaff({...person, first_name: e.target.value})}/>
+                        <input type="text" id="firstname" value={staff?.first_name || ""} onChange={(e) => updateField("first_name", e.target.value)}/>
                     </label>
 
                     <label htmlFor="lastname"> Last Name
-                        <input type="text" id="lastname" value={person?.last_name} onChange={(e) => setStaff({...person, last_name: e.target.value})}/>
+                        <input type="text" id="lastname" value={staff?.last_name || ""} onChange={(e) => updateField("last_name", e.target.value)}/>
                     </label>
 
                     <label htmlFor="sex">
@@ -81,8 +82,8 @@ export default function EditStaff(props:any){
                                     name="gender"
                                     id="male"
                                     value="male"
-                                    onChange={(e) => setStaff({ ...person, sex: e.target.value })}
-                                    checked={person?.sex === 'male'}
+                                    onChange={(e) => updateField("sex", e.target.value)}
+                                    checked={String(staff?.sex || "").toLowerCase() === "male"}
                                     />Male
                             </label>
 
@@ -92,36 +93,38 @@ export default function EditStaff(props:any){
                                     name="gender"
                                     id="female"
                                     value="female"
-                                    checked={person?.sex === 'female'}
-                                    onChange={(e) => setStaff({ ...person, sex: e.target.value })}
+                                    checked={String(staff?.sex || "").toLowerCase() === "female"}
+                                    onChange={(e) => updateField("sex", e.target.value)}
                                     />Female
                             </label>
                         </div>
                     </label>
 
-                    <select name="" id="" value={person?.staff_catefory_id} onChange={(e) => setStaff({...person, staff_category_id : e.target.value})}>
-                        {roles?.map((role) => {
-                            return(
-                                <option value={role.staff_category_id}>{role.category_name}</option>
-                            )
-                        })}
-                    </select>
+                    <label htmlFor="role">Role
+                        <select id="role" value={staff?.staff_category_id != null ? String(staff.staff_category_id) : ""} onChange={(e) => updateField("staff_category_id", e.target.value)}>
+                            {roles.map((role) => {
+                                return(
+                                    <option key={role.staff_category_id} value={String(role.staff_category_id)}>{role.category_name}</option>
+                                )
+                            })}
+                        </select>
+                    </label>
                     
-                    <label htmlFor="phone">
-                         <input type="text" name="" id="phone" value={person?.phone} onChange={(e) => setStaff({...person, phone : e.target.value})}/>
+                    <label htmlFor="phone">Phone
+                         <input type="text" name="" id="phone" value={staff?.phone || ""} onChange={(e) => updateField("phone", e.target.value)}/>
                     </label>
                     
                     <label htmlFor="email">Email
-                        <input type="text" name="" id="email" value={person?.email} onChange={(e) => setStaff({...person, email : e.target.value})}/>
+                        <input type="text" name="" id="email" value={staff?.email || ""} onChange={(e) => updateField("email", e.target.value)}/>
                     </label>
 
-                    <label htmlFor="username">
-                         <input type="text" name="" id="username" value={person?.username} onChange={(e) => setStaff({...person, username : e.target.value})}/>
+                    <label htmlFor="username">Username
+                         <input type="text" name="" id="username" value={staff?.username || ""} onChange={(e) => updateField("username", e.target.value)}/>
                     </label>
 
                     <label htmlFor="password">Password
-                        <input type={showPass ? 'text' : 'password'} value={person?.password} onChange={(e) => setStaff({...person, password : e.target.value})}/>
-                        <button onClick={() => setShowPass(prev => !prev)}><i className="bi bi-eye"></i></button>
+                        <input type={showPass ? "text" : "password"} id="password" placeholder="Leave blank to keep the current password" value={staff?.password || ""} onChange={(e) => updateField("password", e.target.value)}/>
+                        <button type="button" onClick={() => setShowPass(prev => !prev)}><i className="bi bi-eye"></i></button>
                     </label>
 
 
