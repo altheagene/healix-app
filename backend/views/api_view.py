@@ -9,3 +9,7 @@ def json_data(data):
 
 def json_success(success):
     return jsonify({"success": success})
+
+
+def json_error(message, status=400):
+    return jsonify({"error": message}), status

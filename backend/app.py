@@ -8,6 +8,8 @@ import csv
 
 from controllers.patient_controller import patient_bp
 from controllers.staff_controller import staff_bp
+from controllers.visit_controller import visit_bp
+from models.visit_model import get_clinic_visits
 
 
 app = Flask(__name__)
@@ -15,6 +17,7 @@ app = Flask(__name__)
 CORS(app)
 app.register_blueprint(patient_bp)
 app.register_blueprint(staff_bp)
+app.register_blueprint(visit_bp)
 
 @app.route('/getall', methods=['GET'])
 def get_all():
@@ -77,17 +80,6 @@ def get_all_medicine():
     data = getallmedicine()
     return jsonify(data)
 
-@app.route("/clinic_visits", methods=['GET'])
-def get_clinic_visits():
-    args = {
-        "from_date": request.args.get("fromdate"),
-        "to_date": request.args.get("todate")
-    }
-
-    print(args['from_date'])
-    data = getclinicvisits(**args)
-    return jsonify(data)
-
 @app.route('/getinvlogs', methods=['GET'])
 def get_inv_logs():
     args = {
@@ -108,37 +100,12 @@ def get_appt_logs():
     data = getappointmentlogs(**args)
     return jsonify(data)
 
-@app.route('/getpatientcliniclogs', methods=['GET'])
-def get_patient_clinic_logs():
-    args = request.args.get('idnum')
-    data = getpatientcliniclogs(patient_id=args)
-    return jsonify(data)
-
 @app.route('/getallsupplies', methods=['GET'])
 def get_all_supplies():
     data = getallsupplies()
     return jsonify(data)
 
-@app.route('/getmedicationdetails')
-def get_medication_details():
-    idnum = request.args.get('idnum')
-    data = getmedicationdetails(visit_id = idnum)
-    
-    return jsonify(data)
-
-@app.route('/getvisitlogs', methods=['GET'])
-def get_visitlogs():
-    data = get_visit_logs()
-    return jsonify(data)
-
 # ----------------------INSERT QUERIES----------------------------
-
-@app.route('/addvisitlog', methods=['POST'])
-def add_visitlog():
-    data = request.get_json()
-    success = addrecord('visit_logs', **data)
-
-    return jsonify({'success' : success})
 
 @app.route('/addservice', methods=['POST'])
 def add_service():
@@ -193,25 +160,6 @@ def edit_batch():
     success = updaterecord('batches', **data)
     
     return jsonify({'success' : success})
-
-@app.route('/addmedicationdetails', methods=['POST'])
-def add_med_details():
-    data = request.get_json()
-    print(data)
-    latest_visit_id = getmaxid('visit_logs', 'visit_id')
-    for med in data:
-        supply_id = med['supply_id']
-        quantity = med['quantity']
-        latest_visit = latest_visit_id[0]['last_id']
-        print(supply_id)
-        print(med)
-        print(latest_visit_id)
-        addrecord('medication_details', visit_id=latest_visit, supply_id=supply_id, quantity=quantity)
-        if med['auto_deduct'] == 1:
-            deductbatch(supply_id, quantity)
-        
-    
-    return jsonify({'success' : True})
 
 @app.route('/addappointment', methods=['POST'])
 def add_appointment():
@@ -284,7 +232,7 @@ def refresh_batches():
 def generate_clinic_visit_report():
     from_date = request.args.get("fromdate")
     to_date = request.args.get("todate")
-    visits = getclinicvisits(from_date=from_date, to_date=to_date)
+    visits = get_clinic_visits(from_date=from_date, to_date=to_date)
 
     headers = [
         'Visit ID',
@@ -444,43 +392,6 @@ def download_inventory_logs():
     # Return as downloadable CSV
     return Response(generate(), mimetype='text/csv',
                     headers={"Content-Disposition": "attachment;filename=inventory_logs.csv"})
-
-@app.route("/updatevisitlog", methods=["POST"])
-def update_visit_log():
-    data = request.get_json()
-    visit_id = data.get("visit_id")
-    weight = data.get("weight")
-    temperature = data.get("temperature")
-    service_id = data.get("service_id")
-    staff_id = data.get("staff_id")
-    notes = data.get("notes")
-
-    success = updaterecord('visit_logs', visit_id=visit_id, weight=weight, temperature=temperature, service_id=service_id, staff_id=staff_id, notes=notes)
-
-    return jsonify({"success": True})
-
-@app.route("/updatemedicationdetails", methods=["POST"])
-def update_medication_details():
-    data = request.get_json()
-    visit_id = data.get("visit_id")
-    medications = data.get("medications", [])
-
-    if not visit_id:
-        return jsonify({"error": "visit_id is required"}), 400
-
-    # Delete existing medications for this visit
-    success = deleterecord('medication_details', visit_id=visit_id)
-
-    # Insert updated medications
-    for med in medications:
-        supply_id = med.get("supply_id")
-        quantity = med.get("quantity", 0)
-        auto_deduct = 1 if med.get("auto_deduct") else 0
-
-        success = addrecord('medication_details', visit_id=visit_id, supply_id=supply_id, quantity=quantity)
-
-    
-    return jsonify({"success": True})
 
 if __name__=="__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
