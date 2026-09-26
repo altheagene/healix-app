@@ -2,10 +2,14 @@
 
 from db.connection import getprocess
 from db.dbhelper import addrecord, getrecord, updaterecord
+from passwords import hash_password
 
 
 def find_staff(staff_id):
-    return getrecord("staff", staff_id=staff_id)
+    rows = getrecord("staff", staff_id=staff_id)
+    for row in rows:
+        row.pop("password", None)
+    return rows
 
 
 def list_staff_categories():
@@ -37,22 +41,24 @@ def list_staff_with_categories():
     return getprocess(sql, [])
 
 
-def validate_user(**credentials):
-    keys = list(credentials.keys())
-    values = list(credentials.values())
-
-    sql = f"""
+def find_user_by_username(username):
+    sql = """
         SELECT s.* , sc.category_name from staff s
         JOIN staff_categories sc ON s.staff_category_id = sc.staff_category_id
-        WHERE `{keys[0]}` = ? AND `{keys[1]}` = ?
-
+        WHERE s.username = ?
     """
-    return getprocess(sql, values)
+    return getprocess(sql, [username])
 
 
 def add_staff(**fields):
+    if fields.get("password"):
+        fields["password"] = hash_password(fields["password"])
     return addrecord("staff", **fields)
 
 
 def update_staff(**fields):
+    if fields.get("password"):
+        fields["password"] = hash_password(fields["password"])
+    else:
+        fields.pop("password", None)
     return updaterecord("staff", **fields)
