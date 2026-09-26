@@ -187,13 +187,13 @@ export default function EditRecord(props: any) {
           {medications.map((med, index) => (
             <div key={index} style={{ display: "flex", gap: "1rem" }}>
               <select
-                value={med.supply_id}
+                value={med.supply_id != null ? String(med.supply_id) : ""}
                 onChange={e =>
                   updateMedication(index, "supply_id", e.target.value)
                 }
               >
                 {medicines.map(m => (
-                  <option key={m.supply_id} value={m.supply_id}>
+                  <option key={m.supply_id} value={String(m.supply_id)}>
                     {m.supply_name}
                   </option>
                 ))}

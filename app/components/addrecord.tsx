@@ -89,6 +89,11 @@ export default function AddRecord(props:any){
                 body: JSON.stringify(recordDetails)
             }
         )
+        const result = await response.json()
+        if (!response.ok || !result.visit_id) {
+            alert('Failed to save the visit')
+            return
+        }
 
         const addmed = await apiFetch(`/addmedicationdetails`,
             {
@@ -96,12 +101,18 @@ export default function AddRecord(props:any){
                 headers: {
                     'Content-Type' : 'application/json'
                 },
-                body: JSON.stringify(medications)
+                body: JSON.stringify({
+                    visit_id: result.visit_id,
+                    medications,
+                })
             }
         )
+        if (!addmed.ok) {
+            alert('The visit was saved, but the medicines were not.')
+            props.refetch()
+            return
+        }
 
-        console.log(await response.json())
-        console.log(medications)
         props.hideForm()
         props.refetch()
     }
