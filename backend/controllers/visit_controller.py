@@ -15,6 +15,7 @@ from models.visit_model import (
     update_visit_log,
 )
 from views.api_view import json_data, json_error, json_success
+from views.report_view import clinic_visits_csv
 
 visit_bp = Blueprint("visits", __name__)
 
@@ -93,3 +94,12 @@ def update_medication_details():
         )
 
     return json_success(True)
+
+
+@visit_bp.route("/generateclinicreport", methods=["GET"])
+def generate_clinic_report():
+    visits = get_clinic_visits(
+        from_date=request.args.get("fromdate"),
+        to_date=request.args.get("todate"),
+    )
+    return clinic_visits_csv(visits)

@@ -34,13 +34,6 @@ def addrecord(table, **kwargs):
 
     return postprocess(sql, values)
 
-def getallwithcondition(table, **kwargs):
-    keys = list(kwargs.keys())
-    values = list(kwargs.values())
-    sql = f'SELECT * FROM {table} WHERE `{keys[0]}` = ?'
-
-    return getprocess(sql, values)
-
 def updaterecord(table, **kwargs):
     keys = list(kwargs.keys())
     values = list(kwargs.values())
@@ -81,13 +74,3 @@ def deleterecord(table, **kwargs):
     '''
 
     return postprocess(sql, values)
-
-def main(): pass
-    # data = getallstudents('students')
-
-    # for dat in data:
-    #     print(f"{dat['student_id']}")
-    
-
-if __name__ == '__main__':
-    main()
