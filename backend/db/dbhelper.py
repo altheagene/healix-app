@@ -34,16 +34,6 @@ def addrecord(table, **kwargs):
 
     return postprocess(sql, values)
 
-def getallappointmentstoday():
-
-    sql = f'''
-        SELECT *
-        FROM appointments
-        WHERE appointment_date LIKE date('now');
-    '''
-
-    return getprocess(sql, [])
-
 def getallwithcondition(table, **kwargs):
     keys = list(kwargs.keys())
     values = list(kwargs.values())
@@ -122,32 +112,6 @@ def updaterecord(table, **kwargs):
            '''
     return postprocess(sql, listvalues)
 
-def getappointments():
-
-    sql = """
-    SELECT 
-        a.appointment_id,
-        a.appointment_date,
-        a.start_time,
-        a.status,
-        a.notes,
-        s.service_id,
-        s.service_name,
-        p.patient_id,
-        p.first_name || ' ' || p.middle_name || ' ' || p.last_name AS patient_name
-        FROM 
-            appointments a
-        JOIN 
-            services s ON a.service_id = s.service_id
-        JOIN 
-            patients p ON a.patient_id = p.patient_id
-        ORDER BY a.appointment_date, a.start_time
-        """
-
-    data = getprocess(sql, [])
-
-    return data
-
 def getinventorylogs(**kwargs):
     values = list(kwargs.values())
     sql = f'''
@@ -166,30 +130,6 @@ def getinventorylogs(**kwargs):
     JOIN supplies s ON b.supply_id = s.supply_id
     WHERE DATE(i.inv_date) BETWEEN ? AND ?
     ORDER BY i.inv_id DESC;
-
-    '''
-
-    data = getprocess(sql, values)
-
-    return data
-
-def getappointmentlogs(**kwargs):
-    values = list(kwargs.values())
-    sql = f'''
-        SELECT
-        a.appointment_id,
-        a.service_id,
-        s.service_name,
-        a.appointment_date,
-        a.start_time,
-        a.status,
-        p.patient_id,
-        p.first_name || ' ' || p.middle_name || ' ' || p.last_name AS patient_name
-    FROM appointments a
-    JOIN services s ON s.service_id = a.service_id
-    JOIN patients p ON a.patient_id = p.patient_id
-    WHERE DATE(a.appointment_date) BETWEEN ? AND ?
-    ORDER BY a.appointment_date DESC;
 
     '''
 
@@ -236,24 +176,6 @@ ORDER BY s.supply_name;
     data = getprocess(sql, [])
 
     return data
-
-def updateappointment(appointment_id, **kwargs):
-    keys = list(kwargs.keys())
-    values = list(kwargs.values())
-
-    listkeys = []
-    for x in range(0, len(keys)):
-        listkeys.append(f'`{keys[x]}` = ?')
-
-    stringifykeys = ','.join(listkeys)
-    
-    sql = f'''
-            UPDATE appointments
-            SET {stringifykeys}
-            WHERE `appointment_id` = {appointment_id}
-           '''
-    return postprocess(sql, values)
-
 
 def deletemedical(table, **kwargs):
     keys = list(kwargs.keys())
