@@ -84,7 +84,6 @@ def inventory_logs_csv(logs):
         "Supply Name",
         "Item In",
         "Item Out",
-        "Auto Update",
     ]
     rows = [
         [
@@ -97,8 +96,36 @@ def inventory_logs_csv(logs):
             log["supply_name"] or "",
             str(log["item_in"]),
             str(log["item_out"]),
-            str(log["auto_update"]),
         ]
         for log in logs
     ]
     return _csv_response("inventory_logs.csv", headers, rows)
+
+
+def clinic_visits_csv(visits):
+    headers = [
+        "Visit ID",
+        "Visit Datetime",
+        "Notes",
+        "Service ID",
+        "Service Name",
+        "Patient ID",
+        "Patient Name",
+        "Staff ID",
+        "Staff Name",
+    ]
+    rows = [
+        [
+            str(visit["visit_id"]),
+            str(visit["visit_datetime"]),
+            visit["notes"] or "",
+            str(visit["service_id"]),
+            visit["service_name"] or "",
+            str(visit["patient_id"]),
+            visit["patient_name"] or "",
+            str(visit["staff_id"]),
+            visit["staff_name"] or "",
+        ]
+        for visit in visits
+    ]
+    return _csv_response("clinic_visit_report.csv", headers, rows)
