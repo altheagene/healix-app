@@ -1,10 +1,10 @@
+import { apiFetch } from "../api";
 import '../routepages.css'
 import '../app.css'
 import AddPatient from '~/components/addpatient'
 import React from 'react'
 import { useNavigate } from 'react-router'
 import 'bootstrap-icons/font/bootstrap-icons.css';
-import {API_BASE_URL} from '../config'
 
 export default function Patients() {
     const [width, setWidth] = React.useState(0)
@@ -24,13 +24,13 @@ export default function Patients() {
     const [searchTerm, setSearchTerm] = React.useState("")
 
     React.useEffect(() => {
-        fetch(`${API_BASE_URL}/getallpatients`)
+        apiFetch(`/getallpatients`)
             .then(res => res.json())
             .then(data => setAllPatients(data))
     }, [])
 
     function refetchPatients() {
-        fetch(`${API_BASE_URL}/getallpatients`)
+        apiFetch(`/getallpatients`)
             .then(res => res.json())
             .then(data => setAllPatients(data))
     }
@@ -82,7 +82,8 @@ export default function Patients() {
                     </thead>
                     <tbody>
                         {filteredPatients.map(patient => (
-                            <tr key={patient.patient_id} onClick={() => navigate(`/patientdetails/${patient.patient_id}`)}>
+                            <tr key={patient.patient_id} onClick={() => navigate(`/patientdetails/${patient.patient_id}`)} 
+                                style={{cursor: 'pointer'}}>
                                 <td></td>
                                 <td>{patient.student_id}</td>
                                 <td>{patient.first_name} {patient.last_name}</td>

@@ -1,5 +1,5 @@
+import { apiFetch } from "../api";
 import React from "react";
-import {API_BASE_URL} from '../config'
 
 
 export default function InventoryReport(){
@@ -27,8 +27,7 @@ export default function InventoryReport(){
   };
 
   const downloadReport = async () => {
-        const url = `${API_BASE_URL}/download/inventorylogs?fromdate=${encodeURIComponent(dateRange.from_date)}&todate=${encodeURIComponent(dateRange.to_date)}`;
-        const response = await fetch(url);
+        const response = await apiFetch(`/download/inventorylogs?fromdate=${encodeURIComponent(dateRange.from_date)}&todate=${encodeURIComponent(dateRange.to_date)}`);
         const blob = await response.blob();
         const link = document.createElement('a');
         link.href = window.URL.createObjectURL(blob);
@@ -71,13 +70,13 @@ export default function InventoryReport(){
     console.log(itemInOut)
     
         React.useEffect(() => {
-            fetch(`${API_BASE_URL}/getinvlogs?fromdate=${dateRange.from_date}&todate=${dateRange.to_date}`)
+            apiFetch(`/getinvlogs?fromdate=${dateRange.from_date}&todate=${dateRange.to_date}`)
             .then(res => res.json())
             .then(data => setInvLogs(data))
         }, [])
 
         React.useEffect(() => {
-                fetch(`${API_BASE_URL}/getinvlogs?fromdate=${dateRange.from_date}&todate=${dateRange.to_date}`)
+                apiFetch(`/getinvlogs?fromdate=${dateRange.from_date}&todate=${dateRange.to_date}`)
             .then(res => res.json())
             .then(data => setInvLogs(data))
         }, [dateRange])

@@ -1,9 +1,9 @@
+import { apiFetch } from "../api";
 import Searchbar from "~/components/searchbar"
 import AddStaff from "~/components/addstaff"
 import EditStaff from "~/components/editstaff"
 import React from "react"
 import '../app.css'
-import {API_BASE_URL} from '../config'
 import 'bootstrap-icons/font/bootstrap-icons.css'
 import '../staff.css'
 import ViewStaff from "~/components/viewstaff"
@@ -32,24 +32,24 @@ export default function Staff() {
 
     // Fetch staff on mount
     React.useEffect(() => {
-        fetch(`${API_BASE_URL}/getstaffandcateg`)
+        apiFetch(`/getstaffandcateg`)
             .then(res => res.json())
             .then(data => setStaff(data))
     }, [])
 
     function refetch(){
-         fetch(`${API_BASE_URL}/getstaffandcateg`)
+         apiFetch(`/getstaffandcateg`)
             .then(res => res.json())
             .then(data => setStaff(data))
     }
 
-    function handleEdit(id:number){
+    function handleEdit(id:number, person: any){
         const userid= localStorage.getItem('userid');
         const isAdmin = localStorage.getItem('admin')
         if (userid && parseInt(userid) === id || isAdmin == 'true'){
             console.log('YES YOU CAN EDIT!');
             setShowEdit(true);
-            setChosenId(id)
+            setChosenId(person)
         }else{
             alert('You are not authorized to edit this')
         }
@@ -122,7 +122,7 @@ export default function Staff() {
                                             <i className="bi bi-eye"></i> View
                                         </button>
 
-                                        <button onClick={() => handleEdit(person.staff_id)}>
+                                        <button onClick={() => handleEdit(person.staff_id, person)}>
                                             <i className="bi bi-pencil"></i> Edit
                                         </button>
                                         </div>

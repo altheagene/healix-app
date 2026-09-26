@@ -1,10 +1,10 @@
+import { apiFetch } from "../api";
 import Searchbar from "~/components/searchbar"
 import '../inventory.css'
 import AddItem from "~/components/additem"
 import ItemDetails from "./itemdetails"
 import React from "react"
 import { NavLink, useNavigate } from "react-router"
-import {API_BASE_URL} from '../config'
 
 
 export default function Inventory() {
@@ -12,19 +12,20 @@ export default function Inventory() {
   const [showAddItem, setShowAddItem] = React.useState(false);
   const [supplies, setSupplies] = React.useState<any[]>([]);
   const [searchTerm, setSearchTerm] = React.useState("");
-  const [chosenActive, setChosenActive] = React.useState(true)
+  const [chosenActive, setChosenActive] = React.useState(true);
+  const [selectedCategory, setSelectedCategory] = React.useState("All Items"); // NEW
 
   React.useEffect(() => {
-    fetch(`${API_BASE_URL}/getallsupplies`)
+    apiFetch(`/getallsupplies`)
       .then(res => res.json())
       .then(data => setSupplies(data));
 
-      fetch(`${API_BASE_URL}/refreshbatches`)
+      apiFetch(`/refreshbatches`)
         .then(res => res.json())
   }, []);
 
   async function removeItem( id:any){
-    const responses = await fetch(`${API_BASE_URL}/deleteitem`, {
+    const responses = await apiFetch(`/deleteitem`, {
       method: 'POST',
       headers: {
         'Content-Type' : 'application/json'
@@ -33,12 +34,11 @@ export default function Inventory() {
     })
 
     const result = await responses.json()
-   
     refetchSupplies();
   }
 
   async function reactivateItem( id:any){
-    const responses = await fetch(`${API_BASE_URL}/deleteitem`, {
+    const responses = await apiFetch(`/deleteitem`, {
       method: 'POST',
       headers: {
         'Content-Type' : 'application/json'
@@ -51,17 +51,21 @@ export default function Inventory() {
   }
 
   function refetchSupplies() {
-    fetch(`${API_BASE_URL}/getallsupplies`)
+    apiFetch(`/getallsupplies`)
       .then(res => res.json())
       .then(data => setSupplies(data));
   }
 
-  // Filtered supplies based on search term
+  // Derive unique categories from supplies dynamically
+  const categories = ["All Items", ...Array.from(new Set(supplies.map(s => s.category_name)))]; // NEW
+
+  // Filtered supplies based on search term + active status + category
   const filteredSupplies = supplies.filter(supply => 
-  (supply.supply_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-   supply.category_name.toLowerCase().includes(searchTerm.toLowerCase())) && 
-  supply.is_active == chosenActive
-);
+    (supply.supply_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+     supply.category_name.toLowerCase().includes(searchTerm.toLowerCase())) && 
+    supply.is_active == chosenActive &&
+    (selectedCategory === "All Items" || supply.category_name === selectedCategory) // NEW
+  );
 
 
   return (
@@ -76,7 +80,6 @@ export default function Inventory() {
           Manage your clinic's inventory, supplies, and equipment.
         </p>
 
-        {/* Searchbar */}
         <input type="text"
           id="searchbar"
           placeholder="Search item"
@@ -84,29 +87,21 @@ export default function Inventory() {
           onChange={(e) => setSearchTerm(e.target.value)}
         />
 
-        {/* Filters (optional) */}
-        {/* <div id="filter-div">
-          <select>
-            <option value="all">All Items</option>
-            <option value="medications">Medications</option>
-            <option value="medical-supplies">Medical Supplies</option>
-            <option value="equipment">Equipment</option>
-          </select>
-
-          <select>
-            <option value="all">All Status</option>
-            <option value="instock">In Stock</option>
-            <option value="lowstock">Low Stock</option>
-            <option value="out-of-stock">Out of Stock</option>
-          </select>
-        </div> */}
-
         <div style={{ display: "flex", justifyContent: "space-between", marginTop: "1rem" }}>
-          <div id="filter-by-category" style={{ visibility: "hidden" }}>
-            <button className="category-filter">All Items</button>
-            <button className="category-filter">Medications</button>
-            <button className="category-filter">Medical Supplies</button>
-            <button className="category-filter">Equipment</button>
+          {/* Category filter buttons — dynamically built from your data */}
+          <div style={{ display: "flex", justifyContent: "space-between", marginTop: "1rem" }}>
+            <div id="filter-by-category">
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+              >
+                {categories.map(category => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
 
@@ -126,7 +121,7 @@ export default function Inventory() {
             + Add Item
           </button>
         </div>
-        {/* Inventory Table */}
+
         <div id="inventory-table-container" className="table-container">
           <table id="inventory-table">
             <thead>
@@ -173,36 +168,34 @@ export default function Inventory() {
                   </td>
                   <td>{supply.last_updated || "None"}</td>
                   <td className="action-cell">
-  <div className="action-menu">
-    <button className="action-trigger">
-      <i className="bi bi-three-dots-vertical"></i>
-    </button>
+                    <div className="action-menu">
+                      <button className="action-trigger">
+                        <i className="bi bi-three-dots-vertical"></i>
+                      </button>
 
-    <div className="action-dropdown">
-      <button onClick={() => navigate(`/itemdetails/${supply.supply_id}`)}>
-        <i className="bi bi-eye"></i> View
-      </button>
+                      <div className="action-dropdown">
+                        <button onClick={() => navigate(`/itemdetails/${supply.supply_id}`)}>
+                          <i className="bi bi-eye"></i> View
+                        </button>
 
-      {supply.is_active ? (
-        <button onClick={() => removeItem(supply.supply_id)}>
-          <i className="bi bi-trash"></i> Delete
-        </button>
-      ) : (
-        <button onClick={() => reactivateItem(supply.supply_id)}>
-          <i className="bi bi-arrow-clockwise"></i> Reactivate
-        </button>
-      )}
-    </div>
-  </div>
-</td>
-
-                    
+                        {supply.is_active ? (
+                          <button onClick={() => removeItem(supply.supply_id)}>
+                            <i className="bi bi-trash"></i> Delete
+                          </button>
+                        ) : (
+                          <button onClick={() => reactivateItem(supply.supply_id)}>
+                            <i className="bi bi-arrow-clockwise"></i> Reactivate
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </td>
                 </tr>
               )) : <tr>
-                          <td colSpan={7} style={{ textAlign: 'center', padding: '15px' }}>
-                              No Supplies found
-                          </td>
-                      </tr>}
+                    <td colSpan={7} style={{ textAlign: 'center', padding: '15px' }}>
+                      No Supplies found
+                    </td>
+                  </tr>}
             </tbody>
           </table>
         </div>

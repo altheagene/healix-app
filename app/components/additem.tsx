@@ -1,3 +1,4 @@
+import { apiFetch } from "../api";
 import '../inventory.css'
 import React from 'react'
 import CancelSaveBtn from './cancelsavebtn'
@@ -27,7 +28,7 @@ export default function AddItem(props: any) {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/additem`, {
+      const response = await apiFetch(`/additem`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -53,7 +54,7 @@ export default function AddItem(props: any) {
   }
 
   React.useEffect(() => {
-    fetch(`http://localhost:5000/getallsuppliescategories`)
+    apiFetch(`/getallsuppliescategories`)
       .then(res => res.json())
       .then(data => setSuppliesCategories(data))
   }, [])
@@ -121,15 +122,14 @@ export default function AddItem(props: any) {
             </select>
           </label>
 
-          <label style={{ display: "flex", alignItems: "center", gap: "8px", color: 'red' }}>
-            <input
-              type="checkbox"
-              checked={itemDetails.auto_deduct}
-              onChange={(e) => setItemDetails({ ...itemDetails, auto_deduct: e.target.checked })}
-              style={{ width: "18px", height: "18px", cursor: "pointer" }}
-            />
-            Auto deduct from inventory
-          </label>
+          <label>
+                        <input type="checkbox" 
+                                checked={itemDetails?.auto_deduct} 
+                                onChange={(e) => setItemDetails({...itemDetails, auto_deduct: e.target.checked})}
+                                style={{width: '30px', display: 'inline'}}/>
+                        Automatically deduct this item when dispensed. 
+                        <span style={{display: 'block', color: 'red'}}>This should only be activated for medicines in units (e.g. capsules, tablets)</span>
+                    </label>
         </div>
 
         <CancelSaveBtn hideForm={props.hideForm} submit={submitForm} />

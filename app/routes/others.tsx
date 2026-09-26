@@ -1,5 +1,5 @@
+import { apiFetch } from "../api";
 import React from "react";
-import { API_BASE_URL } from "../config";
 import "bootstrap-icons/font/bootstrap-icons.css";
 
 export default function Services() {
@@ -11,7 +11,7 @@ export default function Services() {
   }, []);
 
   function loadServices() {
-    fetch(`${API_BASE_URL}/getallservices`)
+    apiFetch(`/getallservices`)
       .then(res => res.json())
       .then(data => setServices(data));
   }
@@ -19,7 +19,7 @@ export default function Services() {
   function addService() {
     if (!newService.trim()) return;
 
-    fetch(`${API_BASE_URL}/addservice`, {
+    apiFetch(`/addservice`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ service_name: newService.trim() })

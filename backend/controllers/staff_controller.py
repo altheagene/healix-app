@@ -1,7 +1,8 @@
 """Staff routes. Each function reads the request, calls the model, and returns JSON."""
 
-from flask import Blueprint, request
+from flask import Blueprint, jsonify, request
 
+from auth import create_token
 from models.staff_model import (
     add_staff,
     find_staff,
@@ -10,7 +11,7 @@ from models.staff_model import (
     update_staff,
     validate_user,
 )
-from views.api_view import json_data, json_success
+from views.api_view import json_data, json_error, json_success
 
 staff_bp = Blueprint("staff", __name__)
 
@@ -39,8 +40,19 @@ def get_staff_and_categories():
 
 @staff_bp.route("/validateuser", methods=["POST"])
 def validate_user_route():
-    data = request.get_json()
-    return json_success(validate_user(**data))
+    data = request.get_json() or {}
+    rows = validate_user(**data)
+    if not rows:
+        return json_error("Invalid username or password", 401)
+
+    user = dict(rows[0])
+    user.pop("password", None)
+    token = create_token(
+        user["staff_id"],
+        user["staff_category_id"],
+        user["category_name"],
+    )
+    return jsonify({"token": token, "user": user})
 
 
 @staff_bp.route("/addstaff", methods=["POST"])

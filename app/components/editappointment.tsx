@@ -1,6 +1,6 @@
+import { apiFetch } from "../api";
 import CancelSaveBtn from "./cancelsavebtn"
 import React from "react"
-import { API_BASE_URL } from "../config"
 
 export default function EditAppointment(props:any){
 
@@ -19,15 +19,15 @@ export default function EditAppointment(props:any){
         console.log(appointmentDetails)
 
         React.useEffect(() => {
-            fetch(`http://localhost:5000/getallservices`)
+            apiFetch(`/getallservices`)
                 .then(res => res.json())
                 .then(data => setServices(data))
     
-            fetch(`http://localhost:5000/getallpatients`)
+            apiFetch(`/getallpatients`)
                 .then(res => res.json())
                 .then(data => setPatients(data))
 
-            fetch(`${API_BASE_URL}/getallappointments`)
+            apiFetch(`/getallappointments`)
                 .then(res => res.json())
                 .then(data => setAppointments(data));
 
@@ -82,7 +82,7 @@ export default function EditAppointment(props:any){
             const handleSubmit = async () => {
         
                 try {
-                    const res = await fetch('http://localhost:5000/updateappointmentdetails', {
+                    const res = await apiFetch(`/updateappointmentdetails`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(appointmentDetails)

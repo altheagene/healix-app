@@ -1,10 +1,10 @@
+import { apiFetch } from "../api";
 import '../routepages.css'
 import '../appointments.css'
 import React from 'react'
 import { useNavigate } from 'react-router'
 import 'bootstrap-icons/font/bootstrap-icons.css'
 import EditAppointment from '~/components/editappointment'
-import {API_BASE_URL} from '../config'
 
 export default function Appointments() {
     const [width, setWidth] = React.useState(0)
@@ -35,7 +35,7 @@ export default function Appointments() {
     }, [])
 
     function refetchAppts() {
-        fetch(`${API_BASE_URL}/getallappointments`) 
+        apiFetch(`/getallappointments`) 
             .then(res => res.json())
             .then(data => setAppointments(data))
     }
@@ -49,7 +49,7 @@ export default function Appointments() {
     // Mark completed
     async function markCompleted(appointment_id: any) {
         try {
-            await fetch(`${API_BASE_URL}/updateappointment`, {
+            await apiFetch(`/updateappointment`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ appointment_id, status: 'Completed' })
@@ -65,7 +65,7 @@ export default function Appointments() {
     // Cancel appointment
     async function cancelAppt(appointment_id: any) {
         try {
-            await fetch(`${API_BASE_URL}/updateappointment`, {
+            await apiFetch(`/updateappointment`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ appointment_id, status: 'Cancelled' })

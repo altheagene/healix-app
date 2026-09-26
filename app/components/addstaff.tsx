@@ -1,6 +1,6 @@
+import { apiFetch } from "../api";
 import CancelSaveBtn from "./cancelsavebtn"
 import React from "react"
-import {API_BASE_URL} from '../config'
 
 export default function AddStaff(props:any){
 
@@ -13,11 +13,11 @@ export default function AddStaff(props:any){
 
 
     React.useEffect(() => {
-        fetch(`${API_BASE_URL}/getstaffcategories`)
+        apiFetch(`/getstaffcategories`)
         .then(res => res.json())
         .then(data => setRoles(data))
 
-        fetch(`${API_BASE_URL}/getstaffandcateg`)
+        apiFetch(`/getstaffandcateg`)
         .then(res => res.json())
         .then(data => setStaff(data))
     }, [])
@@ -50,7 +50,7 @@ export default function AddStaff(props:any){
             return
         }
 
-        const response = await fetch(`${API_BASE_URL}/addstaff`,
+        const response = await apiFetch(`/addstaff`,
             {
                 method: 'POST',
                 headers:{

@@ -1,3 +1,4 @@
+import { apiFetch } from "../api";
 // import React from "react";
 // import {
 //   BarChart,
@@ -138,24 +139,23 @@ export default function PatientReports()
         }
     }
      React.useEffect(() => {
-        fetch(`${API_BASE_URL}/clinic_visits?fromdate=${dateRange.from_date}&todate=${dateRange.to_date}`)
+        apiFetch(`/clinic_visits?fromdate=${dateRange.from_date}&todate=${dateRange.to_date}`)
         .then(res => res.json())
         .then(data => setVisitLogs(data))
     }, [])
 
     React.useEffect(() => {
-         fetch(`${API_BASE_URL}/clinic_visits?fromdate=${dateRange.from_date}&todate=${dateRange.to_date}`)
+         apiFetch(`/clinic_visits?fromdate=${dateRange.from_date}&todate=${dateRange.to_date}`)
         .then(res => res.json())
         .then(data => setVisitLogs(data))
     }, [dateRange])
 
     function downloadReports(){
-        fetch(`${API_BASE_URL}/generateclinicreport?fromdate=${dateRange.from_date}&todate=${dateRange.to_date}`)
+        apiFetch(`/generateclinicreport?fromdate=${dateRange.from_date}&todate=${dateRange.to_date}`)
     }`${API_BASE_URL}/generateclinicreport?fromdate=${dateRange.from_date}&todate=${dateRange.to_date}`
 
    const downloadReport = async () => {
-    const url = `${API_BASE_URL}/generateclinicreport?fromdate=${encodeURIComponent(dateRange.from_date)}&todate=${encodeURIComponent(dateRange.to_date)}`;
-    const response = await fetch(url);
+    const response = await apiFetch(`/generateclinicreport?fromdate=${encodeURIComponent(dateRange.from_date)}&todate=${encodeURIComponent(dateRange.to_date)}`);
     const blob = await response.blob();
     const link = document.createElement('a');
     link.href = window.URL.createObjectURL(blob);

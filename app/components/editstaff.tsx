@@ -1,6 +1,6 @@
+import { apiFetch } from "../api";
 import CancelSaveBtn from "./cancelsavebtn"
 import { useEffect, useState } from "react"
-import {API_BASE_URL} from '../config'
 
 export default function EditStaff(props:any){
     const id = localStorage.getItem('userid')
@@ -11,7 +11,7 @@ export default function EditStaff(props:any){
 
    async function handleSubmit() {
         try {
-            const response = await fetch(`${API_BASE_URL}/updatestaff`, {
+            const response = await apiFetch(`/updatestaff`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(staff)
@@ -36,7 +36,7 @@ export default function EditStaff(props:any){
     useEffect(() => {
         const fetchStaff = async () => {
             try {
-                const res = await fetch(`${API_BASE_URL}/findstaff?id=${props.chosenId}`);
+                const res = await apiFetch(`/findstaff?id=${props.chosenId}`);
                 const data = await res.json();
                 setStaff(data[0]);
             } catch (err) {
@@ -46,7 +46,7 @@ export default function EditStaff(props:any){
 
         fetchStaff()
 
-        fetch(`${API_BASE_URL}/getstaffcategories`)
+        apiFetch(`/getstaffcategories`)
         .then(res => res.json())
         .then(data => setRoles(data))
     }, [])

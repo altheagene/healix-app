@@ -1,3 +1,4 @@
+import { apiFetch } from "../api";
 import '../patients.css'
 import '../app.css'
 import AddRecord from '~/components/addrecord'
@@ -8,13 +9,12 @@ import { useParams } from 'react-router';
 import { useNavigate } from 'react-router'
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import user from '../images/user.png'
-import {API_BASE_URL} from '../config'
 import EditRecord from '~/components/editrecord'
 
 
 
 export default function PatientDetails(){
-
+    const role = localStorage.getItem('role');
     const { id } = useParams()
     const navigate = useNavigate()
     const [showAddRecord, setShowAddRecord] = React.useState(false)
@@ -30,36 +30,36 @@ export default function PatientDetails(){
     const [clinicLogs, setClinicLogs]= React.useState<any[]>();
 
     React.useEffect(() => {
-        fetch(`${API_BASE_URL}/getpatient?idnum=${id}`).then
+        apiFetch(`/getpatient?idnum=${id}`).then
         (res => res.json()).then(data => setStudentData(data[0]))
 
-        fetch(`${API_BASE_URL}/getpatientcliniclogs?idnum=${id}`)
+        apiFetch(`/getpatientcliniclogs?idnum=${id}`)
         .then(res => res.json())
         .then(data => setClinicLogs(data))
     }, [])
 
      React.useEffect(() => {
-        fetch(`${API_BASE_URL}/getpatientallergies?idnum=${id}`).then
+        apiFetch(`/getpatientallergies?idnum=${id}`).then
         (res => res.json()).then(data => setAllergies(data))
     }, [])
 
     React.useEffect(() => {
-        fetch(`${API_BASE_URL}/getpatientconditions?idnum=${id}`).then
+        apiFetch(`/getpatientconditions?idnum=${id}`).then
         (res => res.json()).then(data => setConditions(data))
     }, [])
 
     async function refetch(){
-        fetch(`${API_BASE_URL}/getpatientcliniclogs?idnum=${id}`)
+        apiFetch(`/getpatientcliniclogs?idnum=${id}`)
         .then(res => res.json())
         .then(data => setClinicLogs(data))
 
-        await fetch(`${API_BASE_URL}/getpatient?idnum=${id}`).then
+        await apiFetch(`/getpatient?idnum=${id}`).then
         (res => res.json()).then(data => setStudentData(data[0]))
 
-         fetch(`${API_BASE_URL}/getpatientallergies?idnum=${id}`).then
+         apiFetch(`/getpatientallergies?idnum=${id}`).then
         (res => res.json()).then(data => setAllergies(data))
 
-          fetch(`${API_BASE_URL}/getpatientconditions?idnum=${id}`).then
+          apiFetch(`/getpatientconditions?idnum=${id}`).then
         (res => res.json()).then(data => setConditions(data))
     }
 
@@ -185,7 +185,9 @@ export default function PatientDetails(){
                 <div style={{marginTop: '2rem', width:'100%', padding: '1rem 0'}}>
                     <div style={{width: '100%', display:'flex', justifyContent: 'space-between'}}>
                         <h2 style={{fontWeight: '500'}}>Clinic Visits</h2>
+                        {role != 'Staff' &&
                         <button style={{height: '40px', width: '120px', backgroundColor: '#334FBD', borderRadius: '10px', color: 'white', border: 'none'}} onClick={() => setShowAddRecord(true)}>+ Add Record</button>
+                        }
                     </div>
                     <div 
                         // id='patient-visit-div' 

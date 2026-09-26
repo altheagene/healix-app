@@ -1,7 +1,7 @@
+import { apiFetch } from "../api";
 import { NavLink } from "react-router";
 import React from "react";
 import { useNavigate } from "react-router";
-import {API_BASE_URL} from '../config'
 import img  from '../images/user.png'
 
 
@@ -22,7 +22,7 @@ export default function Navbar(props:any){
     }, []);
 
     React.useEffect(() => {
-        fetch(`${API_BASE_URL}/finduser?id=${id}`)
+        apiFetch(`/finduser?id=${id}`)
         .then(res => res.json())
         .then(data => setUser(data[0]))
     }, [])
@@ -40,6 +40,10 @@ export default function Navbar(props:any){
             icon: 'bi bi-person'
         },
         {
+         route: "/records",
+            text: 'Records',
+            icon: 'bi bi-file'
+        },{
             route: "/appointments",
             text: 'Appointments',
             icon: 'bi bi-calendar-date'

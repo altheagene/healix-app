@@ -1,3 +1,4 @@
+import { apiFetch } from "../api";
 import React from "react"
 import CancelSaveBtn from "./cancelsavebtn"
 import { useParams } from "react-router"
@@ -37,7 +38,7 @@ export default function AddBatch(props:any){
            alert('Please fill out all form fields!')
             return
         }else{
-            const response = await fetch('http://localhost:5000/addbatch', {
+            const response = await apiFetch(`/addbatch`, {
                 method: 'POST',
                 headers: {
                     'Content-Type' : 'application/json'

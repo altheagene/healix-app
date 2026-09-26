@@ -1,7 +1,7 @@
+import { apiFetch } from "../api";
 import React from "react"
 import CancelSaveBtn from "./cancelsavebtn"
 import '../app.css'
-import { API_BASE_URL } from "../config"
 
 export default function EditRecord(props: any) {
   const now = new Date()
@@ -15,15 +15,15 @@ export default function EditRecord(props: any) {
 
   /* ------------------ LOAD STATIC DATA ------------------ */
   React.useEffect(() => {
-    fetch(`${API_BASE_URL}/getallservices`)
+    apiFetch(`/getallservices`)
       .then(res => res.json())
       .then(setServices)
 
-    fetch(`${API_BASE_URL}/getstaffandcateg`)
+    apiFetch(`/getstaffandcateg`)
       .then(res => res.json())
       .then(setStaff)
 
-    fetch(`http://localhost:5000/getallmedicine`)
+    apiFetch(`/getallmedicine`)
       .then(res => res.json())
       .then(setMedicines)
   }, [])
@@ -46,8 +46,7 @@ export default function EditRecord(props: any) {
     })
 
     // load existing medications
-    fetch(
-      `http://localhost:5000/getmedicationdetails?idnum=${props.record.visit_id}`
+    apiFetch(`/getmedicationdetails?idnum=${props.record.visit_id}`
     )
       .then(res => res.json())
       .then(setMedications)
@@ -89,14 +88,14 @@ export default function EditRecord(props: any) {
   /* ------------------ SUBMIT UPDATE ------------------ */
   async function handleUpdate() {
     try {
-        const response = await fetch(`http://localhost:5000/updatevisitlog`, {
+        const response = await apiFetch(`/updatevisitlog`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(recordDetails)
         })
         const result = await response.json()
 
-        const response2 = await fetch(`http://localhost:5000/updatemedicationdetails`, {
+        const response2 = await apiFetch(`/updatemedicationdetails`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
