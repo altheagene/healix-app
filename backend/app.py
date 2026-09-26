@@ -6,6 +6,7 @@ import os
 import io
 import csv
 
+from controllers.appointment_controller import appointment_bp
 from controllers.patient_controller import patient_bp
 from controllers.staff_controller import staff_bp
 from controllers.visit_controller import visit_bp
@@ -15,6 +16,7 @@ from models.visit_model import get_clinic_visits
 app = Flask(__name__)
 # CORS(app, resources={r"/*" : {"origins":"*"}} )
 CORS(app)
+app.register_blueprint(appointment_bp)
 app.register_blueprint(patient_bp)
 app.register_blueprint(staff_bp)
 app.register_blueprint(visit_bp)
@@ -27,29 +29,10 @@ def get_all():
 
     return jsonify(data)
 
-@app.route('/getallappointments', methods=['GET'])
-def get_all_appointments():
-    data = getappointments()
-
-    return jsonify(data)
-
-@app.route('/updateappointment', methods=['POST'])
-def update_appointment():
-    data = request.get_json()
-    success = updaterecord('appointments', **data)
-
-    return jsonify({'success' : success})
-
 @app.route('/getbatches', methods=['GET'])
 def get_batches():
     supply_id = request.args.get('idnum')
     data = getrecord('batches', supply_id=supply_id)
-
-    return jsonify(data)
-
-@app.route('/getappointmentstoday', methods=['GET'])
-def get_appointments_today():
-    data = getallappointmentstoday()
 
     return jsonify(data)
 
@@ -88,16 +71,6 @@ def get_inv_logs():
     }
 
     data = getinventorylogs(**args)
-    return jsonify(data)
-
-@app.route('/getapptlogs')
-def get_appt_logs():
-    args = {
-        "from_date": request.args.get("fromdate"),
-        "to_date": request.args.get("todate")
-    }
-
-    data = getappointmentlogs(**args)
     return jsonify(data)
 
 @app.route('/getallsupplies', methods=['GET'])
@@ -160,25 +133,6 @@ def edit_batch():
     success = updaterecord('batches', **data)
     
     return jsonify({'success' : success})
-
-@app.route('/addappointment', methods=['POST'])
-def add_appointment():
-    data = request.get_json()
-    success = addrecord('appointments', **data)
-
-    return jsonify({'success' : success})
-
-@app.route('/updateappointmentdetails', methods=['POST'])
-def update_appointmen_details():
-    data = request.get_json()
-    appointment_id = data['appointment_id']
-    del data['appointment_id']
-    del data['patient_name']
-    del data['service_name']
-    print(data)
-    success = updateappointment(appointment_id, **data)
-    return jsonify({'success' : success})
-
 
 # -----------------------------------DELETE----------------------------
 
@@ -265,84 +219,6 @@ def generate_clinic_visit_report():
 
     return Response(generate(), mimetype='text/csv',
         headers={"Content-Disposition": "attachment;filename=clinic_visit_report.csv"})
-
-
-
-@app.route('/download/appointments', methods=['GET'])
-def download_appointments():
-    # Get the appointment data
-    appointments = getappointments()
-
-    # Create a CSV in memory
-    def generate():
-        # CSV header
-        header = ['Appointment ID', 'Date', 'Start Time', 'Status', 'Notes', 'Service ID', 'Service Name', 'Patient ID', 'Patient Name']
-        yield ','.join(header) + '\n'
-
-        # CSV rows
-        for appt in appointments:
-            row = [
-                str(appt['appointment_id']),
-                str(appt['appointment_date']),
-                str(appt['start_time']),
-                appt['status'] or '',
-                appt['Notes'] or '',
-                str(appt['service_id']),
-                appt['service_name'] or '',
-                str(appt['patient_id']),
-                appt['patient_name'] or ''
-            ]
-            # Escape commas in text
-            row = [f'"{col}"' if ',' in col else col for col in row]
-            yield ','.join(row) + '\n'
-
-    # Return as a downloadable CSV
-    return Response(generate(), mimetype='text/csv',
-        headers={"Content-Disposition": "attachment;filename=appointments_report.csv"})
-
-
-@app.route('/download/appointmentlogs', methods=['GET'])
-def download_appointment_logs():
-    # Get query parameters
-    from_date = request.args.get("fromdate")
-    to_date = request.args.get("todate")
-
-    # Fetch data from DB
-    logs = getappointmentlogs(from_date=from_date, to_date=to_date)
-
-    # CSV headers
-    headers = [
-        'Appointment ID',
-        'Service ID',
-        'Service Name',
-        'Appointment Date',
-        'Start Time',
-        'Status',
-        'Patient ID',
-        'Patient Name'
-    ]
-
-    # Generator to stream CSV rows
-    def generate():
-        yield ','.join(headers) + '\n'
-        for log in logs:
-            row = [
-                str(log['appointment_id']),
-                str(log['service_id']),
-                log['service_name'] or '',
-                str(log['appointment_date']),
-                str(log['start_time']),
-                log['status'] or '',
-                str(log['patient_id']),
-                log['patient_name'] or ''
-            ]
-            # Quote fields that contain commas
-            row = [f'"{col}"' if ',' in col else col for col in row]
-            yield ','.join(row) + '\n'
-
-    # Return as downloadable CSV
-    return Response(generate(), mimetype='text/csv',
-        headers={"Content-Disposition": "attachment;filename=appointment_logs.csv"})
 
 
 
