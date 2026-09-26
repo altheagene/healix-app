@@ -45,13 +45,15 @@ def updaterecord(table, **kwargs):
         listvalues.append(values[x])
 
     stringifykeys = ','.join(listkeys)
+    params = listvalues
     
+    params.append(values[0])
     sql = f'''
             UPDATE {table}
             SET {stringifykeys}
-            WHERE `{keys[0]}` = {values[0]}
+            WHERE `{keys[0]}` = ?
            '''
-    return postprocess(sql, listvalues)
+    return postprocess(sql, params)
 
 def deletemedical(table, **kwargs):
     keys = list(kwargs.keys())

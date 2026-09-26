@@ -77,6 +77,6 @@ def update_appointment_details(appointment_id, **fields):
     sql = f"""
             UPDATE appointments
             SET {",".join(assignments)}
-            WHERE `appointment_id` = {appointment_id}
+            WHERE `appointment_id` = ?
            """
-    return postprocess(sql, values)
+    return postprocess(sql, [*values, appointment_id])
