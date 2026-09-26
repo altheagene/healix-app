@@ -1,3 +1,4 @@
+import { apiFetch } from "../api";
 
 // import '../patients.css';
 // import '../app.css';
@@ -36,7 +37,7 @@
 //     console.log(studentData);
     
 //     let success = true;
-//     const response = await fetch('http://localhost:5000/addpatient',
+//     const response = await apiFetch(`/addpatient`,
 //         {
 //             method: 'POST',
 //             headers:{
@@ -61,10 +62,10 @@
 
 //     console.log(selectedAllergy)
 //     if (selectedAllergy.length > 0){
-//         const id = await fetch('http://localhost:5000/getmaxpatientid').
+//         const id = await apiFetch(`/getmaxpatientid`).
 //         then(res => res.json())
         
-//         await fetch('http://localhost:5000/addpatientallergies', {
+//         await apiFetch(`/addpatientallergies`, {
 //             method: 'POST',
 //             headers: { 'Content-Type': 'application/json' },
 //             body: JSON.stringify({
@@ -75,10 +76,10 @@
 //     }
 
 //     if (selectedCondition.length > 0){
-//         const id = await fetch('http://localhost:5000/getmaxpatientid').
+//         const id = await apiFetch(`/getmaxpatientid`).
 //         then(res => res.json())
         
-//         await fetch('http://localhost:5000/addpatientconditions', {
+//         await apiFetch(`/addpatientconditions`, {
 //             method: 'POST',
 //             headers: { 'Content-Type': 'application/json' },
 //             body: JSON.stringify({
@@ -92,7 +93,7 @@
 //   // ---------- EFFECTS ----------
 
 //   React.useEffect(() => {
-//     fetch('http://localhost:5000/getallergies')
+//     apiFetch(`/getallergies`)
 //       .then(res => res.json())
 //       .then(data =>
 //         setAllergies(
@@ -104,7 +105,7 @@
 //   }, []);
 
 //   React.useEffect(() => {
-//     fetch('http://localhost:5000/getconditions')
+//     apiFetch(`/getconditions`)
 //       .then(res => res.json())
 //       .then(data =>
 //         setConditions(
@@ -117,7 +118,7 @@
 
 //   // ---------- FUNCTIONS ----------
 //   function refetchAllergyAndCondi(){
-//      fetch('http://localhost:5000/getallergies')
+//      apiFetch(`/getallergies`)
 //       .then(res => res.json())
 //       .then(data =>
 //         setAllergies(
@@ -127,7 +128,7 @@
 //         )
 //       );
 
-//       fetch('http://localhost:5000/getconditions')
+//       apiFetch(`/getconditions`)
 //       .then(res => res.json())
 //       .then(data =>
 //         setConditions(
@@ -139,9 +140,9 @@
 //   }
 //   async function findStudent() {
 //     const idnum = idnumSearch.trim();
-//     const response = await fetch(`http://localhost:5000/getstudent?idnum=${idnum}`);
+//     const response = await apiFetch(`/getstudent?idnum=${idnum}`);
 
-//       // const response = await fetch(`http://localhost:5000/getstudent?idnum=${idnum}`)
+//       // const response = await apiFetch(`/getstudent?idnum=${idnum}`)
 //       // .then(res => res.json())
 //       // .then(data => setStudentData({...data[0], is_student:true}));
 
@@ -165,7 +166,7 @@
 
 // async function addNewAllergy(name: string) {
 //   if (!name.trim()) return;
-//   const response = await fetch('http://localhost:5000/addnewallergy', {
+//   const response = await apiFetch(`/addnewallergy`, {
 //     method: 'POST',
 //     headers: { 'Content-Type': 'application/json' },
 //     body: JSON.stringify({ allergy_name: name.trim() }),
@@ -182,7 +183,7 @@
 
 // async function addNewCondition(name: string) {
 //   if (!name.trim()) return;
-//   const response = await fetch('http://localhost:5000/addnewcondition', {
+//   const response = await apiFetch(`/addnewcondition`, {
 //     method: 'POST',
 //     headers: { 'Content-Type': 'application/json' },
 //     body: JSON.stringify({ condition_name: name.trim() }),
@@ -482,7 +483,7 @@ export default function AddPatient(props: any) {
 
   // ---------- EFFECTS ----------
   React.useEffect(() => {
-    fetch('http://localhost:5000/getallergies')
+    apiFetch(`/getallergies`)
       .then(res => res.json())
       .then(data =>
         setAllergies(
@@ -494,7 +495,7 @@ export default function AddPatient(props: any) {
   }, []);
 
   React.useEffect(() => {
-    fetch('http://localhost:5000/getconditions')
+    apiFetch(`/getconditions`)
       .then(res => res.json())
       .then(data =>
         setConditions(
@@ -537,7 +538,7 @@ export default function AddPatient(props: any) {
     }
 
     // ---------- SUBMIT STUDENT ----------
-    const response = await fetch('http://localhost:5000/addpatient', {
+    const response = await apiFetch(`/addpatient`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({...studentData, is_student: true})
@@ -554,8 +555,8 @@ export default function AddPatient(props: any) {
 
     // ---------- SUBMIT ALLERGIES ----------
     if (selectedAllergy.length > 0) {
-      const id = await fetch('http://localhost:5000/getmaxpatientid').then(res => res.json());
-      await fetch('http://localhost:5000/addpatientallergies', {
+      const id = await apiFetch(`/getmaxpatientid`).then(res => res.json());
+      await apiFetch(`/addpatientallergies`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -567,8 +568,8 @@ export default function AddPatient(props: any) {
 
     // ---------- SUBMIT CONDITIONS ----------
     if (selectedCondition.length > 0) {
-      const id = await fetch('http://localhost:5000/getmaxpatientid').then(res => res.json());
-      await fetch('http://localhost:5000/addpatientconditions', {
+      const id = await apiFetch(`/getmaxpatientid`).then(res => res.json());
+      await apiFetch(`/addpatientconditions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -586,7 +587,7 @@ export default function AddPatient(props: any) {
       setFlashMessage('Please enter an id number!')
       return;
     }
-    const response = await fetch(`http://localhost:5000/getstudent?idnum=${idnum}`);
+    const response = await apiFetch(`/getstudent?idnum=${idnum}`);
     const jsonified = await response.json();
 
     if (jsonified.length > 0) {
@@ -605,7 +606,7 @@ export default function AddPatient(props: any) {
 
   async function addNewAllergy(name: string) {
     if (!name.trim()) return;
-    const response = await fetch('http://localhost:5000/addnewallergy', {
+    const response = await apiFetch(`/addnewallergy`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ allergy_name: name.trim() }),
@@ -620,7 +621,7 @@ export default function AddPatient(props: any) {
 
   async function addNewCondition(name: string) {
     if (!name.trim()) return;
-    const response = await fetch('http://localhost:5000/addnewcondition', {
+    const response = await apiFetch(`/addnewcondition`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ condition_name: name.trim() }),
@@ -665,224 +666,6 @@ export default function AddPatient(props: any) {
       <label htmlFor={`condition-${item.condition_id}`}>{item.condition_name}</label>
     </li>
   ));
-
-//   // ---------- JSX ----------
-//   return (
-//     <div id="add-new-patient-div">
-//       <div className='gray-bg'></div>
-
-//       <div id="add-patient-form" className='modal-form'>
-//         {/* Header */}
-//         <div className='modal-header-div'>
-//           <p className="modal-header">Add Patient</p>
-//         </div>
-
-//         <div id='main-add-patient-form'>
-//         {flashMessage.length > 0 && (
-//           <div className='flash-message' style={{ background: found ? '#4caf50' : '#FF3838' }}>
-//             {flashMessage}
-//           </div>
-//         )}
-//           {/* Search */}
-//           <div>
-//             <label htmlFor="search-by-id" style={{ display: 'inline-block', marginRight: '1rem' }}>
-//               Find student by ID Number
-//               <input
-//                 type="text"
-//                 id='search-by-id'
-//                 placeholder='Search by ID Number'
-//                 style={{ width: '250px' }}
-//                 value={idnumSearch}
-//                 onChange={(e) => setIdnumSearch(e.target.value)}
-//               />
-//             </label>
-//             <button
-//               style={{ height: '40px', width: '80px', borderRadius: '10px', border: 'none' }}
-//               onClick={findStudent}
-//             >
-//               Search
-//             </button>
-//           </div>
-
-//           {/* Student Information */}
-//           <div id="student-information" className='form-div'>
-//             <p className='form-header'>Student Information</p>
-//             <div>
-//               <label>First Name
-//                 <input 
-//                   type="text" 
-//                   value={studentData?.first_name || ''}
-//                   onChange={(e) => setStudentData({ ...studentData, first_name: e.target.value })}
-//                 />
-//               </label>
-//               <label>Middle Name
-//                 <input 
-//                   type="text" 
-//                   value={studentData?.middle_name || ''}
-//                   onChange={(e) => setStudentData({ ...studentData, middle_name: e.target.value })}
-//                 />
-//               </label>
-//               <label>Last Name
-//                 <input 
-//                   type="text" 
-//                   value={studentData?.last_name || ''}
-//                   onChange={(e) => setStudentData({ ...studentData, last_name: e.target.value })}
-//                 />
-//               </label>
-//             </div>
-
-//             <div>
-//               <label>Birthdate
-//                 <input 
-//                   type="date" 
-//                   value={studentData?.birthday || ''}
-//                   onChange={(e) => setStudentData({ ...studentData, birthday: e.target.value })}
-//                 />
-//               </label>
-
-//               <label>Sex
-//                 <div id='gender-div'>
-//                   <div>
-//                     <input type="radio" name="gender" checked={studentData?.sex === 'Female'} 
-//                       onChange={() => setStudentData({ ...studentData, sex: 'Female' })}/>
-//                     <label>Female</label>
-//                   </div>
-//                   <div>
-//                     <input type="radio" name="gender" checked={studentData?.sex === 'Male'} 
-//                       onChange={() => setStudentData({ ...studentData, sex: 'Male' })}/>
-//                     <label>Male</label>
-//                   </div>
-//                 </div>
-//               </label>
-//             </div>
-
-//             <div>
-//               <label>Email
-//                 <input 
-//                   type="text" 
-//                   value={studentData?.email || ''}
-//                   onChange={(e) => setStudentData({ ...studentData, email: e.target.value })}
-//                 />
-//               </label>
-
-//               <label>Phone
-//                 <input 
-//                   type="text" 
-//                   value={studentData?.phone || ''}
-//                   onChange={(e) => setStudentData({ ...studentData, phone: e.target.value })}
-//                 />
-//               </label>
-//             </div>
-
-//             <div>
-//               <label>ID Number
-//                 <input 
-//                   type="number" 
-//                   value={studentData?.student_id || ''}
-//                   onChange={(e) => setStudentData({ ...studentData, student_id: e.target.value })}
-//                 />
-//               </label>
-//               <label>Department
-//                 <input 
-//                   type='text' 
-//                   value={studentData?.department || ''}
-//                   onChange={(e) => setStudentData({ ...studentData, department: e.target.value })}
-//                 />
-//               </label>
-//               <label>Level
-//                 <input 
-//                   type='number' 
-//                   value={studentData?.level || ''}
-//                   onChange={(e) => setStudentData({ ...studentData, level: e.target.value })}
-//                 />
-//               </label>
-//             </div>
-
-//             <div>
-//               <label>Emergency Contact Name
-//                 <input 
-//                   type="text" 
-//                   value={studentData?.emergency_contact_name || ''}
-//                   onChange={(e) => setStudentData({ ...studentData, emergency_contact_name: e.target.value })}
-//                 />
-//               </label>
-
-//               <label>Emergency Contact Phone
-//                 <input 
-//                   type="text" 
-//                   value={studentData?.emergency_contact_phone || ''}
-//                   onChange={(e) => setStudentData({ ...studentData, emergency_contact_phone: e.target.value })}
-//                 />
-//               </label>
-//             </div>
-//           </div>
-
-//           {/* Medical Information (optional) */}
-//           <div id="medical-information" className='form-div'>
-//             <p className='form-header'>Medical Information (Optional)</p>
-
-//             {/* Allergies */}
-//             <div>
-//               <label>Allergies</label>
-//               <input
-//                 type="text"
-//                 placeholder="Search Allergies"
-//                 onClick={() => setShowAllergyDropdown(prev => !prev)}
-//                 onChange={e => setAllergySearch(e.target.value)}
-//               />
-//               {showAllergyDropdown && (
-//                 <div className="dropdown">
-//                   <ul>{allergyCheckboxes}</ul>
-//                   {allergySearch && !filteredAllergies.some(a => a.allergy_name.toLowerCase() === allergySearch.toLowerCase()) && (
-//                     <li style={{ cursor: 'pointer', fontWeight: 'bold' }} onClick={() => addNewAllergy(allergySearch)}>
-//                       + Add "{allergySearch}"
-//                     </li>
-//                   )}
-//                 </div>
-//               )}
-//             </div>
-
-//             {/* Conditions */}
-//             <div>
-//               <label>Conditions</label>
-//               <input
-//                 type="text"
-//                 placeholder="Search Conditions"
-//                 onClick={() => setShowConditionDropdown(prev => !prev)}
-//                 onChange={e => setConditionSearch(e.target.value)}
-//               />
-//               {showConditionDropdown && (
-//                 <div className="dropdown">
-//                   <ul>{conditionsCheckboxes}</ul>
-//                   {conditionSearch && !filteredConditions.some(c => c.condition_name.toLowerCase() === conditionSearch.toLowerCase()) && (
-//                     <li style={{ cursor: 'pointer', fontWeight: 'bold' }} onClick={() => addNewCondition(conditionSearch)}>
-//                       + Add "{conditionSearch}"
-//                     </li>
-//                   )}
-//                 </div>
-//               )}
-//             </div>
-
-//             {/* Notes */}
-//             <div>
-//               <label>Notes
-//                 <input 
-//                   type="text"
-//                   onChange={(e) => setStudentData({ ...studentData, notes: e.target.value })}
-//                 />
-//               </label>
-//             </div>
-//           </div>
-//         </div>
-
-//         {/* Cancel / Save Buttons */}
-//         <div id='cancel-save-div'>
-//           <CancelSaveBtn hideForm={props.hideForm} submit={handleSubmit} />
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
 
   // ---------- JSX ----------
   return (

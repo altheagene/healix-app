@@ -1,3 +1,4 @@
+import { apiFetch } from "./api";
 import {
   isRouteErrorResponse,
   Links,
@@ -108,7 +109,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
 //   )
 // }
 
-import { API_BASE_URL} from './config'
 import './routepages.css'
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { useNavigate } from "react-router";
@@ -121,11 +121,20 @@ export default function App() {
 
 // Only access localStorage after component mounts
 React.useEffect(() => {
-  const loggedIn = localStorage.getItem("loggedIn") === "true";
+  const loggedIn = localStorage.getItem("loggedIn") === "true" && !!localStorage.getItem("token");
   setValidUser(loggedIn);
 
-  fetch(`${API_BASE_URL}/refreshbatches`)
-  .then(res => res.json())
+  if (loggedIn) {
+    apiFetch("/refreshbatches").then(res => res.json());
+  }
+
+  const onExpired = () => {
+    localStorage.removeItem("token");
+    localStorage.setItem("loggedIn", "false");
+    setValidUser(false);
+  };
+  window.addEventListener("auth-expired", onExpired);
+  return () => window.removeEventListener("auth-expired", onExpired);
 }, []);
 
 function validate() {
@@ -141,6 +150,7 @@ function logout() {
   setValidUser(false);
   setFlashMessage("Logged out!");
   setTimeout(() => setFlashMessage(""), 3000);
+  localStorage.removeItem("token");
   localStorage.setItem("loggedIn", "false");
 }
 

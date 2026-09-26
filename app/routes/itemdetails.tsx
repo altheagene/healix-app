@@ -1,3 +1,4 @@
+import { apiFetch } from "../api";
 import '../inventory.css'
 import AddBatch from '~/components/addbatch'
 import UpdateStocks from '~/components/updatestocks';
@@ -9,7 +10,6 @@ import CancelSaveBtn from '~/components/cancelsavebtn';
 import EditStock from '~/components/editstocks';
 import EditBatch from '~/components/editbatch';
 import { useNavigate } from 'react-router';
-import {API_BASE_URL} from '../config'
 import rxsymbol from '../images/rxsymbol.png'
 import equipment from '../images/equipment.png'
 import supplies from '../images/supply.png'
@@ -81,20 +81,20 @@ export default function ItemDetails(){
     
 
     React.useEffect(() => {
-        fetch(`${API_BASE_URL}/getsupplydetails?idnum=${id}`).
+        apiFetch(`/getsupplydetails?idnum=${id}`).
         then(res => res.json()).
         then(data => setItemDetails(data[0]))
 
     }, [])
 
     React.useEffect(() => {
-        fetch(`${API_BASE_URL}/getbatches?idnum=${id}`)
+        apiFetch(`/getbatches?idnum=${id}`)
         .then(res => res.json())
         .then(data => setBatches(data))
     }, [])
 
     function refetchBatches(){
-        fetch(`${API_BASE_URL}/getbatches?idnum=${id}`)
+        apiFetch(`/getbatches?idnum=${id}`)
         .then(res => res.json())
         .then(data => setBatches(data))
     }
@@ -113,16 +113,16 @@ export default function ItemDetails(){
     }
 
     function refetchDetails(){
-        fetch(`${API_BASE_URL}/getsupplydetails?idnum=${id}`).
+        apiFetch(`/getsupplydetails?idnum=${id}`).
         then(res => res.json()).
         then(data => setItemDetails(data[0]))
 
-        fetch(`${API_BASE_URL}/refreshbatches`)
+        apiFetch(`/refreshbatches`)
                 .then(res => res.json())
     }
 
      async function removeBatch( id:any){
-        const responses = await fetch(`${API_BASE_URL}/updatebatchactive`, {
+        const responses = await apiFetch(`/updatebatchactive`, {
           method: 'POST',
           headers: {
             'Content-Type' : 'application/json'
@@ -136,7 +136,7 @@ export default function ItemDetails(){
       }
     
       async function reactivateBatch( id:any){
-        const responses = await fetch(`${API_BASE_URL}/updatebatchactive`, {
+        const responses = await apiFetch(`/updatebatchactive`, {
           method: 'POST',
           headers: {
             'Content-Type' : 'application/json'

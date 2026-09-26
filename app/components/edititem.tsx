@@ -1,6 +1,6 @@
+import { apiFetch } from "../api";
 import CancelSaveBtn from "./cancelsavebtn"
 import React from "react"
-import {API_BASE_URL} from '../config'
 
 export default function EditItem(props:any){
 
@@ -23,7 +23,7 @@ export default function EditItem(props:any){
         return;
     }
 
-    const response = await fetch(`${API_BASE_URL}/updatesupply`, {
+    const response = await apiFetch(`/updatesupply`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",

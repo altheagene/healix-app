@@ -1,3 +1,4 @@
+import { apiFetch } from "../api";
 
 import '../patients.css';
 import '../app.css';
@@ -39,7 +40,7 @@ export default function EditPatient(props: any) {
 
   // Load allergies
   React.useEffect(() => {
-    fetch('http://localhost:5000/getallergies')
+    apiFetch(`/getallergies`)
       .then(res => res.json())
       .then(data =>
         setAllergies(data.sort((a, b) =>
@@ -50,7 +51,7 @@ export default function EditPatient(props: any) {
 
   // Load conditions
   React.useEffect(() => {
-    fetch('http://localhost:5000/getconditions')
+    apiFetch(`/getconditions`)
       .then(res => res.json())
       .then(data =>
         setConditions(data.sort((a, b) =>
@@ -104,7 +105,7 @@ export default function EditPatient(props: any) {
 
   async function submitAddAllergies() {
     if (addedAllergy.length === 0) return;
-    await fetch("http://localhost:5000/addallergies", {
+    await apiFetch(`/addallergies`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -116,7 +117,7 @@ export default function EditPatient(props: any) {
 
   async function submitDeleteAllergies() {
     if (removedAllergy.length === 0) return;
-    await fetch("http://localhost:5000/deletepatientallergies", {
+    await apiFetch(`/deletepatientallergies`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -128,7 +129,7 @@ export default function EditPatient(props: any) {
 
   async function submitAddConditions() {
     if (addedCondition.length === 0) return;
-    await fetch("http://localhost:5000/addconditions", {
+    await apiFetch(`/addconditions`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -140,7 +141,7 @@ export default function EditPatient(props: any) {
 
   async function submitDeleteConditions() {
     if (removedCondition.length === 0) return;
-    await fetch("http://localhost:5000/deletepatientconditions", {
+    await apiFetch(`/deletepatientconditions`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -155,7 +156,7 @@ export default function EditPatient(props: any) {
   // ============================================================
 
   async function handleSubmit() {
-    const res = await fetch("http://localhost:5000/updatepatient", {
+    const res = await apiFetch(`/updatepatient`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(studentData),

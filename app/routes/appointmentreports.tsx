@@ -1,5 +1,5 @@
+import { apiFetch } from "../api";
 import React from "react";
-import {API_BASE_URL} from '../config'
 
 
 export default function AppointmentReport() {
@@ -41,8 +41,7 @@ export default function AppointmentReport() {
 
   
   const downloadReport = async () => {
-      const url = `${API_BASE_URL}/download/appointmentlogs?fromdate=${encodeURIComponent(dateRange.from_date)}&todate=${encodeURIComponent(dateRange.to_date)}`;
-      const response = await fetch(url);
+      const response = await apiFetch(`/download/appointmentlogs?fromdate=${encodeURIComponent(dateRange.from_date)}&todate=${encodeURIComponent(dateRange.to_date)}`);
       const blob = await response.blob();
       const link = document.createElement('a');
       link.href = window.URL.createObjectURL(blob);
@@ -75,8 +74,7 @@ export default function AppointmentReport() {
 
   // Fetch appointments initially and whenever dateRange changes
   React.useEffect(() => {
-    fetch(
-      `${API_BASE_URL}/getapptlogs?fromdate=${dateRange.from_date}&todate=${dateRange.to_date}`
+    apiFetch(`/getapptlogs?fromdate=${dateRange.from_date}&todate=${dateRange.to_date}`
     )
       .then((res) => res.json())
       .then((data) => setApptLogs(data));

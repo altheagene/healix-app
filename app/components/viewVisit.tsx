@@ -1,3 +1,4 @@
+import { apiFetch } from "../api";
 
 // import { useParams } from "react-router"
 // import CancelSaveBtn from "./cancelsavebtn"
@@ -13,7 +14,7 @@
 //     }, [])
 
 //     React.useEffect(() => {
-//         fetch(`http://localhost:5000/getmedicationdetails?idnum=${visitInfo?.visit_id}`)
+//         apiFetch(`/getmedicationdetails?idnum=${visitInfo?.visit_id}`)
 //         .then(res => res.json())
 //         .then(data => setMedicationDetails(data))
 //     })
@@ -107,7 +108,7 @@ export default function ViewVisit(props: any) {
 
   React.useEffect(() => {
     if (visitInfo) {
-      fetch(`http://localhost:5000/getmedicationdetails?idnum=${visitInfo?.visit_id}`)
+      apiFetch(`/getmedicationdetails?idnum=${visitInfo?.visit_id}`)
         .then(res => res.json())
         .then(data => setMedicationDetails(data));
     }

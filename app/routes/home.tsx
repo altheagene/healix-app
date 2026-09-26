@@ -1,10 +1,10 @@
+import { apiFetch } from "../api";
 import type { Route } from "./+types/home";
 import { Welcome } from "../welcome/welcome";
 import '../home.css'
 import React from "react";
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { API_BASE_URL } from '../config';
 
 
 
@@ -34,19 +34,19 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AA46BE', '#FF4C4C'
 
 
   React.useEffect(() => {
-    fetch(`${API_BASE_URL}/getallpatients`)
+    apiFetch(`/getallpatients`)
     .then(res => res.json())
     .then(data => setPatients(data))
 
-    fetch(`${API_BASE_URL}/getappointmentstoday`)
+    apiFetch(`/getappointmentstoday`)
     .then(res => res.json())
     .then(data => setAppointments(data))
 
-    fetch(`${API_BASE_URL}/getallsupplies`)
+    apiFetch(`/getallsupplies`)
     .then(res => res.json())
     .then(data => setSupplies(data))
 
-    fetch(`${API_BASE_URL}/getstaffandcateg`)
+    apiFetch(`/getstaffandcateg`)
     .then(res => res.json())
     .then(data => setStaff(data))
   }, [])

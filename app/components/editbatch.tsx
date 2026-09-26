@@ -1,6 +1,6 @@
+import { apiFetch } from "../api";
 import React from "react"
 import CancelSaveBtn from "./cancelsavebtn"
-import {API_BASE_URL} from '../config'
 
 export default function EditBatch(props:any){
 
@@ -12,7 +12,7 @@ export default function EditBatch(props:any){
     })
 
     async function handleSubmit(){
-        const response = await fetch(`${API_BASE_URL}/editbatch`, 
+        const response = await apiFetch(`/editbatch`, 
             {
                 method: 'POST',
                 headers: {
@@ -27,7 +27,7 @@ export default function EditBatch(props:any){
             response.json()
             
         props.refetch()
-        fetch(`${API_BASE_URL}/refreshbatches`)
+        apiFetch(`/refreshbatches`)
                         .then(res => res.json())
                 props.refetch();
     }

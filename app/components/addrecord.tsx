@@ -1,8 +1,8 @@
+import { apiFetch } from "../api";
 
 import { useParams } from "react-router"
 import CancelSaveBtn from "./cancelsavebtn"
 import React from "react"
-import {API_BASE_URL} from '../config'
 
 export default function AddRecord(props:any){
 
@@ -26,15 +26,15 @@ export default function AddRecord(props:any){
     const [medicines, setMedicine] = React.useState<any[]>();
     const [medications, setMedications] = React.useState<{ supply_id: number | null; auto_deduct: false | true; quantity: number }[]>([]);
     React.useEffect(() => {
-        fetch(`${API_BASE_URL}/getallservices`)
+        apiFetch(`/getallservices`)
         .then(res => res.json())
         .then(data => setServices(data))
 
-        fetch(`${API_BASE_URL}/getstaffandcateg`)
+        apiFetch(`/getstaffandcateg`)
         .then(res => res.json())
         .then(data => setStaff(data))
 
-        fetch(`${API_BASE_URL}/getallmedicine`)
+        apiFetch(`/getallmedicine`)
         .then(res => res.json())
         .then(data => setMedicine(data))
     }, [])
@@ -50,7 +50,7 @@ export default function AddRecord(props:any){
     async function addServiceInline() {
         if (!newService.trim()) return;
 
-        const res = await fetch(`${API_BASE_URL}/addservice`, {
+        const res = await apiFetch(`/addservice`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ service_name: newService.trim() })
@@ -59,7 +59,7 @@ export default function AddRecord(props:any){
         const result = await res.json();
 
         // reload services
-        const refreshed = await fetch(`${API_BASE_URL}/getallservices`)
+        const refreshed = await apiFetch(`/getallservices`)
             .then(r => r.json());
 
         setServices(refreshed);
@@ -80,7 +80,7 @@ export default function AddRecord(props:any){
             alert('Please fill out notes!')
             return;
         }
-        const response = await fetch(`${API_BASE_URL}/addvisitlog`,
+        const response = await apiFetch(`/addvisitlog`,
             {
                 method: 'POST',
                 headers: {
@@ -90,7 +90,7 @@ export default function AddRecord(props:any){
             }
         )
 
-        const addmed = await fetch(`${API_BASE_URL}/addmedicationdetails`,
+        const addmed = await apiFetch(`/addmedicationdetails`,
             {
                 method: 'POST',
                 headers: {

@@ -1,6 +1,6 @@
+import { apiFetch } from "../api";
 import '../login.css'
 import React from 'react'
-import { API_BASE_URL } from '../config';
 
 export default function LoginPage(props: any) {
   const [username, setUsername] = React.useState('');
@@ -8,7 +8,7 @@ export default function LoginPage(props: any) {
   const [flashMessage, setFlashMessage] = React.useState(''); // Flash message state
 
   async function handleSubmit() {
-    const response = await fetch(`${API_BASE_URL}/validateuser`, {
+    const response = await apiFetch(`/validateuser`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -18,11 +18,12 @@ export default function LoginPage(props: any) {
 
     const result = await response.json();
 
-    if (result.success && result.success.length > 0) {
-      localStorage.setItem('userid', result.success[0].staff_id);
-      const isAdmin = result.success[0].staff_category_id == 4
-      console.log(result.success[0].staff_category_id)
+    if (response.ok && result.token) {
+      localStorage.setItem('token', result.token);
+      localStorage.setItem('userid', result.user.staff_id);
+      const isAdmin = result.user.staff_category_id == 4
       localStorage.setItem('admin', isAdmin.toString())
+      localStorage.setItem('role', result.user.category_name)
       props.validate();
     } else {
       setFlashMessage('Invalid username or password'); // Set flash message
