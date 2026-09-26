@@ -4,7 +4,7 @@ from datetime import date
 from sqlite3 import connect
 
 from db.connection import database, getprocess
-from db.dbhelper import addrecord, deleterecord, getmaxid, updaterecord
+from db.dbhelper import deleterecord, getmaxid, updaterecord
 
 
 def get_clinic_visits(**kwargs):
@@ -59,7 +59,9 @@ def get_medication_details(**kwargs):
     values = list(kwargs.values())
     sql = """
             SELECT
+            s.supply_id,
             s.supply_name,
+            s.auto_deduct,
             m.quantity
             FROM medication_details m
             JOIN supplies s on s.supply_id = m.supply_id
@@ -89,59 +91,185 @@ def get_visit_logs():
 
 
 def add_visit_log(**fields):
-    return addrecord("visit_logs", **fields)
+    keys = list(fields.keys())
+    values = list(fields.values())
+    columns = "`,`".join(keys)
+    placeholders = ",".join(["?"] * len(values))
+    sql = f"INSERT INTO visit_logs (`{columns}`) VALUES ({placeholders})"
+
+    conn = _connect()
+    cursor = conn.cursor()
+    try:
+        cursor.execute(sql, values)
+        visit_id = cursor.lastrowid
+        conn.commit()
+        return visit_id
+    except Exception as error:
+        print("POST error:", error)
+        conn.rollback()
+        return None
+    finally:
+        conn.close()
 
 
 def latest_visit_id():
     return getmaxid("visit_logs", "visit_id")
 
 
-def add_medication_detail(visit_id, supply_id, quantity):
-    return addrecord(
-        "medication_details",
-        visit_id=visit_id,
-        supply_id=supply_id,
-        quantity=quantity,
-    )
-
-
-def deduct_batch(supply_id, quantity):
-    conn = connect(database)
+def add_medications_for_visit(visit_id, medications):
+    conn = _connect()
     cursor = conn.cursor()
+    try:
+        _insert_medications(cursor, visit_id, medications or [])
+        conn.commit()
+        return True
+    except Exception as error:
+        print("POST error:", error)
+        conn.rollback()
+        return False
+    finally:
+        conn.close()
 
-    cursor.execute("""
-        SELECT batch_id, stock_level
+
+def replace_visit_medications(visit_id, medications):
+    conn = _connect()
+    cursor = conn.cursor()
+    try:
+        cursor.execute(
+            """
+            SELECT m.supply_id, m.quantity, s.auto_deduct
+            FROM medication_details m
+            JOIN supplies s ON s.supply_id = m.supply_id
+            WHERE m.visit_id = ?
+            """,
+            (visit_id,),
+        )
+        previous = cursor.fetchall()
+        for supply_id, quantity, auto_deduct in previous:
+            if auto_deduct and quantity:
+                _change_stock(cursor, supply_id, quantity, "in")
+
+        cursor.execute(
+            "DELETE FROM medication_details WHERE visit_id = ?",
+            (visit_id,),
+        )
+        _insert_medications(cursor, visit_id, medications or [])
+        conn.commit()
+        return True
+    except Exception as error:
+        print("POST error:", error)
+        conn.rollback()
+        return False
+    finally:
+        conn.close()
+
+
+def _connect():
+    conn = connect(database)
+    conn.execute("PRAGMA foreign_keys = ON;")
+    return conn
+
+
+def _insert_medications(cursor, visit_id, medications):
+    for med in medications:
+        supply_id = med.get("supply_id")
+        if supply_id in (None, ""):
+            continue
+        supply_id = int(supply_id)
+        quantity = int(med.get("quantity") or 0)
+        cursor.execute(
+            """
+            INSERT INTO medication_details (visit_id, supply_id, quantity)
+            VALUES (?, ?, ?)
+            """,
+            (visit_id, supply_id, quantity),
+        )
+        if _supply_auto_deducts(cursor, supply_id) and quantity > 0:
+            _change_stock(cursor, supply_id, quantity, "out")
+
+
+def _supply_auto_deducts(cursor, supply_id):
+    cursor.execute(
+        "SELECT auto_deduct FROM supplies WHERE supply_id = ?",
+        (supply_id,),
+    )
+    row = cursor.fetchone()
+    return bool(row and row[0])
+
+
+def _change_stock(cursor, supply_id, quantity, direction):
+    quantity = int(quantity or 0)
+    if quantity <= 0:
+        return
+
+    if direction == "out":
+        cursor.execute(
+            """
+            SELECT batch_id, stock_level
+            FROM batches
+            WHERE supply_id = ? AND stock_level > 0 AND is_active = true
+            ORDER BY expiration_date ASC
+            """,
+            (supply_id,),
+        )
+        remaining = quantity
+        for batch_id, stock in cursor.fetchall():
+            if remaining <= 0:
+                break
+            take = min(stock, remaining)
+            cursor.execute(
+                """
+                UPDATE batches
+                SET stock_level = stock_level - ?
+                WHERE batch_id = ?
+                """,
+                (take, batch_id),
+            )
+            cursor.execute(
+                """
+                INSERT INTO inventory (inv_date, batch_id, item_in, item_out)
+                VALUES (?, ?, ?, ?)
+                """,
+                (date.today(), batch_id, 0, take),
+            )
+            remaining -= take
+        if remaining > 0:
+            print(
+                f"Warning: Not enough stock for supply_id {supply_id}, {remaining} remaining!"
+            )
+        return
+
+    cursor.execute(
+        """
+        SELECT batch_id
         FROM batches
-        WHERE supply_id = ? AND stock_level > 0 AND is_active = true
+        WHERE supply_id = ? AND is_active = true
         ORDER BY expiration_date ASC
-    """, (supply_id,))
+        LIMIT 1
+        """,
+        (supply_id,),
+    )
+    row = cursor.fetchone()
+    if not row:
+        print(f"Warning: No active batch to restore supply_id {supply_id}")
+        return
 
-    batches = cursor.fetchall()
-    remaining = quantity
-
-    for batch_id, stock in batches:
-        cursor = conn.cursor()
-        if remaining <= 0:
-            break
-        take = min(stock, remaining)
-        cursor.execute("""
-            UPDATE batches
-            SET stock_level = stock_level - ?
-            WHERE batch_id = ?
-        """, (take, batch_id))
-        remaining -= take
-
-        cursor.execute("""
-            INSERT INTO inventory (inv_date, batch_id, item_in, item_out)
-            VALUES (?, ?, ?, ?)
-        """, (date.today(), batch_id, 0, take))
-
-    if remaining > 0:
-        print(f"Warning: Not enough stock for supply_id {supply_id}, {remaining} remaining!")
-
-    conn.commit()
-    cursor.close()
-    conn.close()
+    batch_id = row[0]
+    cursor.execute(
+        """
+        UPDATE batches
+        SET stock_level = stock_level + ?
+        WHERE batch_id = ?
+        """,
+        (quantity, batch_id),
+    )
+    cursor.execute(
+        """
+        INSERT INTO inventory (inv_date, batch_id, item_in, item_out)
+        VALUES (?, ?, ?, ?)
+        """,
+        (date.today(), batch_id, quantity, 0),
+    )
 
 
 def update_visit_log(**fields):
