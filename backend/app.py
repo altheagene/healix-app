@@ -1,31 +1,20 @@
 from flask import Flask, jsonify, redirect, url_for, request, Response
 from flask_cors import CORS
-import sys
-sys.path.insert(0, '/db')
 from db.dbhelper import *
 from datetime import date, datetime
 import os
 import io
 import csv
 
+from controllers.patient_controller import patient_bp
+from controllers.staff_controller import staff_bp
+
 
 app = Flask(__name__)
 # CORS(app, resources={r"/*" : {"origins":"*"}} )
 CORS(app)
-
-@app.route('/finduser', methods = ['GET'])
-def find_user():
-    data = request.args.get('id')
-    user = getrecord('staff', staff_id = data)
-
-    return jsonify(user)
-    
-
-@app.route('/findstudent', methods=['GET'])
-def find_student():
-    idnum = request.args.get('idnum')
-    data = findstudent('students', student_id=idnum)
-    return jsonify(data)
+app.register_blueprint(patient_bp)
+app.register_blueprint(staff_bp)
 
 @app.route('/getall', methods=['GET'])
 def get_all():
@@ -55,62 +44,9 @@ def get_batches():
 
     return jsonify(data)
 
-@app.route('/getstudent', methods=['GET'])
-def get_student():
-    idnum = request.args.get('idnum')
-    data = getstudent(student_id=idnum)
-
-    return jsonify(data)
-
-@app.route('/getallergies', methods=['GET'])
-def get_allergies():
-    data = getallergies('allergies')
-    return jsonify(data)
-
-@app.route('/getconditions', methods=['GET'])
-def get_conditions():
-    data = getconditions('conditions')
-    return jsonify(data)
-
-@app.route('/getallpatients', methods=['GET'])
-def get_all_patients():
-    data  = getall('patients')
-    return jsonify(data)
-
 @app.route('/getappointmentstoday', methods=['GET'])
 def get_appointments_today():
     data = getallappointmentstoday()
-
-    return jsonify(data)
-
-@app.route('/getpatientdetails', methods=['GET'])
-def get_patient_details():
-    None
-
-@app.route('/getmaxpatientid', methods=['GET'])
-def get_max_patient_id():
-    data = getmaxid('patients', 'patient_id')
-    return jsonify(data)
-
-@app.route('/getpatient', methods=['GET'])
-def get_patient():
-    patient_id = request.args.get('idnum')
-    data = getpatient('patients', patient_id=patient_id)
-
-    return jsonify(data)
-
-@app.route('/getpatientallergies', methods=['GET'])
-def get_patient_allergies():
-    patient_id = request.args.get('idnum')
-    # data = getallwithcondition('patient_allergies', patient_id=patient_id)
-    data = getallpatientallergies(patient_id = patient_id)
-
-    return jsonify(data)
-
-@app.route('/getpatientconditions', methods=['GET'])
-def get_patient_conditions():
-    patient_id = request.args.get('idnum')
-    data = getpatientconditions(patient_id=patient_id)
 
     return jsonify(data)
 
@@ -190,71 +126,17 @@ def get_medication_details():
     
     return jsonify(data)
 
-@app.route('/validateuser', methods=['POST'])
-def validate_user():
-    data = request.get_json()
-    success = validateuser(**data)
-    print(success)
-    return ({'success' : success})
-
-@app.route('/findstaff', methods =['GET'])
-def find_staff():
-    id = request.args.get('id')
-    print(id)
-    staff = getrecord('staff', staff_id=id)
-
-    return jsonify(staff)
+@app.route('/getvisitlogs', methods=['GET'])
+def get_visitlogs():
+    data = get_visit_logs()
+    return jsonify(data)
 
 # ----------------------INSERT QUERIES----------------------------
-
-@app.route('/addnewallergy', methods=['POST'])
-def add_new_allergy():
-    data = request.get_json()
-    success = addrecord('allergies', **data)
-
-    return jsonify({'success' : success})
-
-@app.route('/addnewcondition', methods=['POST'])
-def add_new_conditions():
-    data = request.get_json()
-    success = addrecord('conditions', **data)
-
-    return jsonify({'success' : success})
 
 @app.route('/addvisitlog', methods=['POST'])
 def add_visitlog():
     data = request.get_json()
     success = addrecord('visit_logs', **data)
-
-    return jsonify({'success' : success})
-
-@app.route('/addpatient', methods=['POST'])
-def add_patient():
-    data = request.get_json()
-    if 'Id' in data:
-        del data['Id']
-    success = addrecord('patients', **data)
-
-    return jsonify({'success' : success})
-
-
-@app.route('/addpatientallergies', methods=['POST'])
-def add_patient_allergies():
-    data = request.get_json()
-    allergies = data['allergies']
-    id = data['patient_id']
-    # allergies = data['allergies']
-    success = True
-    for allergy in allergies:
-        ok = addrecord('patient_allergies', patient_id = id, allergy_id = allergy)
-        success = ok
-
-    return jsonify({'success' : success})
-
-@app.route('/addstaff', methods=['POST'])
-def add_staff():
-    data = request.get_json()
-    success = addrecord('staff', **data)
 
     return jsonify({'success' : success})
 
@@ -265,19 +147,6 @@ def add_service():
 
     return jsonify({'success' : success})
 
-@app.route('/addpatientconditions', methods=['POST'])
-def add_patient_conditions():
-    data = request.get_json()
-    conditions = data['conditions']
-    id = data['patient_id']
-    # allergies = data['allergies']
-    success = True
-    for condition in conditions:
-        ok = addrecord('patient_conditions', patient_id = id, condition_id =  condition)
-        success = ok
-
-    return jsonify({'success' : success})
-    
 @app.route('/additem', methods=['POST'])
 def add_item():
     data = request.get_json()
@@ -351,47 +220,6 @@ def add_appointment():
 
     return jsonify({'success' : success})
 
-@app.route('/updatestaff', methods=['POST'])
-def update_staff():
-    data = request.get_json()
-    # staff_kwargs = {
-    #     'staff_id': data['staff_id'],
-    #     'first_name': data['first_name'],
-    #     'last_name': data['last_name'],
-    #     'staff_category_id': data['staff_category_id'],
-    #     'sex': data['sex'],
-    #     'phone': data['phone'],
-    #     'email': data['email'],
-    #     'username': data['username'],
-    #     'password': data['password']
-    # }
-
-    # Suppose `data` is a dictionary from your database query
-    staff_id = data['staff_id']
-    first_name = data['first_name']
-    last_name = data['last_name']
-    staff_category_id = data['staff_category_id']
-    sex = data['sex']
-    phone = data['phone']
-    email = data['email']
-    username = data['username']
-    password = data['password']
-
-
-
-    success = updaterecord('staff', staff_id=staff_id, first_name=first_name, last_name=last_name, staff_category_id=staff_category_id, sex=sex, phone=phone, email=email, username=username, password=password)
-
-    return jsonify({'success' : success})
-
-@app.route('/updatepatient', methods=['POST'])
-def update_patient():
-    data = request.get_json()
-    patient_id = data['patient_id']
-    del data['patient_id']
-    success = updatepatients(patient_id, **data)
-
-    return jsonify({'success' : success})
-
 @app.route('/updateappointmentdetails', methods=['POST'])
 def update_appointmen_details():
     data = request.get_json()
@@ -403,11 +231,6 @@ def update_appointmen_details():
     success = updateappointment(appointment_id, **data)
     return jsonify({'success' : success})
 
-
-@app.route('/getstaffandcateg', methods=['GET'])
-def getstaffandcateg():
-    data = getstaffandcategories()
-    return jsonify(data)
 
 # -----------------------------------DELETE----------------------------
 
@@ -424,53 +247,6 @@ def delete_item():
     
     success = updaterecord('supplies', **data)
 
-    return jsonify({'success' : success})
-
-@app.route('/deletepatientallergies', methods=['POST'])
-def delete_patient_allergies():
-    data = request.get_json()
-    patient_id = data['patient_id']
-    allergies = data['allergies']
-    success = True
-    for item in allergies:
-        success = deletemedical('patient_allergies', patient_id=patient_id, allergy_id=item)
-
-    return jsonify({'success' : success})
-
-@app.route('/addallergies', methods=['POST'])
-def add_allergies():
-    data = request.get_json()
-    patient_id = data['patient_id']
-    allergies = data['allergies']
-    success = True
-
-    for item in allergies:
-        success = addrecord('patient_allergies', patient_id=patient_id, allergy_id=item)
-    
-    return jsonify({'success' : success})
-
-@app.route('/deletepatientconditions', methods=['POST'])
-def delete_patient_conditions():
-    data = request.get_json()
-    patient_id = data['patient_id']
-    conditions = data['conditions']
-    success = True
-
-    for item in conditions:
-        success = deletemedical('patient_conditions', patient_id=patient_id, condition_id=item)
-    
-    return jsonify({'success' : success})
-
-@app.route('/addconditions', methods=['POST'])
-def add_conditions():
-    data = request.get_json()
-    patient_id = data['patient_id']
-    conditions = data['conditions']
-    success = True
-
-    for item in conditions:
-        addrecord('patient_conditions', patient_id=patient_id, condition_id=item)
-    
     return jsonify({'success' : success})
 
 @app.route('/updatesupply', methods=['POST'])
@@ -708,3 +484,4 @@ def update_medication_details():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+

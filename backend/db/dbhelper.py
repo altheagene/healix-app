@@ -1,26 +1,13 @@
-from sqlite3 import Row, connect
-import os
+from sqlite3 import connect
 from datetime import date
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))   # points to /backend/db
-database = os.path.join(BASE_DIR, "clinic.db")
-studentdb = os.path.join(BASE_DIR, "students.db")
+from db.connection import database, getprocess, postprocess
 
 #----------------------------------------PATIENTS MODULE------------------------------
 
 def getall(table):
     sql = f'SELECT * FROM {table}'
     data = getprocess(sql, [])
-    return data
-
-def findstudent(table:str, **kwargs):
-    keys = list(kwargs.keys())
-    values = list(kwargs.values())
-
-    sql = f'SELECT * FROM {table} WHERE `{keys[0]}` = ?'
-    print(sql)
-    data = getprocess(sql, values)
-
     return data
 
 def getrecord(table, **kwargs):
@@ -30,38 +17,6 @@ def getrecord(table, **kwargs):
 
     data = getprocess(sql, values)
 
-    return data
-
-def getstudent(**kwargs):
-
-    try:
-        keys = list(kwargs.keys())
-        values = list(kwargs.values())
-        
-        sql = f'SELECT * FROM students WHERE `{keys[0]}` = ?'
-        conn = connect(studentdb)
-        conn.row_factory = Row
-        cursor = conn.cursor()
-        cursor.execute(sql, values)
-        data = cursor.fetchall()
-        cursor.close()
-        conn.close()
-    except Exception as e:
-        cursor.close()
-        conn.close()
-        print(e)
-
-    return [dict(row) for row in data]
-    
-
-def getallergies(string = 'allergies'):
-    sql = f'SELECT * FROM {string}'
-    data = getprocess(sql, [])
-    return data
-
-def getconditions(string ='conditions'):
-    sql = f'SELECT * from {string}'
-    data = getprocess(sql, [])
     return data
 
 def getmaxid(table, id):
@@ -81,14 +36,6 @@ def addrecord(table, **kwargs):
     sql = f'INSERT INTO {table} (`{stringifiedkeys}`) values({stringifiedph})'
 
     return postprocess(sql, values)
-
-def getpatient(table, **kwargs):
-    keys = list(kwargs.keys())
-    values = list(kwargs.values())
-
-    sql = f'SELECT * FROM {table} WHERE `{keys[0]}` = ?'
-
-    return getprocess(sql, values)
 
 def getallappointmentstoday():
 
@@ -119,26 +66,6 @@ def getitemdetails(table, **kwargs):
 
     '''
     return getprocess(sql, values)
-
-def getstaffandcategories():
-    sql = f'''
-            SELECT 
-            s.staff_id,
-            s.first_name,
-            s.middle_name,
-            s.last_name,
-            s.staff_category_id,
-            s.birthday,
-            sc.category_name,
-            s.sex,
-            s.phone,
-            s.email,
-            s.username
-            FROM staff s
-            JOIN staff_categories sc
-            ON s.staff_category_id = sc.staff_category_id;
-            '''
-    return getprocess(sql, [])
 
 # def getallmedicine():
 #     sql = f'SELECT * from supplies WHERE category_id = 1'
@@ -406,36 +333,6 @@ ORDER BY s.supply_name;
 
     return data
 
-def getallpatientallergies(**kwargs):
-    values = list(kwargs.values())
-    sql = f"""
-
-        SELECT 
-            pa.allergy_id,
-            a.allergy_name
-        FROM patient_allergies pa
-        JOIN allergies a on a.allergy_id = pa.allergy_id
-        WHERE pa.patient_id = ?
-    """
-
-    data = getprocess(sql, values)
-    return data
-
-def  getpatientconditions(**kwargs):
-    values = list(kwargs.values())
-    sql = f"""
-
-        SELECT 
-            pc.condition_id,
-            c.condition_name
-        FROM patient_conditions pc
-        JOIN conditions c on c.condition_id = pc.condition_id
-        WHERE pc.patient_id = ?
-    """
-
-    data = getprocess(sql, values)
-    return data
-
 def getmedicationdetails(**kwargs):
     values = list(kwargs.values())
 
@@ -448,34 +345,6 @@ def getmedicationdetails(**kwargs):
             WHERE visit_id = ?
             '''
     return getprocess(sql, values)
-
-def validateuser(**kwargs):
-    keys = list(kwargs.keys())
-    values = list(kwargs.values())
-
-    sql = f'''
-        SELECT * from staff
-        WHERE `{keys[0]}` = ? AND `{keys[1]}` = ?
-
-    '''
-    return getprocess(sql, values)
-
-def updatepatients(patient_id, **kwargs):
-    keys = list(kwargs.keys())
-    values = list(kwargs.values())
-
-    listkeys = []
-    for x in range(0, len(keys)):
-        listkeys.append(f'`{keys[x]}` = ?')
-
-    stringifykeys = ','.join(listkeys)
-    
-    sql = f'''
-            UPDATE patients
-            SET {stringifykeys}
-            WHERE `patient_id` = {patient_id}
-           '''
-    return postprocess(sql, values)
 
 def updateappointment(appointment_id, **kwargs):
     keys = list(kwargs.keys())
@@ -517,43 +386,24 @@ def deleterecord(table, **kwargs):
 
     return postprocess(sql, values)
 
-def getprocess(sql, values) -> list:
-    try:
-        conn = connect(database)
-        conn.row_factory = Row
-        cursor = conn.cursor()
-        cursor.execute(sql, values)
-        data = cursor.fetchall()
-        cursor.close()
-        conn.close()
-
-        return [dict(row) for row in data]
-
-    except Exception as e:
-        print("GET error:", e)
-        return []     # Return empty list if something goes wrong
-
-def postprocess(sql, values) -> bool:
-    try:
-        conn = connect(database)
-        print(sql)
-        conn.execute("PRAGMA foreign_keys = ON;")
-        cursor = conn.cursor()
-        cursor.execute(sql, values)
-        conn.commit()
-
-        rowcount = cursor.rowcount
-
-       
-        return rowcount > 0   # success if at least 1 row affected
-
-    except Exception as e:
-        print("POST error:", e)
-        return False          # failure
-    finally: 
-        cursor.close()
-        conn.close()
-
+def get_visit_logs():
+    sql = """
+        SELECT 
+            v.visit_id,
+            v.visit_datetime,
+            v.notes,
+            v.Weight,
+            v.Temperature,
+            s.service_name,
+            p.first_name || ' ' || p.middle_name || ' ' || p.last_name AS patient_name,
+            st.first_name || ' ' || st.last_name AS staff_name
+        FROM visit_logs v
+        JOIN services s ON v.service_id = s.service_id
+        JOIN patients p ON v.patient_id = p.patient_id
+        JOIN staff st ON v.staff_id = st.staff_id
+        ORDER BY v.visit_datetime DESC
+    """
+    return getprocess(sql, [])
 
 def main(): pass
     # data = getallstudents('students')
