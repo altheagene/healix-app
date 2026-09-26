@@ -85,6 +85,7 @@ LEFT JOIN (
         supply_id,
         SUM(stock_level) AS total_stock
     FROM batches
+    WHERE is_active = 1
     GROUP BY supply_id
 ) b ON b.supply_id = s.supply_id
 
