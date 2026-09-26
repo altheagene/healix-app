@@ -1,4 +1,5 @@
 import { apiFetch } from "../api";
+import { STAFF_ROLE_NAME } from "../roles";
 import '../patients.css'
 import '../app.css'
 import AddRecord from '~/components/addrecord'
@@ -185,7 +186,7 @@ export default function PatientDetails(){
                 <div style={{marginTop: '2rem', width:'100%', padding: '1rem 0'}}>
                     <div style={{width: '100%', display:'flex', justifyContent: 'space-between'}}>
                         <h2 style={{fontWeight: '500'}}>Clinic Visits</h2>
-                        {role != 'Staff' &&
+                        {role != STAFF_ROLE_NAME &&
                         <button style={{height: '40px', width: '120px', backgroundColor: '#334FBD', borderRadius: '10px', color: 'white', border: 'none'}} onClick={() => setShowAddRecord(true)}>+ Add Record</button>
                         }
                     </div>

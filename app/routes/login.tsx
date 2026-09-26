@@ -1,4 +1,5 @@
 import { apiFetch } from "../api";
+import { ADMIN_ROLE_ID } from "../roles";
 import '../login.css'
 import React from 'react'
 
@@ -21,7 +22,7 @@ export default function LoginPage(props: any) {
     if (response.ok && result.token) {
       localStorage.setItem('token', result.token);
       localStorage.setItem('userid', result.user.staff_id);
-      const isAdmin = result.user.staff_category_id == 4
+      const isAdmin = result.user.staff_category_id == ADMIN_ROLE_ID
       localStorage.setItem('admin', isAdmin.toString())
       localStorage.setItem('role', result.user.category_name)
       props.validate();

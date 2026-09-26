@@ -85,7 +85,7 @@ export default function Staff() {
                 }}>
                 <button id='add-patient-btn' 
                 className="add-button"
-                    style={{position: width < 600 ? 'relative' : 'absolute', right: width > 600 && '2rem' }} 
+                    style={{position: width < 600 ? 'relative' : 'absolute', right: width > 600 && '2rem', display: localStorage.getItem('admin') === 'true' ? 'block' : 'none' }} 
                     onClick={() => setShowStaff(true)}>+ Add Staff</button>
             </div>
             
