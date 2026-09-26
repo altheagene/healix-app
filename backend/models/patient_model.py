@@ -128,6 +128,6 @@ def update_patient(patient_id, **fields):
     sql = f"""
             UPDATE patients
             SET {stringifykeys}
-            WHERE `patient_id` = {patient_id}
+            WHERE `patient_id` = ?
            """
-    return postprocess(sql, values)
+    return postprocess(sql, [*values, patient_id])
