@@ -4,6 +4,7 @@ from flask import Blueprint, jsonify, request
 
 from auth import create_token
 from passwords import password_matches
+from roles import ADMIN, is_known_role
 from models.staff_model import (
     add_staff,
     find_staff,
@@ -58,13 +59,27 @@ def validate_user_route():
 
 @staff_bp.route("/addstaff", methods=["POST"])
 def add_staff_route():
-    data = request.get_json()
+    data = request.get_json() or {}
+    if not is_known_role(data.get("staff_category_id")):
+        return json_error("Unknown role")
     return json_success(add_staff(**data))
 
 
 @staff_bp.route("/updatestaff", methods=["POST"])
 def update_staff_route():
-    data = request.get_json()
+    data = request.get_json() or {}
+    caller = request.staff
+    target_id = data.get("staff_id")
+    if not is_known_role(data.get("staff_category_id")):
+        return json_error("Unknown role")
+
+    is_self = str(caller.get("staff_id")) == str(target_id)
+    is_admin = int(caller.get("staff_category_id")) == ADMIN
+    if not is_admin and not is_self:
+        return json_error("You do not have permission for this", 403)
+    if not is_admin and str(data.get("staff_category_id")) != str(caller.get("staff_category_id")):
+        return json_error("You do not have permission to change a role", 403)
+
     success = update_staff(
         staff_id=data["staff_id"],
         first_name=data["first_name"],

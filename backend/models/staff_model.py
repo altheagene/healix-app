@@ -3,6 +3,7 @@
 from db.connection import getprocess
 from db.dbhelper import addrecord, getrecord, updaterecord
 from passwords import hash_password
+from roles import ROLES, role_name
 
 
 def find_staff(staff_id):
@@ -13,11 +14,13 @@ def find_staff(staff_id):
 
 
 def list_staff_categories():
-    sql = """
-        SELECT staff_category_id, category_name
-        FROM staff_categories
-    """
-    return getprocess(sql, [])
+    return [dict(role) for role in ROLES]
+
+
+def _attach_role(rows):
+    for row in rows:
+        row["category_name"] = role_name(row.get("staff_category_id"))
+    return rows
 
 
 def list_staff_with_categories():
@@ -29,25 +32,21 @@ def list_staff_with_categories():
             s.last_name,
             s.staff_category_id,
             s.birthday,
-            sc.category_name,
             s.sex,
             s.phone,
             s.email,
             s.username
             FROM staff s
-            JOIN staff_categories sc
-            ON s.staff_category_id = sc.staff_category_id;
             """
-    return getprocess(sql, [])
+    return _attach_role(getprocess(sql, []))
 
 
 def find_user_by_username(username):
     sql = """
-        SELECT s.* , sc.category_name from staff s
-        JOIN staff_categories sc ON s.staff_category_id = sc.staff_category_id
-        WHERE s.username = ?
+        SELECT * FROM staff
+        WHERE username = ?
     """
-    return getprocess(sql, [username])
+    return _attach_role(getprocess(sql, [username]))
 
 
 def add_staff(**fields):

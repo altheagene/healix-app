@@ -3,6 +3,7 @@ from flask_cors import CORS
 import os
 
 from auth import BadSignature, SignatureExpired, read_token
+from roles import permission_error, role_name
 from passwords import upgrade_plaintext_passwords
 from controllers.appointment_controller import appointment_bp
 from controllers.inventory_controller import inventory_bp
@@ -40,6 +41,15 @@ def require_token():
         return jsonify({"error": "Token expired"}), 401
     except BadSignature:
         return jsonify({"error": "Invalid token"}), 401
+
+    request.staff["category_name"] = role_name(request.staff.get("staff_category_id"))
+    denied = permission_error(
+        request.staff.get("staff_category_id"),
+        request.method,
+        request.path,
+    )
+    if denied:
+        return jsonify({"error": denied}), 403
 
 
 if __name__ == "__main__":

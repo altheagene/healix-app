@@ -101,7 +101,7 @@ export default function EditStaff(props:any){
                     </label>
 
                     <label htmlFor="role">Role
-                        <select id="role" value={staff?.staff_category_id != null ? String(staff.staff_category_id) : ""} onChange={(e) => updateField("staff_category_id", e.target.value)}>
+                        <select id="role" value={staff?.staff_category_id != null ? String(staff.staff_category_id) : ""} onChange={(e) => updateField("staff_category_id", e.target.value)} disabled={localStorage.getItem("admin") !== "true"}>
                             {roles.map((role) => {
                                 return(
                                     <option key={role.staff_category_id} value={String(role.staff_category_id)}>{role.category_name}</option>
