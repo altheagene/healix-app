@@ -31,7 +31,7 @@ _EVERYONE_POST = (
     "/addallergies", "/addappointment", "/addbatch", "/addconditions", "/additem",
     "/addnewallergy", "/addnewcondition", "/addpatient", "/addpatientallergies",
     "/addpatientconditions", "/addservice", "/deleteitem", "/deletepatientallergies",
-    "/deletepatientconditions", "/editbatch", "/editstockbatch", "/resetpassword",
+    "/deletepatientconditions", "/editbatch", "/editstockbatch", "/logout", "/resetpassword",
     "/updateappointment", "/updateappointmentdetails", "/updatebatchactive",
     "/updatepatient", "/updatestaff", "/updatesupply",
 )

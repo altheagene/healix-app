@@ -20,6 +20,7 @@ SKIP_PATHS = {"/refreshbatches"}
 
 ACTION_BY_PATH = {
     "/validateuser": "login",
+    "/logout": "logout",
     "/resetpassword": "password_reset",
     "/addstaff": "staff_create",
     "/updatestaff": "staff_update",
@@ -138,7 +139,7 @@ def resource_for(path):
     name = (path or "").lower()
     if "audit" in name:
         return "audit"
-    if any(part in name for part in ("password", "validateuser")):
+    if any(part in name for part in ("password", "validateuser", "logout")):
         return "auth"
     if any(part in name for part in ("staff", "user")):
         return "staff"

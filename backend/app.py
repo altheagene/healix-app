@@ -12,6 +12,7 @@ from controllers.patient_controller import patient_bp
 from controllers.service_controller import service_bp
 from controllers.staff_controller import staff_bp
 from controllers.visit_controller import visit_bp
+from models.staff_model import ensure_session_column, get_session_staff
 
 
 DEV_ORIGINS = "http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000"
@@ -33,6 +34,7 @@ app.register_blueprint(patient_bp)
 app.register_blueprint(service_bp)
 app.register_blueprint(staff_bp)
 app.register_blueprint(visit_bp)
+ensure_session_column()
 upgrade_plaintext_passwords()
 
 OPEN_PATHS = {"/validateuser"}
@@ -50,13 +52,22 @@ def require_token():
         return jsonify({"error": "Missing token"}), 401
 
     try:
-        request.staff = read_token(header.removeprefix("Bearer ").strip())
+        claims = read_token(header.removeprefix("Bearer ").strip())
     except SignatureExpired:
         return jsonify({"error": "Token expired"}), 401
     except BadSignature:
         return jsonify({"error": "Invalid token"}), 401
 
-    request.staff["category_name"] = role_name(request.staff.get("staff_category_id"))
+    staff = get_session_staff(claims.get("staff_id"))
+    if not staff or staff["token_version"] != claims.get("v"):
+        return jsonify({"error": "Session ended"}), 401
+
+    request.staff = {
+        "staff_id": staff["staff_id"],
+        "username": staff["username"],
+        "staff_category_id": staff["staff_category_id"],
+        "category_name": role_name(staff["staff_category_id"]),
+    }
     denied = permission_error(
         request.staff.get("staff_category_id"),
         request.method,

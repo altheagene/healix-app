@@ -146,6 +146,8 @@ function validate() {
 }
 
 function logout() {
+  // End the session on the server too, so a copied token stops working.
+  apiFetch("/logout", { method: "POST" }).catch(() => {});
   navigate('/', {replace :true})
   setValidUser(false);
   setFlashMessage("Logged out!");

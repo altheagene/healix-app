@@ -13,6 +13,7 @@ from models.staff_model import (
     list_staff_with_categories,
     update_staff,
     find_user_by_username,
+    end_sessions,
 )
 from views.api_view import json_data, json_error, json_success
 
@@ -59,12 +60,15 @@ def validate_user_route():
 
     user = dict(rows[0])
     user.pop("password", None)
-    token = create_token(
-        user["staff_id"],
-        user["staff_category_id"],
-        user["category_name"],
-    )
+    token_version = user.pop("token_version", 0)
+    token = create_token(user["staff_id"], token_version)
     return jsonify({"token": token, "user": user})
+
+
+@staff_bp.route("/logout", methods=["POST"])
+def logout_route():
+    # Ends every session this staff member has open, on all devices.
+    return json_success(end_sessions(request.staff["staff_id"]))
 
 
 @staff_bp.route("/addstaff", methods=["POST"])

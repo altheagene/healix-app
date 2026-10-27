@@ -11,14 +11,10 @@ TOKEN_MAX_AGE = 60 * 60 * 8
 _serializer = URLSafeTimedSerializer(SECRET, salt="healix-login")
 
 
-def create_token(staff_id, staff_category_id, category_name):
-    return _serializer.dumps(
-        {
-            "staff_id": staff_id,
-            "staff_category_id": staff_category_id,
-            "category_name": category_name,
-        }
-    )
+def create_token(staff_id, token_version):
+    # The role is not stored here. Each request reads it from the staff row, so a
+    # role change applies at once, and a changed token_version ends the session.
+    return _serializer.dumps({"staff_id": staff_id, "v": token_version})
 
 
 def read_token(token):
