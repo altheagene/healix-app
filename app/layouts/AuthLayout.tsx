@@ -1,6 +1,6 @@
 import { Links, Meta, Scripts, ScrollRestoration } from "react-router";
 
-export default function AuthLayout({ children }) {
+export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>

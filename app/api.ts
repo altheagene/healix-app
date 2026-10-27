@@ -1,6 +1,6 @@
 import { API_BASE_URL } from "./config";
 
-export async function apiFetch(path, options = {}) {
+export async function apiFetch(path: string, options: RequestInit = {}): Promise<Response> {
   const headers = new Headers(options.headers || {});
   const token = localStorage.getItem("token");
 

@@ -4,7 +4,7 @@ import React from "react";
 
 export default function InventoryReport(){
 
-     const boxStyle = {
+     const boxStyle: React.CSSProperties = {
     border: "1px solid #ccc",
     borderRadius: "8px",
     padding: "20px",
@@ -14,13 +14,13 @@ export default function InventoryReport(){
     backgroundColor: "#f9f9f9",
   };
 
-  const containerStyle = {
+  const containerStyle: React.CSSProperties = {
     display: "flex",
     justifyContent: "space-around",
     margin: "20px 0",
   };
 
-  const numberStyle = {
+  const numberStyle: React.CSSProperties = {
     fontSize: "2rem",
     fontWeight: "bold",
     margin: "10px 0",
@@ -52,7 +52,7 @@ export default function InventoryReport(){
         let totalItemIn = 0;
         let totalItemOut = 0;
 
-        if(invLogs?.length > 0){
+        if(invLogs && invLogs.length > 0){
             for(const item of invLogs){
                 console.log(item.item_in)
                 totalItemIn += item.item_in;

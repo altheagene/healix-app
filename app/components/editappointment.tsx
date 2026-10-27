@@ -6,7 +6,7 @@ export default function EditAppointment(props:any){
 
     const [services, setServices] = React.useState<any[]>([])
         const [patients, setPatients] = React.useState<any[]>([])
-        const [appointmentDetails, setAppointmentDetails] = React.useState({
+        const [appointmentDetails, setAppointmentDetails] = React.useState<Record<string, any>>({
         })
         const [availableTime, setAvailableTime] = React.useState<string[]>([]);
         const timeArr = ["9:00 AM", "10:00 AM", "11:00 AM", "1:00 PM", "2:00 PM", "3:00 PM"];

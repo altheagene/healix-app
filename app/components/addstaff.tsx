@@ -39,8 +39,6 @@ export default function AddStaff(props:any){
             alert("Please fill out all required fields.");
             return;
         }
-        let success = true;
-
         const exists = staff?.some(person =>
             person.username === staffData.username
         )
@@ -59,10 +57,9 @@ export default function AddStaff(props:any){
                 body: JSON.stringify(staffData)
             }
         )
-        success = await response.json()
-        console.log(success)
+        const result = await response.json()
 
-        if (success.success){
+        if (result.success){
             alert('Successfully added!')
         return;
         }

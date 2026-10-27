@@ -29,7 +29,7 @@ export default function UpdateStocks(props:any){
                     </label>
 
                     <label htmlFor="stock-update-notes">Notes
-                        <textarea name="stock-update-notes" id="stock-update-notes" rows='4' cols='35'></textarea>
+                        <textarea name="stock-update-notes" id="stock-update-notes" rows={4} cols={35}></textarea>
                     </label>
 
                 </div>

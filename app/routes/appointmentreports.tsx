@@ -3,7 +3,7 @@ import React from "react";
 
 
 export default function AppointmentReport() {
-  const boxStyle = {
+  const boxStyle: React.CSSProperties = {
     border: "1px solid #ccc",
     borderRadius: "8px",
     padding: "20px",
@@ -13,13 +13,13 @@ export default function AppointmentReport() {
     backgroundColor: "#f9f9f9",
   };
 
-  const containerStyle = {
+  const containerStyle: React.CSSProperties = {
     display: "flex",
     justifyContent: "space-around",
     margin: "20px 0",
   };
 
-  const numberStyle = {
+  const numberStyle: React.CSSProperties = {
     fontSize: "2rem",
     fontWeight: "bold",
     margin: "10px 0",

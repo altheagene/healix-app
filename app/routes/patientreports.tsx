@@ -129,7 +129,7 @@ export default function PatientReports()
 
     const serviceCounts: { name: string; value: number }[] = [];
 
-    if (visitLogs?.length > 0) {
+    if (visitLogs && visitLogs.length > 0) {
         const countsMap: Record<string, number> = {};
         visitLogs.forEach(v => {
             countsMap[v.service_name] = (countsMap[v.service_name] || 0) + 1;
@@ -169,7 +169,7 @@ export default function PatientReports()
     console.log(visitLogs)
     console.log(dateRange)
 
-    const boxStyle = {
+    const boxStyle: React.CSSProperties = {
     border: "1px solid #ccc",
     borderRadius: "8px",
     padding: "20px",
@@ -179,7 +179,7 @@ export default function PatientReports()
     backgroundColor: "#f9f9f9",
   };
 
-  const containerStyle = {
+  const containerStyle: React.CSSProperties = {
     display: "flex",
     flexDirection: 'column',
     justifyContent: "space-around",
@@ -187,7 +187,7 @@ export default function PatientReports()
     width: '30%'
   };
 
-  const graphStyle = {
+  const graphStyle: React.CSSProperties = {
     display: "flex",
     flexDirection: 'column',
     justifyContent: "space-around",
@@ -195,7 +195,7 @@ export default function PatientReports()
     width: '70%'
   }
 
-  const numberStyle = {
+  const numberStyle: React.CSSProperties = {
     fontSize: "2rem",
     fontWeight: "bold",
     margin: "10px 0",

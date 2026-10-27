@@ -1,4 +1,5 @@
 import { apiFetch } from "../api";
+import type { Allergy, Condition } from "../types";
 
 import '../patients.css';
 import '../app.css';
@@ -42,7 +43,7 @@ export default function EditPatient(props: any) {
   React.useEffect(() => {
     apiFetch(`/getallergies`)
       .then(res => res.json())
-      .then(data =>
+      .then((data: Allergy[]) =>
         setAllergies(data.sort((a, b) =>
           a.allergy_name.localeCompare(b.allergy_name)
         ))
@@ -53,7 +54,7 @@ export default function EditPatient(props: any) {
   React.useEffect(() => {
     apiFetch(`/getconditions`)
       .then(res => res.json())
-      .then(data =>
+      .then((data: Condition[]) =>
         setConditions(data.sort((a, b) =>
           a.condition_name.localeCompare(b.condition_name)
         ))
@@ -63,8 +64,8 @@ export default function EditPatient(props: any) {
   // Load selected student & preset selections
   React.useEffect(() => {
     setStudentData(props.studentData);
-    setSelectedAllergy(props.allergies?.map(a => a.allergy_id) || []);
-    setSelectedCondition(props.conditions?.map(c => c.condition_id) || []);
+    setSelectedAllergy(props.allergies?.map((a: Allergy) => a.allergy_id) || []);
+    setSelectedCondition(props.conditions?.map((c: Condition) => c.condition_id) || []);
   }, [props.studentData]);
 
   // ============================================================
