@@ -1,6 +1,6 @@
 """Appointment queries. This file talks to SQLite and does not know about HTTP."""
 
-from db.connection import getprocess, postprocess
+from db.connection import getprocess
 from db.dbhelper import addrecord, updaterecord
 
 
@@ -67,16 +67,4 @@ def update_appointment_record(**fields):
 
 
 def update_appointment_details(appointment_id, **fields):
-    keys = list(fields.keys())
-    values = list(fields.values())
-
-    assignments = []
-    for key in keys:
-        assignments.append(f"`{key}` = ?")
-
-    sql = f"""
-            UPDATE appointments
-            SET {",".join(assignments)}
-            WHERE `appointment_id` = ?
-           """
-    return postprocess(sql, [*values, appointment_id])
+    return updaterecord("appointments", appointment_id=appointment_id, **fields)

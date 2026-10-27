@@ -5,7 +5,6 @@ import { useEffect, useState } from "react"
 export default function EditStaff(props:any){
     const [roles, setRoles] = useState<any[]>([])
     const [staff, setStaff] = useState<any>(null)
-    const [showPass, setShowPass] = useState(false)
 
     function updateField(field: string, value: string) {
         setStaff((current: any) => ({ ...current, [field]: value }))
@@ -42,7 +41,7 @@ export default function EditStaff(props:any){
                 const res = await apiFetch(`/findstaff?id=${props.chosenId}`);
                 const data = await res.json();
                 if (data?.[0]) {
-                    setStaff({ ...data[0], password: "" })
+                    setStaff(data[0])
                 }
             } catch (err) {
                 console.error(err);
@@ -121,12 +120,6 @@ export default function EditStaff(props:any){
                     <label htmlFor="username">Username
                          <input type="text" name="" id="username" value={staff?.username || ""} onChange={(e) => updateField("username", e.target.value)}/>
                     </label>
-
-                    <label htmlFor="password">Password
-                        <input type={showPass ? "text" : "password"} id="password" placeholder="Leave blank to keep the current password" value={staff?.password || ""} onChange={(e) => updateField("password", e.target.value)}/>
-                        <button type="button" onClick={() => setShowPass(prev => !prev)}><i className="bi bi-eye"></i></button>
-                    </label>
-
 
                 </div>
                 <CancelSaveBtn hideForm={props.hideForm} submit={handleSubmit}/>

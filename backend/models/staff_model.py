@@ -56,8 +56,6 @@ def add_staff(**fields):
 
 
 def update_staff(**fields):
-    if fields.get("password"):
-        fields["password"] = hash_password(fields["password"])
-    else:
-        fields.pop("password", None)
+    # Passwords change only through /resetpassword, which checks the current one.
+    fields.pop("password", None)
     return updaterecord("staff", **fields)

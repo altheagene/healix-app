@@ -89,6 +89,5 @@ def update_staff_route():
         phone=data["phone"],
         email=data["email"],
         username=data["username"],
-        password=data.get("password"),
     )
     return json_success(success)

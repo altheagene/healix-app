@@ -2,8 +2,8 @@
 
 from sqlite3 import Row, connect
 
-from db.connection import getprocess, postprocess, studentdb
-from db.dbhelper import addrecord, deletemedical, getall, getmaxid
+from db.connection import getprocess, studentdb
+from db.dbhelper import addrecord, deletemedical, getall, getmaxid, updaterecord
 
 
 def find_student_record(table, **kwargs):
@@ -116,18 +116,4 @@ def delete_patient_condition(patient_id, condition_id):
 
 
 def update_patient(patient_id, **fields):
-    keys = list(fields.keys())
-    values = list(fields.values())
-
-    listkeys = []
-    for x in range(0, len(keys)):
-        listkeys.append(f"`{keys[x]}` = ?")
-
-    stringifykeys = ",".join(listkeys)
-
-    sql = f"""
-            UPDATE patients
-            SET {stringifykeys}
-            WHERE `patient_id` = ?
-           """
-    return postprocess(sql, [*values, patient_id])
+    return updaterecord("patients", patient_id=patient_id, **fields)

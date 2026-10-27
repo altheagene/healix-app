@@ -4,7 +4,9 @@ import os
 
 from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 
-SECRET = os.environ.get("HEALIX_SECRET", "healix-dev-secret")
+SECRET = os.environ.get("HEALIX_SECRET")
+if not SECRET:
+    raise RuntimeError("Set the HEALIX_SECRET environment variable before starting the server.")
 TOKEN_MAX_AGE = 60 * 60 * 8
 _serializer = URLSafeTimedSerializer(SECRET, salt="healix-login")
 

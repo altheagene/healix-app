@@ -4,7 +4,7 @@ from datetime import date
 from sqlite3 import connect
 
 from db.connection import database, getprocess
-from db.dbhelper import deleterecord, getmaxid, updaterecord
+from db.dbhelper import checked_columns, deleterecord, getmaxid, updaterecord
 
 
 def get_clinic_visits(**kwargs):
@@ -93,6 +93,11 @@ def get_visit_logs():
 def add_visit_log(**fields):
     keys = list(fields.keys())
     values = list(fields.values())
+    try:
+        checked_columns("visit_logs", keys)
+    except ValueError as error:
+        print("POST error:", error)
+        return None
     columns = "`,`".join(keys)
     placeholders = ",".join(["?"] * len(values))
     sql = f"INSERT INTO visit_logs (`{columns}`) VALUES ({placeholders})"

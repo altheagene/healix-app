@@ -5,3 +5,10 @@
 # React Router
 /.react-router/
 /build/
+
+# Local databases hold patient and staff data. Never commit them.
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+backend/db/clinic.cb
