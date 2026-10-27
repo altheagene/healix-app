@@ -48,11 +48,11 @@ def update_appointment():
 
 @appointment_bp.route("/updateappointmentdetails", methods=["POST"])
 def update_appointment_details_route():
-    data = request.get_json()
-    appointment_id = data["appointment_id"]
-    del data["appointment_id"]
-    del data["patient_name"]
-    del data["service_name"]
+    # Copy, so the audit log still sees which appointment the request was for.
+    data = dict(request.get_json())
+    appointment_id = data.pop("appointment_id")
+    data.pop("patient_name", None)
+    data.pop("service_name", None)
     return json_success(update_appointment_details(appointment_id, **data))
 
 

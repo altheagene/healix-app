@@ -27,7 +27,7 @@ export default function LoginPage(props: any) {
       localStorage.setItem('role', result.user.category_name)
       props.validate();
     } else {
-      setFlashMessage('Invalid username or password'); // Set flash message
+      setFlashMessage(result.error || 'Invalid username or password'); // Set flash message
     }
   }
 

@@ -12,16 +12,42 @@ ROLES = (
     {"staff_category_id": ADMIN, "category_name": "Admin"},
 )
 
-# Clinical writes. The Staff role can read visits, but not save them.
-STAFF_BLOCKED = {
-    ("POST", "/addvisitlog"),
-    ("POST", "/addmedicationdetails"),
-    ("POST", "/updatevisitlog"),
-    ("POST", "/updatemedicationdetails"),
-}
+EVERYONE = frozenset({STAFF, NURSE, DOCTOR, ADMIN})
+CLINICIANS = frozenset({NURSE, DOCTOR, ADMIN})
+ADMINS = frozenset({ADMIN})
 
-ADMIN_ONLY = {
-    ("POST", "/addstaff"),
+_EVERYONE_GET = (
+    "/clinic_visits", "/download/appointmentlogs", "/download/appointments",
+    "/download/inventorylogs", "/findstaff", "/findstudent", "/finduser",
+    "/generateclinicreport", "/getallappointments", "/getallergies", "/getallmedicine",
+    "/getallpatients", "/getallservices", "/getallsupplies", "/getallsuppliescategories",
+    "/getappointmentstoday", "/getapptlogs", "/getbatches", "/getconditions", "/getinvlogs",
+    "/getmaxpatientid", "/getmedicationdetails", "/getpatient", "/getpatientallergies",
+    "/getpatientcliniclogs", "/getpatientconditions", "/getpatientdetails",
+    "/getstaffandcateg", "/getstaffcategories", "/getstudent", "/getsupplydetails",
+    "/getvisitlogs", "/refreshbatches",
+)
+_EVERYONE_POST = (
+    "/addallergies", "/addappointment", "/addbatch", "/addconditions", "/additem",
+    "/addnewallergy", "/addnewcondition", "/addpatient", "/addpatientallergies",
+    "/addpatientconditions", "/addservice", "/deleteitem", "/deletepatientallergies",
+    "/deletepatientconditions", "/editbatch", "/editstockbatch", "/resetpassword",
+    "/updateappointment", "/updateappointmentdetails", "/updatebatchactive",
+    "/updatepatient", "/updatestaff", "/updatesupply",
+)
+
+# Every API route must be listed here. A route that is missing is refused for
+# every role, so a new route stays closed until someone decides who may call it.
+ROUTE_ROLES = {
+    **{("GET", path): EVERYONE for path in _EVERYONE_GET},
+    **{("POST", path): EVERYONE for path in _EVERYONE_POST},
+    # Clinical writes. The Staff role can read visits, but not save them.
+    ("POST", "/addvisitlog"): CLINICIANS,
+    ("POST", "/addmedicationdetails"): CLINICIANS,
+    ("POST", "/updatevisitlog"): CLINICIANS,
+    ("POST", "/updatemedicationdetails"): CLINICIANS,
+    ("POST", "/addstaff"): ADMINS,
+    ("GET", "/getauditlogs"): ADMINS,
 }
 
 
@@ -44,8 +70,18 @@ def permission_error(role_id, method, path):
     """Return an error message when this role cannot call the route."""
     if role_name(role_id) is None:
         return "Unknown role"
-    if (method, path) in ADMIN_ONLY and int(role_id) != ADMIN:
-        return "You do not have permission for this"
-    if int(role_id) == STAFF and (method, path) in STAFF_BLOCKED:
+    if int(role_id) not in ROUTE_ROLES.get((method, path), ()):
         return "You do not have permission for this"
     return None
+
+
+def unlisted_routes(url_map, open_paths):
+    """Routes with no entry in ROUTE_ROLES. Every role is refused on these."""
+    missing = []
+    for rule in url_map.iter_rules():
+        if rule.endpoint == "static" or rule.rule in open_paths:
+            continue
+        for method in sorted(rule.methods - {"HEAD", "OPTIONS"}):
+            if (method, rule.rule) not in ROUTE_ROLES:
+                missing.append(f"{method} {rule.rule}")
+    return missing

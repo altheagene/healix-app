@@ -3,6 +3,7 @@
 from flask import Blueprint, jsonify, request
 
 from auth import create_token
+from login_throttle import clear_account, record_failure, retry_after
 from passwords import password_matches
 from roles import ADMIN, is_known_role
 from models.staff_model import (
@@ -43,9 +44,18 @@ def get_staff_and_categories():
 @staff_bp.route("/validateuser", methods=["POST"])
 def validate_user_route():
     data = request.get_json() or {}
-    rows = find_user_by_username(data.get("username"))
+    username = data.get("username")
+    wait = retry_after(username, request.remote_addr)
+    if wait:
+        response, status = json_error("Too many failed logins. Try again later.", 429)
+        response.headers["Retry-After"] = str(wait)
+        return response, status
+
+    rows = find_user_by_username(username)
     if not rows or not password_matches(rows[0].get("password"), data.get("password")):
+        record_failure(username, request.remote_addr)
         return json_error("Invalid username or password", 401)
+    clear_account(username, request.remote_addr)
 
     user = dict(rows[0])
     user.pop("password", None)

@@ -125,9 +125,9 @@ def add_patient_conditions():
 
 @patient_bp.route("/updatepatient", methods=["POST"])
 def update_patient_route():
-    data = request.get_json()
-    patient_id = data["patient_id"]
-    del data["patient_id"]
+    # Copy, so the audit log still sees which patient the request was for.
+    data = dict(request.get_json())
+    patient_id = data.pop("patient_id")
     return json_success(update_patient(patient_id, **data))
 
 

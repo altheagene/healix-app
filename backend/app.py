@@ -1,9 +1,10 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from werkzeug.middleware.proxy_fix import ProxyFix
 import os
 
 from auth import BadSignature, SignatureExpired, read_token
-from roles import permission_error, role_name
+from roles import permission_error, role_name, unlisted_routes
 from passwords import upgrade_plaintext_passwords
 from controllers.appointment_controller import appointment_bp
 from controllers.inventory_controller import inventory_bp
@@ -13,8 +14,19 @@ from controllers.staff_controller import staff_bp
 from controllers.visit_controller import visit_bp
 
 
+DEV_ORIGINS = "http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000"
+ALLOWED_ORIGINS = [
+    origin.strip()
+    for origin in os.environ.get("HEALIX_ALLOWED_ORIGINS", DEV_ORIGINS).split(",")
+    if origin.strip()
+]
+
 app = Flask(__name__)
-CORS(app, allow_headers=["Content-Type", "Authorization"])
+# Only behind a reverse proxy (Railway, nginx) may X-Forwarded-For be trusted, and
+# then only the one hop the proxy adds. Otherwise any client could fake its address.
+if os.environ.get("HEALIX_TRUST_PROXY") == "1":
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
+CORS(app, origins=ALLOWED_ORIGINS, allow_headers=["Content-Type", "Authorization"])
 app.register_blueprint(appointment_bp)
 app.register_blueprint(inventory_bp)
 app.register_blueprint(patient_bp)
@@ -24,6 +36,8 @@ app.register_blueprint(visit_bp)
 upgrade_plaintext_passwords()
 
 OPEN_PATHS = {"/validateuser"}
+for route in unlisted_routes(app.url_map, OPEN_PATHS):
+    print("WARNING: no role rule in roles.ROUTE_ROLES, so every role is refused:", route)
 
 
 @app.before_request
