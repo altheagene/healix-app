@@ -2,8 +2,8 @@
 
 from sqlite3 import Row, connect
 
-from db.connection import getprocess, studentdb
-from db.dbhelper import addrecord, deletemedical, getall, insertrecord, updaterecord
+from db.connection import database, getprocess, studentdb
+from db.dbhelper import addrecord, checked_columns, deletemedical, getall, updaterecord
 
 
 def find_student_record(table, **kwargs):
@@ -80,8 +80,42 @@ def get_patient_conditions(**kwargs):
     return getprocess(sql, values)
 
 
-def add_patient(**fields):
-    return insertrecord("patients", **fields)
+def add_patient(allergies=(), conditions=(), **fields):
+    """Saves the patient with their allergies and conditions, all or nothing.
+    Returns the new patient_id, or None if anything failed."""
+    keys = list(fields.keys())
+    values = list(fields.values())
+    try:
+        checked_columns("patients", keys)
+    except ValueError as e:
+        print("POST error:", e)
+        return None
+
+    columns = "`,`".join(keys)
+    placeholders = ",".join(["?"] * len(values))
+    conn = None
+    try:
+        conn = connect(database)
+        conn.execute("PRAGMA foreign_keys = ON;")
+        with conn:  # commits on success, rolls back on any error
+            patient_id = conn.execute(
+                f"INSERT INTO patients (`{columns}`) VALUES ({placeholders})", values
+            ).lastrowid
+            conn.executemany(
+                "INSERT INTO patient_allergies (patient_id, allergy_id) VALUES (?, ?)",
+                [(patient_id, allergy_id) for allergy_id in allergies],
+            )
+            conn.executemany(
+                "INSERT INTO patient_conditions (patient_id, condition_id) VALUES (?, ?)",
+                [(patient_id, condition_id) for condition_id in conditions],
+            )
+        return patient_id
+    except Exception as e:
+        print("POST error:", e)
+        return None
+    finally:
+        if conn is not None:
+            conn.close()
 
 
 def add_allergy(**fields):

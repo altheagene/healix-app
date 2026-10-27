@@ -541,7 +541,13 @@ export default function AddPatient(props: any) {
     const response = await apiFetch(`/addpatient`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({...studentData, is_student: true})
+      // Allergies and conditions are saved with the patient, all or nothing.
+      body: JSON.stringify({
+        ...studentData,
+        is_student: true,
+        allergies: selectedAllergy,
+        conditions: selectedCondition,
+      })
     });
 
     const success = await response.json();
@@ -552,31 +558,6 @@ export default function AddPatient(props: any) {
 
     showFlash('Successfully saved new patient!');
     setTimeout(() => props.hideForm(), 1000)
-    const patientId = success.patient_id;
-
-    // ---------- SUBMIT ALLERGIES ----------
-    if (selectedAllergy.length > 0) {
-      await apiFetch(`/addpatientallergies`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          patient_id: patientId,
-          allergies: selectedAllergy
-        })
-      });
-    }
-
-    // ---------- SUBMIT CONDITIONS ----------
-    if (selectedCondition.length > 0) {
-      await apiFetch(`/addpatientconditions`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          patient_id: patientId,
-          conditions: selectedCondition
-        })
-      });
-    }
     props.refetchPatients();
   }
 

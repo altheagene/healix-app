@@ -84,12 +84,13 @@ def add_new_condition():
 
 @patient_bp.route("/addpatient", methods=["POST"])
 def add_patient_route():
-    data = request.get_json()
-    if "Id" in data:
-        del data["Id"]
-    # Return the new id so the client attaches allergies to this patient, not
-    # to whichever patient happens to have the highest id by then.
-    patient_id = add_patient(**data)
+    data = dict(request.get_json())
+    data.pop("Id", None)
+    allergies = data.pop("allergies", [])
+    conditions = data.pop("conditions", [])
+    # Saved in one transaction, so a failure never leaves a patient without
+    # the allergies the nurse entered.
+    patient_id = add_patient(allergies=allergies, conditions=conditions, **data)
     return jsonify({"success": patient_id is not None, "patient_id": patient_id})
 
 

@@ -20,3 +20,4 @@ venv/
 myenv/
 backend/react_build/
 *.exe
+.pytest_cache/

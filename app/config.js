@@ -1,2 +1,2 @@
- //export const API_BASE_URL = 'https://web-production-8fb6.up.railway.app'
- export const API_BASE_URL = 'http://localhost:5000'
+// Set VITE_API_URL when building for production, e.g. VITE_API_URL=https://api.example.com
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'

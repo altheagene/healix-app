@@ -231,7 +231,7 @@ def _change_stock(cursor, supply_id, quantity, direction):
                 INSERT INTO inventory (inv_date, batch_id, item_in, item_out)
                 VALUES (?, ?, ?, ?)
                 """,
-                (date.today(), batch_id, 0, take),
+                (date.today().isoformat(), batch_id, 0, take),
             )
             remaining -= take
         if remaining > 0:
@@ -269,7 +269,7 @@ def _change_stock(cursor, supply_id, quantity, direction):
         INSERT INTO inventory (inv_date, batch_id, item_in, item_out)
         VALUES (?, ?, ?, ?)
         """,
-        (date.today(), batch_id, quantity, 0),
+        (date.today().isoformat(), batch_id, quantity, 0),
     )
 
 

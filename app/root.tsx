@@ -4,19 +4,15 @@ import {
   Links,
   Meta,
   Outlet,
-  replace,
   Scripts,
   ScrollRestoration,
 } from "react-router";
 
-import { createHashRouter } from "react-router";
 import type { Route } from "./+types/root";
 import "./app.css";
 import Navbar from "./components/navbar";
 import React from "react";
 import LoginPage from "./routes/login";
-import open from './open.png'
-import close from './close.png'
 
 
 export const links: Route.LinksFunction = () => [
@@ -64,50 +60,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
-// export default function App() {
-
-//   const [showNavbar, setShowNavBar] = React.useState(true);
-//   const [validUser, setValidUser] = React.useState(() => {
-//     return localStorage.getItem("loggedIn") === "true";
-//   });
-
-//   function validate(){
-//     localStorage.setItem("loggedIn", "true");
-//     setValidUser(true)
-//   }
-
-//   function logout(){
-//     setValidUser(false);
-//     localStorage.setItem("loggedIn", "false");
-
-//   }
-//   return (
-//     <>
-    
-//     {validUser ? 
-//       <>
-//         <div id='header'>
-//           <div>
-//             <button onClick={() => setShowNavBar(prev => !prev)}><i className={showNavbar ? 'bi bi-caret-left-fill' : 'bi bi-caret-right-fill'}></i></button>
-//             <h1>Healix</h1>
-//           </div>
-          
-//           <button onClick={logout} className="logout-btn">Logout</button>
-//         </div>
-
-//         <div id="main-content">
-//           <Navbar showNavbar={showNavbar}/>
-//           <div id="route-container">
-//             <Outlet></Outlet>
-//           </div>
-//         </div>
-//       </>
-//       :
-//       <LoginPage validate={validate}/>
-//     }    
-//     </>
-//   )
-// }
 
 import './routepages.css'
 import 'bootstrap-icons/font/bootstrap-icons.css';
@@ -159,7 +111,7 @@ function logout() {
   return (
     <>
       {flashMessage && (
-        <div className="flash-message" style={{backgroundColor: validUser ? '#4caf50' : '#FF3838'}}>{flashMessage}</div>
+        <div className="flash-message" role="status" aria-live="polite" style={{backgroundColor: validUser ? '#4caf50' : '#FF3838'}}>{flashMessage}</div>
       )}
 
       {validUser ? 

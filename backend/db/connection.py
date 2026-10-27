@@ -4,8 +4,9 @@ import os
 from sqlite3 import Row, connect
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-database = os.path.join(BASE_DIR, "clinic.db")
-studentdb = os.path.join(BASE_DIR, "students.db")
+# Overridable so tests, or a server with a separate data disk, can point elsewhere.
+database = os.environ.get("HEALIX_DB", os.path.join(BASE_DIR, "clinic.db"))
+studentdb = os.environ.get("HEALIX_STUDENT_DB", os.path.join(BASE_DIR, "students.db"))
 
 
 def getprocess(sql, values) -> list:

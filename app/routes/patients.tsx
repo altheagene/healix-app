@@ -3,7 +3,7 @@ import '../routepages.css'
 import '../app.css'
 import AddPatient from '~/components/addpatient'
 import React from 'react'
-import { useNavigate } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
 export default function Patients() {
@@ -53,6 +53,7 @@ export default function Patients() {
                 type="text"
                 id='searchbar'
                 placeholder='Search patient'
+                aria-label='Search patients by name or ID'
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -88,7 +89,12 @@ export default function Patients() {
                                 style={{cursor: 'pointer'}}>
                                 <td></td>
                                 <td>{patient.student_id}</td>
-                                <td>{patient.first_name} {patient.last_name}</td>
+                                <td>
+                                    {/* A real link, so keyboard and screen reader users can open the patient too. */}
+                                    <Link to={`/patientdetails/${patient.patient_id}`} onClick={(e) => e.stopPropagation()} style={{color: 'inherit'}}>
+                                        {patient.first_name} {patient.last_name}
+                                    </Link>
+                                </td>
                                 <td>{patient.department}</td>
                                 <td>{patient.level}</td>
                                 <td>{patient.sex}</td>

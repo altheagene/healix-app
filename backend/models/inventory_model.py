@@ -1,8 +1,9 @@
 """Supply, batch, and stock queries. This file talks to SQLite and does not know about HTTP."""
 
 from datetime import date, datetime
+from sqlite3 import connect
 
-from db.connection import getprocess, postprocess
+from db.connection import database, getprocess
 from db.dbhelper import addrecord, getall, getrecord, insertrecord, updaterecord
 
 
@@ -120,26 +121,35 @@ def add_batch(**fields):
         batch_id=batch_id,
         item_in=fields["stock_level"],
         item_out=0,
-        inv_date=date.today(),
+        inv_date=date.today().isoformat(),
     )
 
 
 def edit_stock_batch(batch_id, item_in, item_out):
-    success = addrecord(
-        "inventory",
-        batch_id=batch_id,
-        inv_date=date.today(),
-        item_in=item_in,
-        item_out=item_out,
-    )
-    update_value = item_in - item_out
-    sql = """
-            UPDATE batches
-            SET stock_level = stock_level +  ?
-            WHERE batch_id = ?
-            """
-    postprocess(sql, [update_value, batch_id])
-    return success
+    """Logs the movement and changes the batch's stock together, or not at all."""
+    conn = None
+    try:
+        item_in, item_out = int(item_in), int(item_out)
+        conn = connect(database)
+        conn.execute("PRAGMA foreign_keys = ON;")
+        with conn:  # commits on success, rolls back on any error
+            updated = conn.execute(
+                "UPDATE batches SET stock_level = stock_level + ? WHERE batch_id = ?",
+                (item_in - item_out, batch_id),
+            ).rowcount
+            if updated != 1:
+                raise ValueError(f"No batch {batch_id}")
+            conn.execute(
+                "INSERT INTO inventory (batch_id, inv_date, item_in, item_out) VALUES (?, ?, ?, ?)",
+                (batch_id, date.today().isoformat(), item_in, item_out),
+            )
+        return True
+    except Exception as e:
+        print("POST error:", e)
+        return False
+    finally:
+        if conn is not None:
+            conn.close()
 
 
 def update_batch(**fields):

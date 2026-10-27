@@ -8,7 +8,8 @@ export default function LoginPage(props: any) {
   const [password, setPassword] = React.useState('');
   const [flashMessage, setFlashMessage] = React.useState(''); // Flash message state
 
-  async function handleSubmit() {
+  async function handleSubmit(event: React.FormEvent) {
+    event.preventDefault();
     const response = await apiFetch(`/validateuser`, {
       method: 'POST',
       headers: {
@@ -33,35 +34,42 @@ export default function LoginPage(props: any) {
 
   return (
     <div className="login-container">
-      <div className="login-form">
+      {/* A real form, so Enter submits and password managers recognise it. */}
+      <form className="login-form" onSubmit={handleSubmit}>
         <h2>Healix</h2>
 
         {flashMessage && (
-          <div className="flash-message" style={{backgroundColor: 'red'}}>
+          <div className="flash-message" role="alert" style={{backgroundColor: 'red'}}>
             {flashMessage}
           </div>
         )}
 
         <label>
+          <span className="sr-only">Username</span>
           <input
             type="text"
             className='login-input'
             placeholder='Username'
+            autoComplete="username"
+            required
             onChange={(e) => setUsername(e.target.value)}
           />
         </label>
 
         <label>
+          <span className="sr-only">Password</span>
           <input
             type="password"
             className='login-input'
             placeholder='Password'
+            autoComplete="current-password"
+            required
             onChange={(e) => setPassword(e.target.value)}
           />
         </label>
 
-        <button onClick={handleSubmit}>Login</button>
-      </div>
+        <button type="submit">Login</button>
+      </form>
     </div>
   );
 }
