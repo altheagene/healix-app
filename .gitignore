@@ -12,3 +12,11 @@
 *.db-wal
 *.db-shm
 backend/db/clinic.cb
+
+# Python and build output
+__pycache__/
+*.pyc
+venv/
+myenv/
+backend/react_build/
+*.exe

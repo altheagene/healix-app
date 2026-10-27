@@ -1,6 +1,6 @@
 """Patient routes. Same URLs as before, now calling the patient model."""
 
-from flask import Blueprint, request
+from flask import Blueprint, jsonify, request
 
 from models.patient_model import (
     add_allergy,
@@ -14,7 +14,6 @@ from models.patient_model import (
     get_allergies,
     get_all_patients,
     get_conditions,
-    get_max_patient_id,
     get_patient,
     get_patient_allergies,
     get_patient_conditions,
@@ -53,16 +52,6 @@ def get_all_patients_route():
     return json_data(get_all_patients())
 
 
-@patient_bp.route("/getpatientdetails", methods=["GET"])
-def get_patient_details():
-    None
-
-
-@patient_bp.route("/getmaxpatientid", methods=["GET"])
-def get_max_patient_id_route():
-    return json_data(get_max_patient_id())
-
-
 @patient_bp.route("/getpatient", methods=["GET"])
 def get_patient_route():
     patient_id = request.args.get("idnum")
@@ -98,7 +87,10 @@ def add_patient_route():
     data = request.get_json()
     if "Id" in data:
         del data["Id"]
-    return json_success(add_patient(**data))
+    # Return the new id so the client attaches allergies to this patient, not
+    # to whichever patient happens to have the highest id by then.
+    patient_id = add_patient(**data)
+    return jsonify({"success": patient_id is not None, "patient_id": patient_id})
 
 
 @patient_bp.route("/addpatientallergies", methods=["POST"])

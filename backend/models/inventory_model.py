@@ -3,7 +3,7 @@
 from datetime import date, datetime
 
 from db.connection import getprocess, postprocess
-from db.dbhelper import addrecord, getall, getmaxid, getrecord, updaterecord
+from db.dbhelper import addrecord, getall, getrecord, insertrecord, updaterecord
 
 
 def list_batches(supply_id):
@@ -111,12 +111,10 @@ def add_supply(**fields):
 
 
 def add_batch(**fields):
-    success = addrecord("batches", **fields)
-    if success == False:
-        return success
+    batch_id = insertrecord("batches", **fields)
+    if batch_id is None:
+        return False
 
-    max_batch_id = getmaxid("batches", "batch_id")
-    batch_id = max_batch_id[0]["last_id"]
     return addrecord(
         "inventory",
         batch_id=batch_id,

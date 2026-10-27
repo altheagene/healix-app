@@ -3,7 +3,7 @@
 from sqlite3 import Row, connect
 
 from db.connection import getprocess, studentdb
-from db.dbhelper import addrecord, deletemedical, getall, getmaxid, updaterecord
+from db.dbhelper import addrecord, deletemedical, getall, insertrecord, updaterecord
 
 
 def find_student_record(table, **kwargs):
@@ -15,24 +15,21 @@ def find_student_record(table, **kwargs):
 
 
 def get_student(**kwargs):
-    try:
-        keys = list(kwargs.keys())
-        values = list(kwargs.values())
+    keys = list(kwargs.keys())
+    values = list(kwargs.values())
+    sql = f"SELECT * FROM students WHERE `{keys[0]}` = ?"
 
-        sql = f"SELECT * FROM students WHERE `{keys[0]}` = ?"
+    conn = None
+    try:
         conn = connect(studentdb)
         conn.row_factory = Row
-        cursor = conn.cursor()
-        cursor.execute(sql, values)
-        data = cursor.fetchall()
-        cursor.close()
-        conn.close()
+        return [dict(row) for row in conn.execute(sql, values).fetchall()]
     except Exception as e:
-        cursor.close()
-        conn.close()
-        print(e)
-
-    return [dict(row) for row in data]
+        print("GET error:", e)
+        return []
+    finally:
+        if conn is not None:
+            conn.close()
 
 
 def get_allergies(table="allergies"):
@@ -47,10 +44,6 @@ def get_conditions(table="conditions"):
 
 def get_all_patients():
     return getall("patients")
-
-
-def get_max_patient_id():
-    return getmaxid("patients", "patient_id")
 
 
 def get_patient(table, **kwargs):
@@ -88,7 +81,7 @@ def get_patient_conditions(**kwargs):
 
 
 def add_patient(**fields):
-    return addrecord("patients", **fields)
+    return insertrecord("patients", **fields)
 
 
 def add_allergy(**fields):

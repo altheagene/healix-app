@@ -552,15 +552,15 @@ export default function AddPatient(props: any) {
 
     showFlash('Successfully saved new patient!');
     setTimeout(() => props.hideForm(), 1000)
+    const patientId = success.patient_id;
 
     // ---------- SUBMIT ALLERGIES ----------
     if (selectedAllergy.length > 0) {
-      const id = await apiFetch(`/getmaxpatientid`).then(res => res.json());
       await apiFetch(`/addpatientallergies`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          patient_id: id[0].last_id,
+          patient_id: patientId,
           allergies: selectedAllergy
         })
       });
@@ -568,12 +568,11 @@ export default function AddPatient(props: any) {
 
     // ---------- SUBMIT CONDITIONS ----------
     if (selectedCondition.length > 0) {
-      const id = await apiFetch(`/getmaxpatientid`).then(res => res.json());
       await apiFetch(`/addpatientconditions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          patient_id: id[0].last_id,
+          patient_id: patientId,
           conditions: selectedCondition
         })
       });

@@ -22,8 +22,8 @@ _EVERYONE_GET = (
     "/generateclinicreport", "/getallappointments", "/getallergies", "/getallmedicine",
     "/getallpatients", "/getallservices", "/getallsupplies", "/getallsuppliescategories",
     "/getappointmentstoday", "/getapptlogs", "/getbatches", "/getconditions", "/getinvlogs",
-    "/getmaxpatientid", "/getmedicationdetails", "/getpatient", "/getpatientallergies",
-    "/getpatientcliniclogs", "/getpatientconditions", "/getpatientdetails",
+    "/getmedicationdetails", "/getpatient", "/getpatientallergies",
+    "/getpatientcliniclogs", "/getpatientconditions",
     "/getstaffandcateg", "/getstaffcategories", "/getstudent", "/getsupplydetails",
     "/getvisitlogs", "/refreshbatches",
 )

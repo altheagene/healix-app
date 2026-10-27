@@ -4,7 +4,7 @@ from datetime import date
 from sqlite3 import connect
 
 from db.connection import database, getprocess
-from db.dbhelper import checked_columns, deleterecord, getmaxid, updaterecord
+from db.dbhelper import checked_columns, deleterecord, updaterecord
 
 
 def get_clinic_visits(**kwargs):
@@ -115,10 +115,6 @@ def add_visit_log(**fields):
         return None
     finally:
         conn.close()
-
-
-def latest_visit_id():
-    return getmaxid("visit_logs", "visit_id")
 
 
 def add_medications_for_visit(visit_id, medications):

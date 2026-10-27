@@ -1,4 +1,4 @@
-from db.connection import getprocess, postprocess
+from db.connection import getprocess, insertprocess, postprocess
 
 # Column names cannot be SQL placeholders, and many routes pass request JSON keys
 # straight through as columns. Only the columns listed here may be written.
@@ -65,20 +65,19 @@ def getrecord(table, **kwargs):
 
     return data
 
-def getmaxid(table, id):
-    sql= f'SELECT MAX ({id}) AS last_id FROM {table}'
-    data = getprocess(sql, [])
-    return data
-
-
 def addrecord(table, **kwargs):
+    return insertrecord(table, **kwargs) is not None
+
+
+def insertrecord(table, **kwargs):
+    """Inserts a row and returns its new id, or None if it failed."""
     keys = list(kwargs.keys())
     values = list(kwargs.values())
     try:
         checked_columns(table, keys)
     except ValueError as e:
         print("POST error:", e)
-        return False
+        return None
 
     placeholder = ['?']*len(values)
     stringifiedph = ','.join(placeholder)
@@ -86,7 +85,7 @@ def addrecord(table, **kwargs):
 
     sql = f'INSERT INTO {table} (`{stringifiedkeys}`) values({stringifiedph})'
 
-    return postprocess(sql, values)
+    return insertprocess(sql, values)
 
 def updaterecord(table, **kwargs):
     primary_key = PRIMARY_KEYS.get(table.lower())
