@@ -139,13 +139,20 @@ def add_new_condition():
     return json_success(add_condition(**data))
 
 
+def _optional_middle_name(data):
+    # Not everyone has a middle name. Saved as "" rather than NULL: databases created
+    # before this still have a NOT NULL rule on the column.
+    data["middle_name"] = (data.get("middle_name") or "").strip()
+
+
 @patient_bp.route("/addpatient", methods=["POST"])
 def add_patient_route():
     data = dict(request.get_json() or {})
     data.pop("Id", None)
     allergies = data.pop("allergies", [])
     conditions = data.pop("conditions", [])
-    validation.require(data, "first_name", "middle_name", "last_name", "birthday", "sex")
+    validation.require(data, "first_name", "last_name", "birthday", "sex")
+    _optional_middle_name(data)
     data["birthday"] = validation.iso_date(data["birthday"], "birthday")
     _check_department(data)
     # Saved in one transaction, so a failure never leaves a patient without
@@ -181,6 +188,8 @@ def update_patient_route():
     # Copy, so the audit log still sees which patient the request was for.
     data = dict(request.get_json() or {})
     patient_id = data.pop("patient_id")
+    if "middle_name" in data:
+        _optional_middle_name(data)
     if data.get("birthday"):
         data["birthday"] = validation.iso_date(data["birthday"], "birthday")
     if any(key in data for key in ("department", "level", "strand")):

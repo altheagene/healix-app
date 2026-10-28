@@ -75,7 +75,6 @@ export default function AddPatient(props: any) {
     // ---------- VALIDATION ----------
     const requiredFields: Record<string, string> = {
       first_name: 'First name',
-      middle_name: 'Middle name',
       last_name: 'Last name',
       birthday: 'Birthday',
       sex: 'Sex',
@@ -277,13 +276,12 @@ export default function AddPatient(props: any) {
                 />
               </div>
               <div>
-                <label className={labelClasses}>Middle Name</label>
+                <label className={labelClasses}>Middle Name <span className="font-normal text-slate-400">(optional)</span></label>
                 <input
                   type="text"
                   value={studentData?.middle_name || ''}
                   onChange={(e) => setStudentData({ ...studentData, middle_name: e.target.value })}
                   className={inputClasses}
-                  required
                 />
               </div>
               <div>

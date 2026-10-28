@@ -100,3 +100,18 @@ def test_student_registry_failure_is_reported(client, headers, monkeypatch, tmp_
     monkeypatch.setattr(patient_model, "studentdb", str(tmp_path / "missing" / "s.db"))
     response = client.get("/getstudent?idnum=S-0001", headers=headers("staff"))
     assert response.status_code == 503
+
+
+def test_middle_name_is_optional(client, headers, db):
+    # The test database is built from schema.sql; an older clinic database still has
+    # NOT NULL on the column, which is why the routes save "" and never NULL.
+    staff = headers("staff")
+    body = {key: value for key, value in NEW_PATIENT.items() if key != "middle_name"}
+    response = client.post("/addpatient", headers=staff, json=body)
+    assert response.json["success"], response.json
+    patient_id = response.json["patient_id"]
+    row = db.execute("SELECT middle_name FROM patients WHERE patient_id = ?", (patient_id,)).fetchone()
+    assert row[0] == ""
+    response = client.post("/updatepatient", headers=staff, json={"patient_id": 1, "middle_name": None})
+    assert response.json == {"success": True}
+    assert db.execute("SELECT middle_name FROM patients WHERE patient_id = 1").fetchone()[0] == ""

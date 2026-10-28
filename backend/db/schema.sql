@@ -116,7 +116,7 @@ CREATE TABLE patients (
     department varchar(50),
     level integer,
     first_name VARCHAR(100) NOT NULL,
-    middle_name VARCHAR(50) NOT NULL,
+    middle_name VARCHAR(50),
     last_name VARCHAR(50) NOT NULL,
     birthday DATE NOT NULL,
     sex VARCHAR(10) NOT NULL,

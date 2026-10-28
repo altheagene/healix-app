@@ -233,7 +233,7 @@ export default function EditPatient(props: any) {
                 />
               </div>
               <div>
-                <label className={labelClasses}>Middle Name</label>
+                <label className={labelClasses}>Middle Name <span className="font-normal text-slate-400">(optional)</span></label>
                 <input
                   type="text"
                   value={studentData?.middle_name || ''}
