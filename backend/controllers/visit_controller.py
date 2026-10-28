@@ -23,7 +23,8 @@ from models.visit_outcome_model import (
 )
 import validation
 from views.api_view import json_data, json_error, json_success
-from views.report_view import clinic_visits_csv
+from models.visit_search_model import get_visit, search_visits, visits_for_export
+from views.report_view import clinic_visits_csv, visits_csv
 
 visit_bp = Blueprint("visits", __name__)
 
@@ -80,6 +81,43 @@ def _check_outcome(data):
         raise validation.ValidationError("Say where the student was referred or taken")
     if data["disposition"] == "sent_home" and not (data.get("picked_up_by") or "").strip():
         raise validation.ValidationError("Say who picked the student up")
+
+
+def _visit_filters(args):
+    return {
+        "q": args.get("q"),
+        "date_from": validation.iso_date(args["date_from"], "date_from") if args.get("date_from") else None,
+        "date_to": validation.iso_date(args["date_to"], "date_to") if args.get("date_to") else None,
+        "outcome": args.get("outcome") or None,
+        "service_id": args.get("service_id") or None,
+        "staff_id": args.get("staff_id") or None,
+        "department": args.get("department") or None,
+        "stage": args.get("stage") or None,
+    }
+
+
+@visit_bp.route("/searchvisits", methods=["GET"])
+def search_visits_route():
+    args = request.args
+    page = validation.non_negative_int(args.get("page", "1"), "page") or 1
+    page_size = min(validation.non_negative_int(args.get("page_size", "20"), "page_size") or 20, 200)
+    return json_data(search_visits(
+        _visit_filters(args), DISPOSITIONS, page, page_size,
+        sort=args.get("sort", "date"), direction=args.get("direction", "desc"),
+    ))
+
+
+@visit_bp.route("/getvisit", methods=["GET"])
+def get_visit_route():
+    visit = get_visit(request.args.get("idnum"))
+    if visit is None:
+        return json_error("No such visit", 404)
+    return json_data(visit)
+
+
+@visit_bp.route("/download/visits", methods=["GET"])
+def download_visits_route():
+    return visits_csv(visits_for_export(_visit_filters(request.args), DISPOSITIONS), DISPOSITIONS)
 
 
 @visit_bp.route("/clinicnow", methods=["GET"])

@@ -1,258 +1,489 @@
 import { apiFetch } from "../api";
-import { useState, useEffect, useMemo } from "react";
+import React from "react";
+import { Link } from "react-router";
 import Pagination from "~/components/pagination";
+import ViewVisit from "~/components/viewVisit";
+import { VisitOutcomeDialog } from "~/components/visitoutcome";
+import { STAFF_ROLE_NAME } from "../roles";
+import { DEPARTMENTS, STAGES, describeLevel } from "../school";
+import { DISPOSITIONS, DISPOSITION_SHORT, DISPOSITION_TONES, localDateTime, visitDateParts } from "../visitOutcomes";
+
+interface VisitRow {
+    visit_id: number
+    visit_datetime: string
+    patient_id: number
+    patient_name: string
+    student_id?: string | null
+    department?: string | null
+    level?: number | null
+    strand?: string | null
+    service_name?: string | null
+    complaint?: string | null
+    disposition?: string | null
+    referred_to?: string | null
+    time_in?: string | null
+    time_out?: string | null
+    staff_name?: string | null
+}
+
+interface SearchResult {
+    visits: VisitRow[]
+    total: number
+    stats: { today: number; this_week: number; in_clinic: number; left_school_today: number }
+    services: { service_id: number; service_name: string }[]
+    staff: { staff_id: number; staff_name: string }[]
+}
+
+type SortKey = "date" | "patient" | "outcome"
+
+const EMPTY: SearchResult = {
+    visits: [], total: 0, stats: { today: 0, this_week: 0, in_clinic: 0, left_school_today: 0 }, services: [], staff: [],
+}
+const PAGE_SIZE = 20
+
+const today = () => localDateTime().slice(0, 10)
+function daysAgo(n: number) {
+    const d = new Date()
+    d.setDate(d.getDate() - n)
+    return localDateTime(d).slice(0, 10)
+}
+function weekStart() {
+    const d = new Date()
+    d.setDate(d.getDate() - ((d.getDay() + 6) % 7))
+    return localDateTime(d).slice(0, 10)
+}
+function monthStart() {
+    return `${today().slice(0, 7)}-01`
+}
+
+const RANGES: { key: string; label: string; from: () => string; to: () => string }[] = [
+    { key: "today", label: "Today", from: today, to: today },
+    { key: "week", label: "This week", from: weekStart, to: today },
+    { key: "month", label: "This month", from: monthStart, to: today },
+    { key: "30", label: "Last 30 days", from: () => daysAgo(29), to: today },
+    { key: "all", label: "All time", from: () => "", to: () => "" },
+]
 
 export default function Records() {
-    const [records, setRecords] = useState<any[]>([]);
-    const [selectedVisit, setSelectedVisit] = useState<any | null>(null);
-    const [medications, setMedications] = useState<any[]>([]);
-    const [searchTerm, setSearchTerm] = useState("");
-    const [currentPage, setCurrentPage] = useState(1);
-    const PAGE_SIZE = 10;
-
-    useEffect(() => {
-        apiFetch(`/getvisitlogs`)
-            .then((res) => res.json())
-            .then((data) => setRecords(data))
-            .catch((err) => console.log(err));
-    }, []);
-
-    useEffect(() => {
-        if (selectedVisit?.visit_id) {
-            apiFetch(`/getmedicationdetails?idnum=${selectedVisit.visit_id}`)
-                .then((res) => res.json())
-                .then((data) => setMedications(data))
-                .catch((err) => console.log(err));
-        } else {
-            setMedications([]);
-        }
-    }, [selectedVisit]);
-
-    const filteredRecords = useMemo(() => {
-        const query = searchTerm.toLowerCase()
-        return records.filter((rec: any) => {
-            const patientName = String(rec.patient_name ?? "").toLowerCase()
-            const service = String(rec.service_name ?? "").toLowerCase()
-            const visitId = String(rec.visit_id ?? "").toLowerCase()
-            return patientName.includes(query) || service.includes(query) || visitId.includes(query)
-        })
-    }, [records, searchTerm])
-
-    const totalPages = Math.max(1, Math.ceil(filteredRecords.length / PAGE_SIZE));
-    const paginatedRecords = filteredRecords.slice(
-        (currentPage - 1) * PAGE_SIZE,
-        currentPage * PAGE_SIZE
-    );
-
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [searchTerm]);
-
-    const stats = useMemo(() => {
-        const totalVisits = records.length;
-
-        const uniquePatients = new Set(
-            records.map((rec: any) => rec.patient_name).filter(Boolean)
-        ).size;
-
-        const today = new Date();
-        const isSameDay = (d: Date) =>
-            d.getFullYear() === today.getFullYear() &&
-            d.getMonth() === today.getMonth() &&
-            d.getDate() === today.getDate();
-
-        const visitsToday = records.filter((rec: any) => {
-            const d = new Date(rec.visit_datetime);
-            return !isNaN(d.getTime()) && isSameDay(d);
-        }).length;
-
-        const serviceCounts: Record<string, number> = {};
-        records.forEach((rec: any) => {
-            const service = rec.service_name;
-            if (!service) return;
-            serviceCounts[service] = (serviceCounts[service] ?? 0) + 1;
-        });
-        let topServiceCount = 0;
-        Object.values(serviceCounts).forEach((count) => {
-            if (count > topServiceCount) topServiceCount = count;
-        });
-        const uniqueServices = Object.keys(serviceCounts).length;
-
-        return { totalVisits, uniquePatients, visitsToday, uniqueServices, topServiceCount };
-    }, [records]);
+    const isClinician = (typeof window !== "undefined" ? localStorage.getItem("role") : null) !== STAFF_ROLE_NAME
+    const [view, setView] = React.useState<"list" | "daily">("list")
 
     return (
         <div className="min-h-full font-sans text-slate-900">
-            <div className="mx-auto max-w-full">
-                {/* HEADER */}
-                <div className="mb-7">
-                    <h1 className="text-[2rem] font-semibold tracking-tight">Visit Records</h1>
-                    <p className="text-slate-500 text-sm mt-1">Browse past clinic visits and their details.</p>
+            <style>{PRINT_CSS}</style>
+            <div className="no-print mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                    <h1 className="m-0 text-[2rem] font-semibold tracking-tight">Visit Records</h1>
+                    <p className="m-0 mt-1 text-sm text-slate-500">Every clinic visit, how it ended, and who was seen.</p>
                 </div>
-
-                {/* STAT CARDS */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                    <StatCard icon="bi-clipboard2-pulse" value={stats.totalVisits} label="Total Visits" />
-                    <StatCard icon="bi-people" value={stats.uniquePatients} label="Unique Patients" />
-                    <StatCard icon="bi-calendar-check" value={stats.visitsToday} label="Visits Today" />
-                    <StatCard icon="bi-clipboard2-check" value={stats.uniqueServices} label="Services Offered" />
+                <div role="tablist" aria-label="View" className="inline-flex self-start rounded-xl border border-slate-200 bg-slate-50 p-1">
+                    {([["list", "All visits"], ["daily", "Daily log"]] as const).map(([key, label]) => (
+                        <button key={key} role="tab" type="button" aria-selected={view === key} onClick={() => setView(key)}
+                            className={`rounded-lg px-3.5 py-1.5 text-sm font-medium transition ${view === key ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-800"}`}>
+                            {label}
+                        </button>
+                    ))}
                 </div>
-
-                {/* TABLE */}
-                <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-                    <div className="flex flex-col gap-3 border-b border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                            <h2 className="text-sm font-semibold text-slate-900">All visits</h2>
-                            <p className="text-xs text-slate-400">{filteredRecords.length} of {records.length} shown</p>
-                        </div>
-                        <label className="flex w-full items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3.5 py-2 text-slate-400 focus-within:border-teal-300 focus-within:ring-2 focus-within:ring-teal-100 sm:w-72">
-                            <i className="bi bi-search text-sm" />
-                            <input
-                                type="text"
-                                placeholder="Search by patient, service or visit #"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full border-none bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
-                            />
-                        </label>
-                    </div>
-
-                    <div className="overflow-x-auto">
-                        <table className="w-full border-collapse">
-                            <thead>
-                                <tr className="bg-slate-50/60">
-                                    <th className="w-24 border-b border-slate-100 px-5 py-3 text-left text-xs font-medium text-slate-400">Visit</th>
-                                    <th className="w-48 border-b border-slate-100 px-5 py-3 text-left text-xs font-medium text-slate-400">Patient</th>
-                                    <th className="border-b border-slate-100 px-5 py-3 text-left text-xs font-medium text-slate-400">Service</th>
-                                    <th className="border-b border-slate-100 px-5 py-3 text-left text-xs font-medium text-slate-400">Date</th>
-                                    <th className="border-b border-slate-100 px-5 py-3 text-right text-xs font-medium text-slate-400">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {paginatedRecords.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={5} className="px-5 py-12 text-center">
-                                            <i className="bi bi-clipboard-x text-2xl text-slate-300" />
-                                            <p className="mt-2 text-sm text-slate-400">
-                                                {records.length === 0 ? "No visit records yet." : "No visits match that search."}
-                                            </p>
-                                        </td>
-                                    </tr>
-                                ) : (
-                                    paginatedRecords.map((rec: any) => (
-                                        <tr
-                                            key={rec.visit_id}
-                                            onClick={() => setSelectedVisit(rec)}
-                                            className="group cursor-pointer transition hover:bg-teal-50/40"
-                                        >
-                                            <td className="border-b border-slate-100 px-5 py-3 text-sm text-slate-400 last:border-none">
-                                                #{rec.visit_id}
-                                            </td>
-                                            <td className="border-b border-slate-100 px-5 py-3 text-sm font-medium text-slate-900 last:border-none group-hover:text-teal-800">
-                                                {rec.patient_name}
-                                            </td>
-                                            <td className="border-b border-slate-100 px-5 py-3 last:border-none">
-                                                <span className="inline-flex items-center rounded-full bg-teal-50 px-2.5 py-1 text-xs font-medium text-teal-800 ring-1 ring-teal-200/60">
-                                                    {rec.service_name}
-                                                </span>
-                                            </td>
-                                            <td className="border-b border-slate-100 px-5 py-3 text-sm text-slate-500 last:border-none">
-                                                {new Date(rec.visit_datetime).toLocaleString()}
-                                            </td>
-                                            <td className="border-b border-slate-100 px-5 py-3 text-right last:border-none">
-                                                <button
-                                                    onClick={(e) => { e.stopPropagation(); setSelectedVisit(rec); }}
-                                                    className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-slate-700"
-                                                >
-                                                    View
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <Pagination
-                        currentPage={currentPage}
-                        totalPages={totalPages}
-                        onPageChange={setCurrentPage}
-                    />
-                </div>
-
-                {/* MODAL */}
-                {selectedVisit && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
-                        <div className="w-full max-w-lg rounded-2xl bg-white shadow-xl">
-                            {/* HEADER */}
-                            <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
-                                <h2 className="text-base font-semibold text-slate-900">Visit Log</h2>
-                                <button
-                                    onClick={() => setSelectedVisit(null)}
-                                    className="flex h-8 w-8 items-center justify-center rounded-full text-xl leading-none text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
-                                >
-                                    ×
-                                </button>
-                            </div>
-
-                            {/* BODY */}
-                            <div className="max-h-[70vh] overflow-y-auto px-5 py-4">
-                                {/* VISIT INFO */}
-                                <div className="grid grid-cols-1 gap-x-6 gap-y-2 text-sm text-slate-700 sm:grid-cols-2">
-                                    <div><span className="font-semibold text-slate-900">Patient:</span> {selectedVisit.patient_name}</div>
-                                    <div><span className="font-semibold text-slate-900">Date:</span> {new Date(selectedVisit.visit_datetime).toLocaleString()}</div>
-                                    <div><span className="font-semibold text-slate-900">Service:</span> {selectedVisit.service_name}</div>
-                                    <div><span className="font-semibold text-slate-900">Weight:</span> {selectedVisit.Weight ?? "-"}</div>
-                                    <div><span className="font-semibold text-slate-900">Temperature:</span> {selectedVisit.Temperature ?? "-"}</div>
-                                    <div><span className="font-semibold text-slate-900">Staff:</span> {selectedVisit.staff_name}</div>
-                                </div>
-
-                                {/* NOTES */}
-                                <div className="mt-5 border-t border-slate-100 pt-4">
-                                    <h3 className="text-sm font-semibold text-slate-900 mb-1.5">Notes</h3>
-                                    <p className="text-sm text-slate-500">{selectedVisit.notes || "No notes available."}</p>
-                                </div>
-
-                                {/* MEDICATIONS */}
-                                <div className="mt-5 border-t border-slate-100 pt-4">
-                                    <h3 className="text-sm font-semibold text-slate-900 mb-2">Medications</h3>
-                                    {medications?.length > 0 ? (
-                                        <ul className="space-y-1.5">
-                                            {medications.map((med: any) => (
-                                                <li key={med.supply_name} className="flex items-center gap-2 text-sm text-slate-700">
-                                                    {med.quantity > 0 && (
-                                                        <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-xs font-medium text-slate-600">
-                                                            {med.quantity}×
-                                                        </span>
-                                                    )}
-                                                    <span>{med.supply_name}</span>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    ) : (
-                                        <p className="text-sm text-slate-500">No medications prescribed.</p>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
             </div>
+
+            {view === "list" ? <VisitList isClinician={isClinician} /> : <DailyLog />}
         </div>
     )
 }
 
-function StatCard({ icon, value, label }: { icon: string; value: number; label: string }) {
+function VisitList({ isClinician }: { isClinician: boolean }) {
+    const [searchTerm, setSearchTerm] = React.useState("")
+    const [query, setQuery] = React.useState("")
+    const [range, setRange] = React.useState("month")
+    const [dateFrom, setDateFrom] = React.useState(monthStart())
+    const [dateTo, setDateTo] = React.useState(today())
+    const [filters, setFilters] = React.useState({ outcome: "", service_id: "", staff_id: "", department: "", stage: "" })
+    const [sort, setSort] = React.useState<{ key: SortKey; direction: "asc" | "desc" }>({ key: "date", direction: "desc" })
+    const [page, setPage] = React.useState(1)
+    const [result, setResult] = React.useState<SearchResult>(EMPTY)
+    const [loading, setLoading] = React.useState(false)
+    const [reloadKey, setReloadKey] = React.useState(0)
+    const [viewing, setViewing] = React.useState<number | null>(null)
+    const [closing, setClosing] = React.useState<any>(null)
+
+    React.useEffect(() => {
+        const timer = setTimeout(() => { setQuery(searchTerm); setPage(1) }, 250)
+        return () => clearTimeout(timer)
+    }, [searchTerm])
+
+    const params = React.useMemo(() => {
+        const p = new URLSearchParams({ q: query, sort: sort.key, direction: sort.direction })
+        if (dateFrom) p.set("date_from", dateFrom)
+        if (dateTo) p.set("date_to", dateTo)
+        for (const [key, value] of Object.entries(filters)) if (value) p.set(key, value)
+        return p
+    }, [query, sort, dateFrom, dateTo, filters])
+
+    React.useEffect(() => {
+        let stale = false
+        setLoading(true)
+        const p = new URLSearchParams(params)
+        p.set("page", String(page))
+        p.set("page_size", String(PAGE_SIZE))
+        apiFetch(`/searchvisits?${p}`)
+            .then(res => res.json())
+            .then(data => {
+                if (stale) return
+                setResult(data && Array.isArray(data.visits) ? data : EMPTY)
+                setLoading(false)
+            })
+        return () => { stale = true }
+    }, [params, page, reloadKey])
+
+    function chooseRange(key: string) {
+        const chosen = RANGES.find(r => r.key === key)
+        setRange(key)
+        if (chosen) { setDateFrom(chosen.from()); setDateTo(chosen.to()) }
+        setPage(1)
+    }
+
+    function updateFilter(key: keyof typeof filters, value: string) {
+        setFilters(current => ({ ...current, [key]: value, ...(key === "department" && value ? { stage: "" } : {}), ...(key === "stage" && value ? { department: "" } : {}) }))
+        setPage(1)
+    }
+
+    function toggleSort(key: SortKey) {
+        setSort(current => current.key === key
+            ? { key, direction: current.direction === "asc" ? "desc" : "asc" }
+            : { key, direction: key === "date" ? "desc" : "asc" })
+        setPage(1)
+    }
+
+    async function openClose(visitId: number) {
+        const visit = await apiFetch(`/getvisit?idnum=${visitId}`).then(res => res.json())
+        if (visit?.visit_id) setClosing(visit)
+    }
+
+    async function exportCsv() {
+        const response = await apiFetch(`/download/visits?${params}`)
+        if (!response.ok) return
+        const url = URL.createObjectURL(await response.blob())
+        const link = document.createElement("a")
+        link.href = url
+        link.download = `visits${dateFrom ? `-${dateFrom}` : ""}${dateTo ? `-to-${dateTo}` : ""}.csv`
+        link.click()
+        URL.revokeObjectURL(url)
+    }
+
+    const activeFilters = Object.values(filters).filter(Boolean).length + (query ? 1 : 0)
+    const totalPages = Math.max(1, Math.ceil(result.total / PAGE_SIZE))
+
     return (
-        <div className="flex items-center gap-3.5 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-teal-50 text-lg text-teal-800">
-                <i className={`bi ${icon}`} />
+        <>
+            {viewing !== null && <ViewVisit visitId={viewing} hideForm={() => setViewing(null)} />}
+            {closing && (
+                <VisitOutcomeDialog
+                    visit={closing}
+                    onClose={() => setClosing(null)}
+                    onDone={() => { setClosing(null); setReloadKey(k => k + 1) }}
+                />
+            )}
+
+            <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <StatCard icon="bi-calendar-check" value={result.stats.today} label="Visits today" />
+                <StatCard icon="bi-calendar-week" value={result.stats.this_week} label="Visits this week" />
+                <StatCard icon="bi-hospital" value={result.stats.in_clinic} label="In the clinic now" tone="emerald"
+                    onClick={() => { chooseRange("all"); updateFilter("outcome", "in_clinic") }} />
+                <StatCard icon="bi-box-arrow-right" value={result.stats.left_school_today} label="Sent home or referred today" tone="amber" />
             </div>
-            <div>
+
+            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                <div className="flex flex-col gap-3 border-b border-slate-100 px-5 py-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div role="group" aria-label="Date range" className="flex flex-wrap items-center gap-1.5">
+                            {RANGES.map(r => (
+                                <button key={r.key} type="button" aria-pressed={range === r.key} onClick={() => chooseRange(r.key)}
+                                    className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${range === r.key ? "border-teal-300 bg-teal-50 text-teal-900" : "border-slate-200 text-slate-600 hover:bg-slate-50"}`}>
+                                    {r.label}
+                                </button>
+                            ))}
+                            <label className="ml-1 inline-flex items-center gap-1.5 text-xs text-slate-500">
+                                From
+                                <input type="date" value={dateFrom} onChange={(e) => { setDateFrom(e.target.value); setRange("custom"); setPage(1) }}
+                                    className="rounded-lg border border-slate-200 px-2 py-1 text-xs" />
+                            </label>
+                            <label className="inline-flex items-center gap-1.5 text-xs text-slate-500">
+                                to
+                                <input type="date" value={dateTo} onChange={(e) => { setDateTo(e.target.value); setRange("custom"); setPage(1) }}
+                                    className="rounded-lg border border-slate-200 px-2 py-1 text-xs" />
+                            </label>
+                        </div>
+                        {isClinician && (
+                            <button type="button" onClick={exportCsv}
+                                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">
+                                <i className="bi bi-download" aria-hidden="true" /> Export CSV
+                            </button>
+                        )}
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                        <label className="flex w-full items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3.5 py-1.5 text-slate-400 focus-within:border-teal-300 sm:w-72">
+                            <i className="bi bi-search text-sm" aria-hidden="true" />
+                            <span className="sr-only">Search visits</span>
+                            <input type="text" placeholder="Patient, student ID, complaint or #visit" value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full border-none bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400" />
+                        </label>
+                        <Select label="Outcome" value={filters.outcome} onChange={v => updateFilter("outcome", v)}
+                            options={[["", "Any outcome"], ["in_clinic", "Still in the clinic"], ...Object.entries(DISPOSITIONS), ["unrecorded", "Not recorded"]]} />
+                        <Select label="Service" value={filters.service_id} onChange={v => updateFilter("service_id", v)}
+                            options={[["", "Any service"], ...result.services.map(s => [String(s.service_id), s.service_name] as [string, string])]} />
+                        <Select label="Attending" value={filters.staff_id} onChange={v => updateFilter("staff_id", v)}
+                            options={[["", "Anyone attending"], ...result.staff.map(s => [String(s.staff_id), s.staff_name] as [string, string])]} />
+                        <Select label="Department" value={filters.department} onChange={v => updateFilter("department", v)}
+                            options={[["", "All departments"], ...DEPARTMENTS.map(d => [d, d] as [string, string])]} />
+                        <Select label="Basic Education stage" value={filters.stage} onChange={v => updateFilter("stage", v)}
+                            options={[["", "All stages"], ...Object.entries(STAGES).map(([key, s]) => [key, s.label] as [string, string])]} />
+                        {activeFilters > 0 && (
+                            <button type="button" className="text-xs font-medium text-teal-800 hover:underline"
+                                onClick={() => { setFilters({ outcome: "", service_id: "", staff_id: "", department: "", stage: "" }); setSearchTerm(""); setPage(1) }}>
+                                Clear filters
+                            </button>
+                        )}
+                    </div>
+                    <p className="m-0 text-xs text-slate-400" aria-live="polite">
+                        {loading ? "Loading..." : `${result.total} visit${result.total === 1 ? "" : "s"}`}
+                    </p>
+                </div>
+
+                <div className="overflow-x-auto">
+                    <table className="w-full border-collapse">
+                        <thead>
+                            <tr className="bg-slate-50/60">
+                                <SortHeader label="Date" sortKey="date" sort={sort} onSort={toggleSort} />
+                                <SortHeader label="Patient" sortKey="patient" sort={sort} onSort={toggleSort} />
+                                <th className="border-b border-slate-100 px-5 py-3 text-left text-xs font-medium text-slate-400">Reason</th>
+                                <SortHeader label="Outcome" sortKey="outcome" sort={sort} onSort={toggleSort} />
+                                <th className="border-b border-slate-100 px-5 py-3 text-left text-xs font-medium text-slate-400">Attending</th>
+                                <th className="border-b border-slate-100 px-5 py-3"><span className="sr-only">Actions</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {result.visits.length === 0 ? (
+                                <tr>
+                                    <td colSpan={6} className="px-5 py-12 text-center">
+                                        <i className="bi bi-clipboard-x text-2xl text-slate-300" aria-hidden="true" />
+                                        <p className="m-0 mt-2 text-sm text-slate-400">{loading ? "Loading..." : "No visits match these filters."}</p>
+                                    </td>
+                                </tr>
+                            ) : result.visits.map(visit => {
+                                const when = visitDateParts(visit.visit_datetime)
+                                return (
+                                    <tr key={visit.visit_id} className="align-top transition hover:bg-teal-50/30">
+                                        <td className="whitespace-nowrap border-b border-slate-100 px-5 py-3 text-sm">
+                                            <span className="block font-medium">{when.date}</span>
+                                            <span className="block text-xs text-slate-400">{when.time} · #{visit.visit_id}</span>
+                                        </td>
+                                        <td className="border-b border-slate-100 px-5 py-3 text-sm">
+                                            <Link to={`/patientdetails/${visit.patient_id}`} className="font-medium text-slate-900 no-underline hover:underline">
+                                                {visit.patient_name || "Unnamed patient"}
+                                            </Link>
+                                            <span className="block text-xs text-slate-400">
+                                                {[visit.student_id, describeLevel(visit.department, visit.level, visit.strand, true)].filter(Boolean).join(" · ")}
+                                            </span>
+                                        </td>
+                                        <td className="border-b border-slate-100 px-5 py-3 text-sm">
+                                            <span className="block">{visit.complaint || <span className="text-slate-400">No complaint recorded</span>}</span>
+                                            <span className="block text-xs text-slate-400">{visit.service_name}</span>
+                                        </td>
+                                        <td className="border-b border-slate-100 px-5 py-3 text-sm">
+                                            <Outcome visit={visit} canClose={isClinician} onClose={() => openClose(visit.visit_id)} />
+                                        </td>
+                                        <td className="border-b border-slate-100 px-5 py-3 text-sm text-slate-600">{visit.staff_name}</td>
+                                        <td className="border-b border-slate-100 px-5 py-3 text-right">
+                                            <button type="button" onClick={() => setViewing(visit.visit_id)}
+                                                className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-slate-700">
+                                                View<span className="sr-only"> visit #{visit.visit_id}</span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                )
+                            })}
+                        </tbody>
+                    </table>
+                </div>
+
+                <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
+            </div>
+        </>
+    )
+}
+
+/** One day's visits in time order, grouped by hour, ready to print as the clinic logbook. */
+function DailyLog() {
+    const [day, setDay] = React.useState(today())
+    const [visits, setVisits] = React.useState<VisitRow[]>([])
+    const [total, setTotal] = React.useState(0)
+    const [viewing, setViewing] = React.useState<number | null>(null)
+
+    React.useEffect(() => {
+        let stale = false
+        const p = new URLSearchParams({ date_from: day, date_to: day, sort: "date", direction: "asc", page_size: "200" })
+        apiFetch(`/searchvisits?${p}`).then(res => res.json()).then(data => {
+            if (stale) return
+            setVisits(Array.isArray(data?.visits) ? data.visits : [])
+            setTotal(data?.total ?? 0)
+        })
+        return () => { stale = true }
+    }, [day])
+
+    const byHour = new Map<string, VisitRow[]>()
+    for (const visit of visits) {
+        const hour = visitDateParts(visit.visit_datetime).time.slice(0, 2) || "--"
+        byHour.set(hour, [...(byHour.get(hour) ?? []), visit])
+    }
+    const counts = Object.keys(DISPOSITIONS).map(key => [key, visits.filter(v => v.disposition === key).length] as const)
+    const open = visits.filter(v => !v.disposition && v.time_in && !v.time_out).length
+
+    return (
+        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm print:border-0 print:p-0 print:shadow-none" aria-labelledby="daily-heading">
+            {viewing !== null && <ViewVisit visitId={viewing} hideForm={() => setViewing(null)} />}
+            <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+                <div>
+                    <p className="m-0 text-xs font-semibold uppercase tracking-wide text-teal-800">Clinic daily log</p>
+                    <h2 id="daily-heading" className="m-0 mt-1 text-xl font-semibold">{visitDateParts(day).date}</h2>
+                    <p className="m-0 mt-1 text-sm text-slate-500">
+                        {total} visit{total === 1 ? "" : "s"}
+                        {counts.filter(([, n]) => n).map(([key, n]) => ` · ${n} ${DISPOSITION_SHORT[key].toLowerCase()}`).join("")}
+                        {open ? ` · ${open} still in the clinic` : ""}
+                    </p>
+                </div>
+                <div className="no-print flex items-center gap-2">
+                    <label className="text-sm text-slate-600">
+                        <span className="sr-only">Day</span>
+                        <input type="date" value={day} max={today()} onChange={(e) => e.target.value && setDay(e.target.value)}
+                            className="rounded-lg border border-slate-200 px-2.5 py-1.5 text-sm" />
+                    </label>
+                    <button type="button" onClick={() => window.print()}
+                        className="inline-flex items-center gap-1.5 rounded-lg bg-teal-800 px-3.5 py-2 text-sm font-semibold text-white hover:bg-teal-900">
+                        <i className="bi bi-printer" aria-hidden="true" /> Print
+                    </button>
+                </div>
+            </div>
+
+            {visits.length === 0 ? (
+                <p className="m-0 text-sm text-slate-400">No visits on this day.</p>
+            ) : (
+                <table className="w-full border-collapse text-sm">
+                    <thead>
+                        <tr className="border-b border-slate-200 text-left text-xs text-slate-500">
+                            <th className="py-2 pr-3 font-medium">Time</th>
+                            <th className="py-2 pr-3 font-medium">Patient</th>
+                            <th className="py-2 pr-3 font-medium">Complaint</th>
+                            <th className="py-2 pr-3 font-medium">Outcome</th>
+                            <th className="py-2 pr-3 font-medium">Out</th>
+                            <th className="py-2 font-medium">Attending</th>
+                        </tr>
+                    </thead>
+                    {[...byHour.entries()].map(([hour, rows]) => (
+                        <tbody key={hour}>
+                            <tr><th colSpan={6} className="bg-slate-50 px-2 py-1 text-left text-xs font-semibold text-slate-500">{hour}:00</th></tr>
+                            {rows.map(visit => (
+                                <tr key={visit.visit_id} className="border-b border-slate-100 align-top">
+                                    <td className="py-2 pr-3 tabular-nums">{visitDateParts(visit.visit_datetime).time}</td>
+                                    <td className="py-2 pr-3">
+                                        <button type="button" onClick={() => setViewing(visit.visit_id)} className="text-left font-medium text-slate-900 hover:underline print:no-underline">
+                                            {visit.patient_name}
+                                        </button>
+                                        <span className="block text-xs text-slate-400">{describeLevel(visit.department, visit.level, visit.strand, true)}</span>
+                                    </td>
+                                    <td className="py-2 pr-3">{visit.complaint || visit.service_name}</td>
+                                    <td className="py-2 pr-3">
+                                        {visit.disposition ? `${DISPOSITIONS[visit.disposition]}${visit.referred_to ? ` (${visit.referred_to})` : ""}` : visit.time_in ? "In clinic" : "-"}
+                                    </td>
+                                    <td className="py-2 pr-3 tabular-nums">{visit.time_out ? visitDateParts(visit.time_out).time : ""}</td>
+                                    <td className="py-2">{visit.staff_name}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    ))}
+                </table>
+            )}
+        </section>
+    )
+}
+
+function Outcome({ visit, canClose, onClose }: { visit: VisitRow; canClose: boolean; onClose: () => void }) {
+    if (!visit.disposition) {
+        if (!visit.time_in) return <span className="text-xs text-slate-400">Not recorded</span>
+        return (
+            <span className="inline-flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-800">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" aria-hidden="true" /> In clinic
+                </span>
+                {canClose && <button type="button" onClick={onClose} className="text-xs font-semibold text-teal-800 underline">Close visit</button>}
+            </span>
+        )
+    }
+    return (
+        <span className="inline-flex flex-col gap-0.5">
+            <span title={DISPOSITIONS[visit.disposition]}
+                className={`inline-flex w-fit whitespace-nowrap rounded-full border px-2.5 py-1 text-xs font-medium ${DISPOSITION_TONES[visit.disposition] || ""}`}>
+                {DISPOSITION_SHORT[visit.disposition] || visit.disposition}
+            </span>
+            {visit.referred_to && <span className="text-xs text-slate-500">{visit.referred_to}</span>}
+        </span>
+    )
+}
+
+function SortHeader({ label, sortKey, sort, onSort }: {
+    label: string; sortKey: SortKey; sort: { key: SortKey; direction: "asc" | "desc" }; onSort: (key: SortKey) => void
+}) {
+    const active = sort.key === sortKey
+    return (
+        <th aria-sort={active ? (sort.direction === "asc" ? "ascending" : "descending") : "none"}
+            className="border-b border-slate-100 px-5 py-3 text-left text-xs font-medium text-slate-400">
+            <button type="button" onClick={() => onSort(sortKey)} className="inline-flex items-center gap-1 hover:text-slate-700">
+                {label}
+                <i aria-hidden="true" className={`bi ${active ? (sort.direction === "asc" ? "bi-caret-up-fill" : "bi-caret-down-fill") : "bi-chevron-expand"} text-[10px]`} />
+            </button>
+        </th>
+    )
+}
+
+function Select({ label, value, onChange, options }: {
+    label: string; value: string; onChange: (value: string) => void; options: [string, string][]
+}) {
+    return (
+        <select aria-label={label} value={value} onChange={(e) => onChange(e.target.value)}
+            className={`rounded-full border px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-teal-100 ${value ? "border-teal-300 bg-teal-50 text-teal-900" : "border-slate-200 bg-white text-slate-600"}`}>
+            {options.map(([optionValue, text]) => <option key={optionValue} value={optionValue}>{text}</option>)}
+        </select>
+    )
+}
+
+function StatCard({ icon, value, label, tone, onClick }: {
+    icon: string; value: number; label: string; tone?: "emerald" | "amber"; onClick?: () => void
+}) {
+    const iconTone = tone === "emerald" ? "bg-emerald-50 text-emerald-700" : tone === "amber" ? "bg-amber-50 text-amber-800" : "bg-teal-50 text-teal-800"
+    const body = (
+        <>
+            <div className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl text-lg ${iconTone}`}>
+                <i className={`bi ${icon}`} aria-hidden="true" />
+            </div>
+            <div className="text-left">
                 <div className="text-xl font-bold leading-none">{value}</div>
                 <div className="mt-1 text-xs text-slate-400">{label}</div>
             </div>
-        </div>
+        </>
     )
+    const base = "flex items-center gap-3.5 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+    return onClick
+        ? <button type="button" onClick={onClick} className={`${base} transition hover:border-teal-300`}>{body}</button>
+        : <div className={base}>{body}</div>
 }
+
+// Printing the daily log: just the log, no sidebar or controls.
+const PRINT_CSS = `
+@media print {
+  nav, .no-print { display: none !important; }
+  #main-content, #main-content > div { overflow: visible !important; height: auto !important; padding: 0 !important; }
+  body { background: #fff !important; }
+  @page { margin: 14mm; }
+}
+`

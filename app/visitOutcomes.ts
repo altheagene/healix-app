@@ -43,6 +43,22 @@ export function localDateTime(date = new Date()) {
     `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
 }
 
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+/**
+ * "2026-10-28 16:07:01" as "Oct 28, 2026" and "16:07". Read straight from the stored text:
+ * new Date() rejects that format in Safari and would shift it by the browser's time zone.
+ */
+export function visitDateParts(value?: string | null) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2}))?/.exec(String(value ?? ""))
+  if (!match) return { date: String(value ?? ""), time: "" }
+  const [, year, month, day, hour, minute] = match
+  return {
+    date: `${MONTHS[Number(month) - 1]} ${Number(day)}, ${year}`,
+    time: hour ? `${hour}:${minute}` : "",
+  }
+}
+
 export function durationLabel(minutes: number | null | undefined) {
   if (minutes == null) return ""
   if (minutes < 60) return `${minutes} min`

@@ -19,7 +19,8 @@ def get_clinic_visits(**kwargs):
                 s.service_id,
                 s.service_name,
                 p.patient_id,
-                p.first_name || ' ' || p.middle_name || ' ' || p.last_name AS patient_name,
+                trim(coalesce(p.first_name, '') || ' ' || coalesce(nullif(trim(p.middle_name), '') || ' ', '')
+                     || coalesce(p.last_name, '')) AS patient_name,
                 st.staff_id,
                 st.first_name || ' ' || st.last_name AS staff_name
             FROM visit_logs v
@@ -57,7 +58,8 @@ def get_patient_clinic_logs(**kwargs):
                 v.Temperature,
                 s.service_name,
                 p.patient_id,
-                p.first_name || ' ' || p.middle_name || ' ' || p.last_name AS patient_name,
+                trim(coalesce(p.first_name, '') || ' ' || coalesce(nullif(trim(p.middle_name), '') || ' ', '')
+                     || coalesce(p.last_name, '')) AS patient_name,
                 st.staff_id,
                 st.first_name || ' ' || st.last_name AS staff_name
             FROM visit_logs v
@@ -94,7 +96,8 @@ def get_visit_logs():
             v.Weight,
             v.Temperature,
             s.service_name,
-            p.first_name || ' ' || p.middle_name || ' ' || p.last_name AS patient_name,
+            trim(coalesce(p.first_name, '') || ' ' || coalesce(nullif(trim(p.middle_name), '') || ' ', '')
+                 || coalesce(p.last_name, '')) AS patient_name,
             st.first_name || ' ' || st.last_name AS staff_name
         FROM visit_logs v
         JOIN services s ON v.service_id = s.service_id

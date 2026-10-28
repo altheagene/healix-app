@@ -15,7 +15,8 @@ def list_appointments():
         s.service_id,
         s.service_name,
         p.patient_id,
-        p.first_name || ' ' || p.middle_name || ' ' || p.last_name AS patient_name
+        trim(coalesce(p.first_name, '') || ' ' || coalesce(nullif(trim(p.middle_name), '') || ' ', '')
+             || coalesce(p.last_name, '')) AS patient_name
         FROM
             appointments a
         JOIN
@@ -47,7 +48,8 @@ def list_appointment_logs(**kwargs):
         a.start_time,
         a.status,
         p.patient_id,
-        p.first_name || ' ' || p.middle_name || ' ' || p.last_name AS patient_name
+        trim(coalesce(p.first_name, '') || ' ' || coalesce(nullif(trim(p.middle_name), '') || ' ', '')
+             || coalesce(p.last_name, '')) AS patient_name
     FROM appointments a
     JOIN services s ON s.service_id = a.service_id
     JOIN patients p ON a.patient_id = p.patient_id

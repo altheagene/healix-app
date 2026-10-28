@@ -64,6 +64,9 @@ ACTION_BY_PATH = {
     "/archivepatient": "patient_archive",
     "/visitoutcome": "visit_outcome",
     "/notifyparent": "parent_notified",
+    "/searchvisits": "visit_list_view",
+    "/getvisit": "visit_view",
+    "/download/visits": "visit_export",
 }
 
 # Reading someone's health record is logged too, not only changes to it.
@@ -78,6 +81,8 @@ VIEW_PATHS = {
     "/checkin",
     "/patienttimeline",
     "/patientsummary",
+    "/searchvisits",
+    "/getvisit",
 }
 
 

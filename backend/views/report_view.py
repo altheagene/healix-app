@@ -1,20 +1,48 @@
 """Builds downloadable CSV files. The controller supplies the rows."""
 
+import csv
+import io
+
 from flask import Response
+
+
+def _safe(value):
+    """Quote-safe text, with a leading ' on anything a spreadsheet would run as a formula."""
+    text = "" if value is None else str(value)
+    return "'" + text if text[:1] in ("=", "+", "-", "@", "\t", "\r") else text
 
 
 def _csv_response(filename, headers, records):
     def generate():
-        yield ",".join(headers) + "\n"
+        buffer = io.StringIO()
+        writer = csv.writer(buffer)
+        writer.writerow(headers)
         for record in records:
-            row = [f'"{col}"' if "," in col else col for col in record]
-            yield ",".join(row) + "\n"
+            writer.writerow([_safe(col) for col in record])
+            yield buffer.getvalue()
+            buffer.seek(0)
+            buffer.truncate()
+        yield buffer.getvalue()
 
     return Response(
         generate(),
         mimetype="text/csv",
         headers={"Content-Disposition": f"attachment;filename={filename}"},
     )
+
+
+def visits_csv(visits, dispositions):
+    headers = ["Visit ID", "Date and time", "Patient", "Student ID", "Department", "Level", "Strand",
+               "Service", "Complaint", "Outcome", "Referred or taken to", "Time in", "Time out",
+               "Parent notified", "Attending"]
+    rows = [
+        [v["visit_id"], v["visit_datetime"], v["patient_name"], v["student_id"], v["department"], v["level"],
+         v["strand"], v["service_name"], v["complaint"],
+         dispositions.get(v["disposition"], "In clinic" if v["time_in"] and not v["time_out"] else ""),
+         v["referred_to"], v["time_in"], v["time_out"], "Yes" if v["parent_notified"] else "No", v["staff_name"]]
+        for v in visits
+    ]
+    return _csv_response("visits.csv", headers, rows)
 
 
 def appointments_csv(appointments):

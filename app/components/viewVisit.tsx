@@ -1,106 +1,117 @@
 import { apiFetch } from "../api";
 import React from "react";
-import { DISPOSITIONS, NOTIFY_METHODS } from "../visitOutcomes";
+import Modal from "./modal";
+import { DISPOSITIONS, NOTIFY_METHODS, visitDateParts } from "../visitOutcomes";
 
-export default function ViewVisit(props: any) {
-  const [visitInfo, setVisitInfo] = React.useState<any>(false);
+/**
+ * Details of one visit. Pass `visit` when the full record is already loaded (the patient
+ * page), or `visitId` to load it (the Visit Records list carries no notes or vitals).
+ */
+export default function ViewVisit(props: { visit?: any; visitId?: number; hideForm: () => void }) {
+  const [visitInfo, setVisitInfo] = React.useState<any>(props.visit ?? null);
   const [medicationDetails, setMedicationDetails] = React.useState<any[]>([]);
+  const [error, setError] = React.useState("");
 
   React.useEffect(() => {
-    setVisitInfo(props.visit);
-  }, [props.visit]);
-
-  React.useEffect(() => {
-    if (visitInfo) {
-      apiFetch(`/getmedicationdetails?idnum=${visitInfo?.visit_id}`)
-        .then(res => res.json())
-        .then(data => setMedicationDetails(data));
+    if (props.visit) {
+      setVisitInfo(props.visit);
+    } else if (props.visitId) {
+      apiFetch(`/getvisit?idnum=${props.visitId}`).then(async res => {
+        const data = await res.json();
+        if (res.ok && data.visit_id) setVisitInfo(data);
+        else setError(data.error || "Could not load this visit.");
+      });
     }
-  }, [visitInfo]);
+  }, [props.visit, props.visitId]);
+
+  React.useEffect(() => {
+    if (visitInfo?.visit_id) {
+      apiFetch(`/getmedicationdetails?idnum=${visitInfo.visit_id}`)
+        .then(res => res.json())
+        .then(data => setMedicationDetails(Array.isArray(data) ? data : []));
+    }
+  }, [visitInfo?.visit_id]);
+
+  const when = visitDateParts(visitInfo?.visit_datetime);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
-      <div className="w-full max-w-lg rounded-2xl bg-white shadow-xl">
+    <Modal title="Visit details" onClose={props.hideForm} width={560}>
+      <div className="overflow-y-auto px-6 py-5">
+        {error && <p role="alert" className="m-0 text-sm text-red-700">{error}</p>}
+        {!visitInfo && !error && <p className="m-0 text-sm text-slate-500">Loading...</p>}
 
-        {/* HEADER */}
-        <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
-          <h2 className="text-base font-semibold text-slate-900">Visit Log</h2>
-          <button
-            onClick={props.hideForm}
-            className="flex h-8 w-8 items-center justify-center rounded-full text-xl leading-none text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
-          >
-            ×
-          </button>
-        </div>
+        {visitInfo && (
+          <>
+            <dl className="m-0 grid grid-cols-1 gap-x-6 gap-y-2 text-sm text-slate-700 sm:grid-cols-2">
+              <Row label="Patient" value={visitInfo.patient_name} />
+              <Row label="Date" value={`${when.date}${when.time ? ` · ${when.time}` : ""}`} />
+              <Row label="Service" value={visitInfo.service_name} />
+              <Row label="Attending" value={visitInfo.staff_name} />
+              <Row label="Weight" value={visitInfo.Weight} />
+              <Row label="Temperature" value={visitInfo.Temperature} />
+            </dl>
 
-        {/* BODY */}
-        <div className="max-h-[70vh] overflow-y-auto px-5 py-4">
-
-          {/* VISIT INFO */}
-          <div className="grid grid-cols-1 gap-x-6 gap-y-2 text-sm text-slate-700 sm:grid-cols-2">
-            <div><span className="font-semibold text-slate-900">Patient:</span> {visitInfo?.patient_name}</div>
-            <div><span className="font-semibold text-slate-900">Date:</span> {visitInfo?.visit_datetime ? new Date(visitInfo.visit_datetime).toLocaleString() : ""}</div>
-            <div><span className="font-semibold text-slate-900">Service:</span> {visitInfo?.service_name}</div>
-            <div><span className="font-semibold text-slate-900">Weight:</span> {visitInfo?.Weight ?? "-"}</div>
-            <div><span className="font-semibold text-slate-900">Temperature:</span> {visitInfo?.Temperature ?? "-"}</div>
-            <div><span className="font-semibold text-slate-900">Staff:</span> {visitInfo?.staff_name}</div>
-          </div>
-
-          {(visitInfo?.complaint || visitInfo?.assessment || visitInfo?.treatment) && (
-            <div className="mt-5 space-y-1.5 border-t border-slate-100 pt-4 text-sm text-slate-700">
-              {visitInfo?.complaint && <p className="m-0"><span className="font-semibold text-slate-900">Complaint:</span> {visitInfo.complaint}</p>}
-              {visitInfo?.assessment && <p className="m-0"><span className="font-semibold text-slate-900">Assessment:</span> {visitInfo.assessment}</p>}
-              {visitInfo?.treatment && <p className="m-0"><span className="font-semibold text-slate-900">Treatment:</span> {visitInfo.treatment}</p>}
-            </div>
-          )}
-
-          {(visitInfo?.disposition || visitInfo?.time_in) && (
-            <div className="mt-5 space-y-1.5 border-t border-slate-100 pt-4 text-sm text-slate-700">
-              <p className="m-0"><span className="font-semibold text-slate-900">Outcome:</span>{" "}
-                {visitInfo?.disposition ? DISPOSITIONS[visitInfo.disposition] || visitInfo.disposition : "Still in the clinic"}
-                {visitInfo?.referred_to ? ` (${visitInfo.referred_to})` : ""}
-              </p>
-              {visitInfo?.time_in && (
-                <p className="m-0"><span className="font-semibold text-slate-900">In / out:</span> {visitInfo.time_in.slice(11, 16)}
-                  {visitInfo?.time_out ? ` to ${visitInfo.time_out.slice(11, 16)}` : ""}</p>
-              )}
-              {visitInfo?.picked_up_by && <p className="m-0"><span className="font-semibold text-slate-900">Picked up by:</span> {visitInfo.picked_up_by}</p>}
-              <p className="m-0"><span className="font-semibold text-slate-900">Parent notified:</span>{" "}
-                {visitInfo?.parent_notified
-                  ? `Yes, by ${(NOTIFY_METHODS[visitInfo.notified_method] || visitInfo.notified_method || "").toLowerCase()} at ${String(visitInfo.notified_at || "").slice(11, 16)}${visitInfo.notified_by ? ` (${visitInfo.notified_by})` : ""}`
-                  : "No"}
-              </p>
-            </div>
-          )}
-
-          {/* NOTES */}
-          <div className="mt-5 border-t border-slate-100 pt-4">
-            <h3 className="text-sm font-semibold text-slate-900 mb-1.5">Notes</h3>
-            <p className="text-sm text-slate-500">{visitInfo?.notes || "No notes available."}</p>
-          </div>
-
-          {/* MEDICATIONS */}
-          <div className="mt-5 border-t border-slate-100 pt-4">
-            <h3 className="text-sm font-semibold text-slate-900 mb-2">Medications</h3>
-            {medicationDetails?.length > 0 ? (
-              <ul className="space-y-1.5">
-                {medicationDetails.map(med => (
-                  <li key={med.supply_name} className="flex items-center gap-2 text-sm text-slate-700">
-                    {med.quantity > 0 && (
-                      <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-xs font-medium text-slate-600">
-                        {med.quantity}×
-                      </span>
-                    )}
-                    <span>{med.supply_name}</span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-sm text-slate-500">No medications prescribed.</p>
+            {(visitInfo.complaint || visitInfo.assessment || visitInfo.treatment) && (
+              <section className="mt-5 space-y-1.5 border-t border-slate-100 pt-4 text-sm text-slate-700">
+                {visitInfo.complaint && <p className="m-0"><span className="font-semibold text-slate-900">Complaint:</span> {visitInfo.complaint}</p>}
+                {visitInfo.assessment && <p className="m-0"><span className="font-semibold text-slate-900">Assessment:</span> {visitInfo.assessment}</p>}
+                {visitInfo.treatment && <p className="m-0"><span className="font-semibold text-slate-900">Treatment:</span> {visitInfo.treatment}</p>}
+              </section>
             )}
-          </div>
-        </div>
+
+            {(visitInfo.disposition || visitInfo.time_in) && (
+              <section className="mt-5 space-y-1.5 border-t border-slate-100 pt-4 text-sm text-slate-700">
+                <p className="m-0"><span className="font-semibold text-slate-900">Outcome:</span>{" "}
+                  {visitInfo.disposition ? DISPOSITIONS[visitInfo.disposition] || visitInfo.disposition : "Still in the clinic"}
+                  {visitInfo.referred_to ? ` (${visitInfo.referred_to})` : ""}
+                </p>
+                {visitInfo.time_in && (
+                  <p className="m-0"><span className="font-semibold text-slate-900">In / out:</span> {visitDateParts(visitInfo.time_in).time}
+                    {visitInfo.time_out ? ` to ${visitDateParts(visitInfo.time_out).time}` : ""}</p>
+                )}
+                {visitInfo.picked_up_by && <p className="m-0"><span className="font-semibold text-slate-900">Picked up by:</span> {visitInfo.picked_up_by}</p>}
+                <p className="m-0"><span className="font-semibold text-slate-900">Parent notified:</span>{" "}
+                  {visitInfo.parent_notified
+                    ? `Yes, by ${(NOTIFY_METHODS[visitInfo.notified_method] || visitInfo.notified_method || "").toLowerCase()} at ${visitDateParts(visitInfo.notified_at).time}${visitInfo.notified_by ? ` (${visitInfo.notified_by})` : ""}`
+                    : "No"}
+                </p>
+              </section>
+            )}
+
+            <section className="mt-5 border-t border-slate-100 pt-4">
+              <h3 className="m-0 mb-1.5 text-sm font-semibold text-slate-900">Notes</h3>
+              <p className="m-0 whitespace-pre-line text-sm text-slate-500">{visitInfo.notes || "No notes."}</p>
+            </section>
+
+            <section className="mt-5 border-t border-slate-100 pt-4">
+              <h3 className="m-0 mb-2 text-sm font-semibold text-slate-900">Medicines</h3>
+              {medicationDetails.length > 0 ? (
+                <ul className="m-0 list-none space-y-1.5 p-0">
+                  {medicationDetails.map(med => (
+                    <li key={med.supply_name} className="flex items-center gap-2 text-sm text-slate-700">
+                      {med.quantity > 0 && (
+                        <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-xs font-medium text-slate-600">{med.quantity}×</span>
+                      )}
+                      <span>{med.supply_name}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="m-0 text-sm text-slate-500">No medicines given.</p>
+              )}
+            </section>
+          </>
+        )}
       </div>
-    </div>
+    </Modal>
   );
+}
+
+function Row({ label, value }: { label: string; value?: string | number | null }) {
+  return (
+    <div>
+      <dt className="inline font-semibold text-slate-900">{label}: </dt>
+      <dd className="inline">{value === null || value === undefined || value === "" ? "-" : value}</dd>
+    </div>
+  )
 }
