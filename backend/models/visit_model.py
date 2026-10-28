@@ -3,8 +3,8 @@
 from datetime import date
 from sqlite3 import connect
 
-from db.connection import database, getprocess
-from db.dbhelper import checked_columns, deleterecord, updaterecord
+from db.connection import REJECTED_WRITE, database, getprocess
+from db.dbhelper import checked_columns, deleterecord
 
 
 def get_clinic_visits(**kwargs):
@@ -14,6 +14,7 @@ def get_clinic_visits(**kwargs):
                 v.visit_id,
                 v.visit_datetime,
                 v.notes,
+                v.complaint,
                 s.service_id,
                 s.service_name,
                 p.patient_id,
@@ -37,6 +38,9 @@ def get_patient_clinic_logs(**kwargs):
                 v.visit_id,
                 v.visit_datetime,
                 v.notes,
+                v.complaint,
+                v.assessment,
+                v.treatment,
                 s.service_id,
                 v.Weight,
                 v.Temperature,
@@ -90,7 +94,9 @@ def get_visit_logs():
     return getprocess(sql, [])
 
 
-def add_visit_log(**fields):
+def add_visit_log(medications=(), **fields):
+    """Saves the visit and its medicines, deducting stock, all or nothing.
+    Returns the new visit_id, or None if the database refused it."""
     keys = list(fields.keys())
     values = list(fields.values())
     try:
@@ -103,15 +109,15 @@ def add_visit_log(**fields):
     sql = f"INSERT INTO visit_logs (`{columns}`) VALUES ({placeholders})"
 
     conn = _connect()
-    cursor = conn.cursor()
     try:
-        cursor.execute(sql, values)
-        visit_id = cursor.lastrowid
-        conn.commit()
+        with conn:  # commits on success, rolls back on any error
+            cursor = conn.cursor()
+            cursor.execute(sql, values)
+            visit_id = cursor.lastrowid
+            _insert_medications(cursor, visit_id, medications or [])
         return visit_id
-    except Exception as error:
-        print("POST error:", error)
-        conn.rollback()
+    except REJECTED_WRITE as error:
+        print("Write refused:", error)
         return None
     finally:
         conn.close()
@@ -119,50 +125,68 @@ def add_visit_log(**fields):
 
 def add_medications_for_visit(visit_id, medications):
     conn = _connect()
-    cursor = conn.cursor()
     try:
-        _insert_medications(cursor, visit_id, medications or [])
-        conn.commit()
+        with conn:
+            _insert_medications(conn.cursor(), visit_id, medications or [])
         return True
-    except Exception as error:
+    except REJECTED_WRITE as error:
+        print("Write refused:", error)
+        return False
+    finally:
+        conn.close()
+
+
+def update_visit(visit_id, fields, medications=None):
+    """Updates the visit and, when medications is given, replaces its medicines
+    (returning the old ones to stock first), all or nothing."""
+    fields = {key: value for key, value in fields.items() if key != "visit_id"}
+    try:
+        checked_columns("visit_logs", fields.keys())
+    except ValueError as error:
         print("POST error:", error)
-        conn.rollback()
+        return False
+
+    conn = _connect()
+    try:
+        with conn:  # commits on success, rolls back on any error
+            cursor = conn.cursor()
+            if fields:
+                assignments = ",".join(f"`{key}` = ?" for key in fields)
+                cursor.execute(
+                    f"UPDATE visit_logs SET {assignments} WHERE visit_id = ?",
+                    [*fields.values(), visit_id],
+                )
+                if cursor.rowcount != 1:
+                    return False
+            if medications is not None:
+                _replace_medications(cursor, visit_id, medications)
+        return True
+    except REJECTED_WRITE as error:
+        print("Write refused:", error)
         return False
     finally:
         conn.close()
 
 
 def replace_visit_medications(visit_id, medications):
-    conn = _connect()
-    cursor = conn.cursor()
-    try:
-        cursor.execute(
-            """
-            SELECT m.supply_id, m.quantity, s.auto_deduct
-            FROM medication_details m
-            JOIN supplies s ON s.supply_id = m.supply_id
-            WHERE m.visit_id = ?
-            """,
-            (visit_id,),
-        )
-        previous = cursor.fetchall()
-        for supply_id, quantity, auto_deduct in previous:
-            if auto_deduct and quantity:
-                _change_stock(cursor, supply_id, quantity, "in")
+    return update_visit(visit_id, {}, medications)
 
-        cursor.execute(
-            "DELETE FROM medication_details WHERE visit_id = ?",
-            (visit_id,),
-        )
-        _insert_medications(cursor, visit_id, medications or [])
-        conn.commit()
-        return True
-    except Exception as error:
-        print("POST error:", error)
-        conn.rollback()
-        return False
-    finally:
-        conn.close()
+
+def _replace_medications(cursor, visit_id, medications):
+    cursor.execute(
+        """
+        SELECT m.supply_id, m.quantity, s.auto_deduct
+        FROM medication_details m
+        JOIN supplies s ON s.supply_id = m.supply_id
+        WHERE m.visit_id = ?
+        """,
+        (visit_id,),
+    )
+    for supply_id, quantity, auto_deduct in cursor.fetchall():
+        if auto_deduct and quantity:
+            _change_stock(cursor, supply_id, quantity, "in")
+    cursor.execute("DELETE FROM medication_details WHERE visit_id = ?", (visit_id,))
+    _insert_medications(cursor, visit_id, medications or [])
 
 
 def _connect():
@@ -271,10 +295,6 @@ def _change_stock(cursor, supply_id, quantity, direction):
         """,
         (date.today().isoformat(), batch_id, quantity, 0),
     )
-
-
-def update_visit_log(**fields):
-    return updaterecord("visit_logs", **fields)
 
 
 def delete_visit_medications(visit_id):

@@ -25,7 +25,7 @@ _EVERYONE_GET = (
     "/getmedicationdetails", "/getpatient", "/getpatientallergies",
     "/getpatientcliniclogs", "/getpatientconditions",
     "/getstaffandcateg", "/getstaffcategories", "/getstudent", "/getsupplydetails",
-    "/getvisitlogs", "/refreshbatches",
+    "/getvisitlogs", "/me", "/searchpatients", "/checkin", "/patienttimeline",
 )
 _EVERYONE_POST = (
     "/addallergies", "/addappointment", "/addbatch", "/addconditions", "/additem",
@@ -46,7 +46,11 @@ ROUTE_ROLES = {
     ("POST", "/addmedicationdetails"): CLINICIANS,
     ("POST", "/updatevisitlog"): CLINICIANS,
     ("POST", "/updatemedicationdetails"): CLINICIANS,
+    # Printable summaries leave the system, and archiving hides a record: clinicians only.
+    ("GET", "/patientsummary"): CLINICIANS,
+    ("POST", "/archivepatient"): CLINICIANS,
     ("POST", "/addstaff"): ADMINS,
+    ("POST", "/adminresetpassword"): ADMINS,
     ("GET", "/getauditlogs"): ADMINS,
 }
 

@@ -7,7 +7,7 @@ WRITABLE_COLUMNS = {
               "birthday", "sex", "phone", "email", "username", "password"},
     "patients": {"patient_id", "is_student", "student_id", "department", "level", "first_name",
                  "middle_name", "last_name", "birthday", "sex", "email", "phone", "notes",
-                 "emergency_contact_name", "emergency_contact_phone"},
+                 "emergency_contact_name", "emergency_contact_phone", "archived"},
     "allergies": {"allergy_id", "allergy_name"},
     "conditions": {"condition_id", "condition_name"},
     "patient_allergies": {"patient_id", "allergy_id"},
@@ -21,7 +21,8 @@ WRITABLE_COLUMNS = {
                      "start_time", "status", "notes"},
     "services": {"service_id", "service_name"},
     "visit_logs": {"visit_id", "appointment_id", "patient_id", "service_id", "staff_id",
-                   "visit_datetime", "weight", "temperature", "notes"},
+                   "visit_datetime", "weight", "temperature", "notes",
+                   "complaint", "assessment", "treatment"},
 }
 
 # updaterecord always matches rows on this column, never on a key the client picked.

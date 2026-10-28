@@ -1,6 +1,13 @@
-"""Opens the clinic database and runs SQL. Models call this. Routes do not."""
+"""Opens the clinic database and runs SQL. Models call this. Routes do not.
+
+A write the database refuses (a duplicate, a missing reference, a bad value) returns
+False or None, because that is an answer the caller can act on. Anything else, such as
+the database file being missing or locked, raises, and becomes a 503 response instead
+of being mistaken for "no rows" or "already exists".
+"""
 
 import os
+import sqlite3
 from sqlite3 import Row, connect
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -8,22 +15,27 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 database = os.environ.get("HEALIX_DB", os.path.join(BASE_DIR, "clinic.db"))
 studentdb = os.environ.get("HEALIX_STUDENT_DB", os.path.join(BASE_DIR, "students.db"))
 
+# Errors that mean "the database said no to this write", not "the database is broken".
+REJECTED_WRITE = (sqlite3.IntegrityError, sqlite3.InterfaceError, sqlite3.ProgrammingError)
 
-def getprocess(sql, values) -> list:
+
+def enable_wal():
+    """Write-ahead logging: readers no longer wait for a writer, which matters once
+    several staff use the app at once. The setting is stored in the database file."""
+    conn = connect(database)
     try:
-        conn = connect(database)
-        conn.row_factory = Row
-        cursor = conn.cursor()
-        cursor.execute(sql, values)
-        data = cursor.fetchall()
-        cursor.close()
+        conn.execute("PRAGMA journal_mode=WAL")
+    finally:
         conn.close()
 
-        return [dict(row) for row in data]
 
-    except Exception as e:
-        print("GET error:", e)
-        return []
+def getprocess(sql, values) -> list:
+    conn = connect(database)
+    try:
+        conn.row_factory = Row
+        return [dict(row) for row in conn.execute(sql, values).fetchall()]
+    finally:
+        conn.close()
 
 
 def postprocess(sql, values) -> bool:
@@ -32,25 +44,20 @@ def postprocess(sql, values) -> bool:
 
 
 def insertprocess(sql, values):
-    """Runs an INSERT and returns the new row's id, or None if it failed."""
+    """Runs an INSERT and returns the new row's id, or None if the database refused it."""
     cursor = _write(sql, values)
     return cursor.lastrowid if cursor is not None else None
 
 
 def _write(sql, values):
-    conn = None
+    conn = connect(database)
     try:
-        conn = connect(database)
-        print(sql)
         conn.execute("PRAGMA foreign_keys = ON;")
-        cursor = conn.cursor()
-        cursor.execute(sql, values)
+        cursor = conn.execute(sql, values)
         conn.commit()
         return cursor
-
-    except Exception as e:
-        print("POST error:", e)
+    except REJECTED_WRITE as e:
+        print("Write refused:", e)
         return None
     finally:
-        if conn is not None:
-            conn.close()
+        conn.close()

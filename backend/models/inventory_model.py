@@ -1,9 +1,9 @@
 """Supply, batch, and stock queries. This file talks to SQLite and does not know about HTTP."""
 
-from datetime import date, datetime
+from datetime import date
 from sqlite3 import connect
 
-from db.connection import database, getprocess
+from db.connection import REJECTED_WRITE, database, getprocess, postprocess
 from db.dbhelper import addrecord, getall, getrecord, insertrecord, updaterecord
 
 
@@ -116,67 +116,62 @@ def add_batch(**fields):
     if batch_id is None:
         return False
 
-    return addrecord(
+    logged = addrecord(
         "inventory",
         batch_id=batch_id,
         item_in=fields["stock_level"],
         item_out=0,
         inv_date=date.today().isoformat(),
     )
+    expire_batches()
+    return logged
 
 
 def edit_stock_batch(batch_id, item_in, item_out):
-    """Logs the movement and changes the batch's stock together, or not at all."""
-    conn = None
+    """Logs the movement and changes the batch's stock together, or not at all.
+    Refuses an unknown batch, or removing more stock than the batch holds."""
+    change = int(item_in) - int(item_out)
+    conn = connect(database)
     try:
-        item_in, item_out = int(item_in), int(item_out)
-        conn = connect(database)
         conn.execute("PRAGMA foreign_keys = ON;")
         with conn:  # commits on success, rolls back on any error
             updated = conn.execute(
-                "UPDATE batches SET stock_level = stock_level + ? WHERE batch_id = ?",
-                (item_in - item_out, batch_id),
+                "UPDATE batches SET stock_level = stock_level + ? WHERE batch_id = ? AND stock_level + ? >= 0",
+                (change, batch_id, change),
             ).rowcount
             if updated != 1:
-                raise ValueError(f"No batch {batch_id}")
+                return False
             conn.execute(
                 "INSERT INTO inventory (batch_id, inv_date, item_in, item_out) VALUES (?, ?, ?, ?)",
-                (batch_id, date.today().isoformat(), item_in, item_out),
+                (batch_id, date.today().isoformat(), int(item_in), int(item_out)),
             )
         return True
-    except Exception as e:
-        print("POST error:", e)
+    except REJECTED_WRITE as e:
+        print("Write refused:", e)
         return False
     finally:
-        if conn is not None:
-            conn.close()
+        conn.close()
 
 
 def update_batch(**fields):
-    return updaterecord("batches", **fields)
+    updated = updaterecord("batches", **fields)
+    expire_batches()  # in case the new expiry date is already past
+    return updated
 
 
 def update_supply(**fields):
     return updaterecord("supplies", **fields)
 
 
-def refresh_expired_batches():
-    try:
-        batches = getall("batches")
-        datenow = date.today()
-        success = True
-
-        for batch in batches:
-            print(batch["expiration_date"])
-            if batch["expiration_date"] != "":
-                exp = batch["expiration_date"]
-
-                if isinstance(exp, str):
-                    exp = datetime.strptime(exp, "%Y-%m-%d").date()
-
-                if exp < datenow:
-                    updaterecord("batches", batch_id=batch["batch_id"], is_active=False)
-    except Exception as e:
-        print(e)
-
-    return success
+def expire_batches():
+    """Marks batches past their expiry date inactive, so their stock stops counting.
+    Runs once a day on the server and after any batch is added or edited."""
+    return postprocess(
+        """
+        UPDATE batches SET is_active = 0
+        WHERE is_active = 1
+          AND expiration_date IS NOT NULL AND expiration_date != ''
+          AND expiration_date < ?
+        """,
+        [date.today().isoformat()],
+    )

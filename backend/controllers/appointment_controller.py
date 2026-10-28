@@ -11,6 +11,7 @@ from models.appointment_model import (
     update_appointment_record,
 )
 from views.api_view import json_data, json_success
+import validation
 from views.report_view import appointment_logs_csv, appointments_csv
 
 appointment_bp = Blueprint("appointments", __name__)
@@ -36,7 +37,10 @@ def get_appointment_logs():
 
 @appointment_bp.route("/addappointment", methods=["POST"])
 def add_appointment_route():
-    data = request.get_json()
+    data = dict(request.get_json() or {})
+    validation.require(data, "patient_id", "service_id", "status")
+    if data.get("appointment_date"):
+        data["appointment_date"] = validation.iso_date(data["appointment_date"], "appointment_date")
     return json_success(add_appointment(**data))
 
 

@@ -11,12 +11,12 @@ from models.inventory_model import (
     list_medicine,
     list_supplies,
     list_supply_categories,
-    refresh_expired_batches,
     supply_details,
     update_batch,
     update_supply,
 )
 from views.api_view import json_data, json_success
+import validation
 from views.report_view import inventory_logs_csv
 
 inventory_bp = Blueprint("inventory", __name__)
@@ -64,16 +64,22 @@ def add_item():
 
 @inventory_bp.route("/addbatch", methods=["POST"])
 def add_batch_route():
-    return json_success(add_batch(**request.get_json()))
+    data = dict(request.get_json() or {})
+    validation.require(data, "supply_id", "batch_number", "stock_level")
+    data["stock_level"] = validation.non_negative_int(data["stock_level"], "stock_level")
+    if data.get("expiration_date"):
+        data["expiration_date"] = validation.iso_date(data["expiration_date"], "expiration_date")
+    return json_success(add_batch(**data))
 
 
 @inventory_bp.route("/editstockbatch", methods=["POST"])
 def edit_stock_batch_route():
-    data = request.get_json()
+    data = request.get_json() or {}
+    validation.require(data, "batch_id")
     return json_success(edit_stock_batch(
         data["batch_id"],
-        data["item_in"],
-        data["item_out"],
+        validation.non_negative_int(data.get("item_in") or 0, "item_in"),
+        validation.non_negative_int(data.get("item_out") or 0, "item_out"),
     ))
 
 
@@ -95,11 +101,6 @@ def delete_item():
 @inventory_bp.route("/updatesupply", methods=["POST"])
 def update_supply_route():
     return json_success(update_supply(**request.get_json()))
-
-
-@inventory_bp.route("/refreshbatches", methods=["GET"])
-def refresh_batches():
-    return json_success(refresh_expired_batches())
 
 
 @inventory_bp.route("/download/inventorylogs", methods=["GET"])

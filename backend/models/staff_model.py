@@ -62,6 +62,13 @@ def update_staff(**fields):
     return updaterecord("staff", **fields)
 
 
+def get_staff_password(staff_id):
+    rows = getrecord("staff", staff_id=staff_id)
+    if not rows:
+        return None
+    return rows[0].get("password")
+
+
 def ensure_session_column():
     """Adds staff.token_version. Raising it ends every session that staff member has open."""
     columns = [row["name"] for row in getprocess("PRAGMA table_info(staff)", [])]
@@ -82,3 +89,7 @@ def end_sessions(staff_id):
         "UPDATE staff SET token_version = token_version + 1 WHERE staff_id = ?",
         [staff_id],
     )
+
+
+def update_staff_password(staff_id, password):
+    return updaterecord("staff", staff_id=staff_id, password=hash_password(password))

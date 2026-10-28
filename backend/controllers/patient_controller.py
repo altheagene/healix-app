@@ -17,10 +17,16 @@ from models.patient_model import (
     get_patient,
     get_patient_allergies,
     get_patient_conditions,
+    check_in_lookup,
     get_student,
+    patient_summary,
+    patient_timeline,
+    search_patients,
+    set_patient_archived,
     update_patient,
 )
 from views.api_view import json_data, json_success
+import validation
 
 patient_bp = Blueprint("patients", __name__)
 
@@ -50,6 +56,55 @@ def get_conditions_route():
 @patient_bp.route("/getallpatients", methods=["GET"])
 def get_all_patients_route():
     return json_data(get_all_patients())
+
+
+@patient_bp.route("/searchpatients", methods=["GET"])
+def search_patients_route():
+    args = request.args
+    page = validation.non_negative_int(args.get("page", "1"), "page") or 1
+    page_size = min(validation.non_negative_int(args.get("page_size", "10"), "page_size") or 10, 100)
+    visited_within = args.get("visited_within")
+    filters = {
+        "department": args.get("department") or None,
+        "level": args.get("level") or None,
+        "sex": args.get("sex") or None,
+        "patient_type": args.get("patient_type") or None,
+        "has_allergies": args.get("has_allergies") == "1",
+        "has_conditions": args.get("has_conditions") == "1",
+        "visited_within": validation.non_negative_int(visited_within, "visited_within") if visited_within else None,
+        "flag": args.get("flag") or None,
+        "archived": args.get("archived") == "1",
+    }
+    return json_data(search_patients(
+        args.get("q", ""), page, page_size, filters,
+        sort=args.get("sort", "patient_id"), direction=args.get("direction", "asc"),
+    ))
+
+
+@patient_bp.route("/checkin", methods=["GET"])
+def check_in_route():
+    return json_data(check_in_lookup(request.args.get("student_id")))
+
+
+@patient_bp.route("/patienttimeline", methods=["GET"])
+def patient_timeline_route():
+    return json_data(patient_timeline(request.args.get("idnum")))
+
+
+@patient_bp.route("/patientsummary", methods=["GET"])
+def patient_summary_route():
+    summary = patient_summary(request.args.get("idnum"))
+    if summary is None:
+        return jsonify({"error": "No such patient"}), 404
+    summary["generated_by"] = request.staff.get("username")
+    return json_data(summary)
+
+
+@patient_bp.route("/archivepatient", methods=["POST"])
+def archive_patient_route():
+    data = request.get_json() or {}
+    validation.require(data, "patient_id")
+    return json_success(set_patient_archived(data["patient_id"], bool(data.get("archived", True))))
 
 
 @patient_bp.route("/getpatient", methods=["GET"])
@@ -84,10 +139,12 @@ def add_new_condition():
 
 @patient_bp.route("/addpatient", methods=["POST"])
 def add_patient_route():
-    data = dict(request.get_json())
+    data = dict(request.get_json() or {})
     data.pop("Id", None)
     allergies = data.pop("allergies", [])
     conditions = data.pop("conditions", [])
+    validation.require(data, "first_name", "middle_name", "last_name", "birthday", "sex")
+    data["birthday"] = validation.iso_date(data["birthday"], "birthday")
     # Saved in one transaction, so a failure never leaves a patient without
     # the allergies the nurse entered.
     patient_id = add_patient(allergies=allergies, conditions=conditions, **data)
@@ -119,8 +176,10 @@ def add_patient_conditions():
 @patient_bp.route("/updatepatient", methods=["POST"])
 def update_patient_route():
     # Copy, so the audit log still sees which patient the request was for.
-    data = dict(request.get_json())
+    data = dict(request.get_json() or {})
     patient_id = data.pop("patient_id")
+    if data.get("birthday"):
+        data["birthday"] = validation.iso_date(data["birthday"], "birthday")
     return json_success(update_patient(patient_id, **data))
 
 

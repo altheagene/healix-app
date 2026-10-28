@@ -34,3 +34,17 @@ def test_cors_allows_only_configured_origins(client, headers):
     local = client.get("/getallservices", headers={**h, "Origin": "http://localhost:5173"})
     assert "Access-Control-Allow-Origin" not in evil.headers
     assert local.headers["Access-Control-Allow-Origin"] == "http://localhost:5173"
+
+
+def test_staff_contacts_are_hidden_from_non_admins(client, headers):
+    rows = client.get("/getstaffandcateg", headers=headers("nurse")).json
+    others = [r for r in rows if r["username"] != "nurse"]
+    me = next(r for r in rows if r["username"] == "nurse")
+    assert others and all("email" not in r and "phone" not in r and "birthday" not in r for r in others)
+    assert me["email"] == "nurse@example.com"
+
+
+def test_admin_sees_staff_contacts(client, headers):
+    rows = client.get("/getstaffandcateg", headers=headers("admin")).json
+    assert all("email" in r for r in rows)
+    assert client.get("/findstaff?id=1", headers=headers("doctor")).json[0].get("email") is None

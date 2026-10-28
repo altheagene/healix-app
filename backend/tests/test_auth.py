@@ -94,3 +94,39 @@ def test_non_admin_cannot_change_own_role(client, headers):
         "sex": "female", "phone": "0", "email": "staff@example.com", "username": "staff",
     }
     assert client.post("/updatestaff", headers=headers("staff"), json=body).status_code == 403
+
+
+def test_admin_can_reset_a_forgotten_password(client, headers, login):
+    nurse = {"Authorization": "Bearer " + login("nurse")}
+    response = client.post("/adminresetpassword", headers=headers("admin"), json={"staff_id": 2, "new_password": "fresh-start-9"})
+    assert response.json == {"success": True}
+    assert client.get("/getallservices", headers=nurse).status_code == 401  # signed out everywhere
+    assert login("nurse", "fresh-start-9")
+
+
+def test_only_admin_can_reset_someone_elses_password(client, headers):
+    body = {"staff_id": 1, "new_password": "fresh-start-9"}
+    assert client.post("/adminresetpassword", headers=headers("doctor"), json=body).status_code == 403
+
+
+def test_weak_passwords_are_refused(client, headers):
+    admin = headers("admin")
+    for weak in ("short1", "password123", "nurse"):
+        response = client.post("/adminresetpassword", headers=admin, json={"staff_id": 2, "new_password": weak})
+        assert response.status_code == 400, weak
+
+
+def test_new_staff_needs_a_strong_password(client, headers):
+    body = {
+        "first_name": "New", "last_name": "Person", "staff_category_id": 1, "sex": "female",
+        "phone": "0", "email": "new@example.com", "username": "newperson", "password": "12345678",
+    }
+    assert client.post("/addstaff", headers=headers("admin"), json=body).status_code == 400
+
+
+def test_me_reports_the_current_role(client, headers, db):
+    h = headers("doctor")
+    assert client.get("/me", headers=h).json == {"staff_id": 3, "username": "doctor", "staff_category_id": 3, "category_name": "Doctor"}
+    db.execute("UPDATE staff SET staff_category_id = 4 WHERE username = 'doctor'")
+    db.commit()
+    assert client.get("/me", headers=h).json["category_name"] == "Admin"

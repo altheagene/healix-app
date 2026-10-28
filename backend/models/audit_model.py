@@ -16,7 +16,7 @@ SENSITIVE_KEYS = {
     "authorization",
 }
 
-SKIP_PATHS = {"/refreshbatches"}
+SKIP_PATHS = set()
 
 ACTION_BY_PATH = {
     "/validateuser": "login",
@@ -50,6 +50,32 @@ ACTION_BY_PATH = {
     "/updateappointmentdetails": "appointment_update",
     "/addservice": "service_create",
     "/getauditlogs": "audit_view",
+    "/adminresetpassword": "admin_password_reset",
+    "/getpatient": "patient_view",
+    "/getpatientallergies": "patient_view",
+    "/getpatientconditions": "patient_view",
+    "/getstudent": "student_view",
+    "/findstudent": "student_view",
+    "/getpatientcliniclogs": "visit_view",
+    "/getmedicationdetails": "visit_view",
+    "/checkin": "patient_checkin",
+    "/patienttimeline": "patient_view",
+    "/patientsummary": "patient_summary_export",
+    "/archivepatient": "patient_archive",
+}
+
+# Reading someone's health record is logged too, not only changes to it.
+VIEW_PATHS = {
+    "/getpatient",
+    "/getpatientallergies",
+    "/getpatientconditions",
+    "/getstudent",
+    "/findstudent",
+    "/getpatientcliniclogs",
+    "/getmedicationdetails",
+    "/checkin",
+    "/patienttimeline",
+    "/patientsummary",
 }
 
 
@@ -165,7 +191,7 @@ def should_audit(method, path, status_code):
         return True
     if status_code >= 400:
         return True
-    if path == "/getauditlogs":
+    if path == "/getauditlogs" or path in VIEW_PATHS:
         return True
     if path.startswith("/download") or "report" in (path or ""):
         return True

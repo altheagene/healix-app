@@ -80,12 +80,22 @@ def _build_database(path):
 
 _build_database(DB)
 import app as app_module  # noqa: E402  runs the startup migrations against DB
+
+# The app switches the database to WAL mode; fold the log back in before copying.
+_conn = sqlite3.connect(DB)
+_conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+_conn.close()
 shutil.copyfile(DB, TEMPLATE)
 
 
 @pytest.fixture(autouse=True)
 def fresh_database():
+    for leftover in (Path(f"{DB}-wal"), Path(f"{DB}-shm")):
+        leftover.unlink(missing_ok=True)
     shutil.copyfile(TEMPLATE, DB)
+    import maintenance
+
+    maintenance._last_run = None
     import login_throttle
 
     login_throttle._failures.clear()

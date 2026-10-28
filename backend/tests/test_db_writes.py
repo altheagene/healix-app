@@ -15,8 +15,10 @@ def test_sql_in_a_column_name_is_rejected(client, headers, db):
 
 
 def test_unknown_column_is_rejected_on_insert(client, headers):
-    response = client.post("/addvisitlog", headers=headers("doctor"), json={"patient_id": 1, "bogus`) --": 1})
-    assert response.status_code == 500
+    body = {"patient_id": 1, "service_id": 1, "staff_id": 3, "visit_datetime": "2026-10-01 09:00:00", "bogus`) --": 1}
+    response = client.post("/addvisitlog", headers=headers("doctor"), json=body)
+    assert response.status_code == 400
+    assert response.json["error"] == "Could not save the visit"
 
 
 def test_normal_update_still_works(client, headers, db):
@@ -72,16 +74,29 @@ def test_new_batch_logs_stock_against_itself(client, headers, db):
     assert [tuple(r) for r in db.execute("SELECT item_in FROM inventory WHERE batch_id = ?", (batch_id,)).fetchall()] == [(7,)]
 
 
-def test_unreachable_database_returns_false_instead_of_crashing(monkeypatch, tmp_path):
+def test_unreachable_database_is_reported_not_hidden(monkeypatch, tmp_path):
+    import sqlite3
+
+    import pytest
+
     monkeypatch.setattr(connection, "database", str(tmp_path / "missing" / "x.db"))
-    assert connection.postprocess("UPDATE staff SET phone = ? WHERE staff_id = ?", ["1", 1]) is False
-    assert connection.insertprocess("INSERT INTO services (service_name) VALUES (?)", ["x"]) is None
+    with pytest.raises(sqlite3.OperationalError):
+        connection.getprocess("SELECT 1", [])
+    with pytest.raises(sqlite3.OperationalError):
+        connection.postprocess("UPDATE staff SET phone = ? WHERE staff_id = ?", ["1", 1])
 
 
-def test_student_lookup_survives_unreachable_database(client, headers, monkeypatch, tmp_path):
+def test_api_answers_503_when_database_is_down(client, headers, monkeypatch, tmp_path):
+    h = headers("staff")
+    monkeypatch.setattr(connection, "database", str(tmp_path / "missing" / "x.db"))
+    response = client.get("/getallservices", headers=h)
+    assert response.status_code == 503
+    assert "database" in response.json["error"].lower()
+
+
+def test_student_registry_failure_is_reported(client, headers, monkeypatch, tmp_path):
     import models.patient_model as patient_model
 
     monkeypatch.setattr(patient_model, "studentdb", str(tmp_path / "missing" / "s.db"))
     response = client.get("/getstudent?idnum=S-0001", headers=headers("staff"))
-    assert response.status_code == 200
-    assert response.json == []
+    assert response.status_code == 503
