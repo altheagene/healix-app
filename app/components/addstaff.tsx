@@ -1,4 +1,5 @@
 import { apiFetch } from "../api";
+import Modal from "./modal"
 import CancelSaveBtn from "./cancelsavebtn"
 import React from "react"
 
@@ -67,13 +68,8 @@ export default function AddStaff(props:any){
 
     console.log(roles)
     return(
-        <div id="add-staff-div" className="modal-form-div">
-            <div className="gray-bg"></div>
-            <div className="modal-form"  style={{width: 500}}>
-                <div className="modal-header-div">
-                    <p className="modal-header">Add Staff</p>
-                </div>
-
+        <Modal title="Add Staff" onClose={props.hideForm} width={500}>
+            <div className="contents">
             <div className="main-form-content">
                 <div style={{display: 'flex', flexDirection: 'column', gap: '1.5rem'}}>
                     <label htmlFor="firstname">First Name <span style={{ color: 'red' }}>*</span>
@@ -153,6 +149,6 @@ export default function AddStaff(props:any){
 
                 <CancelSaveBtn hideForm={props.hideForm} submit={handleSubmit}/>
             </div>
-        </div>
+        </Modal>
     )
 }

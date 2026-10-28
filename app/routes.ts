@@ -9,11 +9,14 @@ export default [
     route("staff", "routes/staff.tsx"),
     route("reports", "routes/reports.tsx"),
     route("patientdetails/:id", 'routes/patientdetails.tsx'),
+    route('patientsummary/:id', 'routes/patientsummary.tsx'),
     route('addappointment', 'routes/addappointment.tsx'),
     route('itemdetails/:id', 'routes/itemdetails.tsx'),
     route('patientreport', 'routes/patientreports.tsx'),
     route('inventoryreport', 'routes/inventoryreport.tsx'),
     route('appointmentreports', 'routes/appointmentreports.tsx'),
     route('addnewpatient', 'routes/addnewpatient.tsx'),
-    route('others', 'routes/others.tsx')
+    route('others', 'routes/others.tsx'),
+    route('records', 'routes/records.tsx'),
+    route('profile', 'routes/userprofile.tsx')
 ] satisfies RouteConfig;

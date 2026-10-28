@@ -1,10 +1,31 @@
 import { apiFetch } from "../api";
+import Modal from "./modal"
 import CancelSaveBtn from "./cancelsavebtn"
 import { useEffect, useState } from "react"
 
 export default function EditStaff(props:any){
     const [roles, setRoles] = useState<any[]>([])
     const [staff, setStaff] = useState<any>(null)
+    const [newPassword, setNewPassword] = useState("")
+    const [resetMessage, setResetMessage] = useState("")
+    const isAdmin = localStorage.getItem("admin") === "true"
+
+    // For staff who forgot their password. The server also signs them out everywhere.
+    async function resetPassword() {
+        setResetMessage("")
+        const response = await apiFetch(`/adminresetpassword`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ staff_id: staff?.staff_id, new_password: newPassword })
+        })
+        const result = await response.json()
+        if (response.ok && result.success) {
+            setNewPassword("")
+            setResetMessage("Password reset. They have been signed out and can log in with the new password.")
+        } else {
+            setResetMessage(result.error || "Could not reset the password.")
+        }
+    }
 
     function updateField(field: string, value: string) {
         setStaff((current: any) => ({ ...current, [field]: value }))
@@ -56,12 +77,8 @@ export default function EditStaff(props:any){
     }, [props.chosenId])
 
     return(
-        <div className="modal-form-div">
-            <div className="gray-bg"></div>
-            <div className="modal-form w-[500px]" style={{maxHeight: 'calc(100vh - 100px)'}}>
-                <div className="modal-header-div">
-                    <h2>Edit Staff</h2>
-                </div>
+        <Modal title="Edit Staff" onClose={props.hideForm} width={500}>
+            <div className="contents">
                 <div className="main-form-content">
 
                     <label htmlFor="firstname"> First Name
@@ -121,9 +138,20 @@ export default function EditStaff(props:any){
                          <input type="text" name="" id="username" value={staff?.username || ""} onChange={(e) => updateField("username", e.target.value)}/>
                     </label>
 
+                    {isAdmin && (
+                        <fieldset style={{border: '1px solid #e5e7eb', borderRadius: 8, padding: '0.75rem'}}>
+                            <legend>Reset password</legend>
+                            <label htmlFor="new-password">New password (at least 8 characters)
+                                <input type="password" id="new-password" autoComplete="new-password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)}/>
+                            </label>
+                            <button type="button" onClick={resetPassword} disabled={newPassword.length < 8}>Reset password</button>
+                            {resetMessage && <p role="status">{resetMessage}</p>}
+                        </fieldset>
+                    )}
+
                 </div>
                 <CancelSaveBtn hideForm={props.hideForm} submit={handleSubmit}/>
             </div>
-        </div>
+        </Modal>
     )
 }

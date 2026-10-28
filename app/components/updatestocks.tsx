@@ -1,16 +1,12 @@
 import CancelSaveBtn from "./cancelsavebtn"
+import Modal from "./modal"
 import React from "react"
 
 export default function UpdateStocks(props:any){
 
     return(
-        <div id="update-stock-div">
-            <div className="gray-bg"></div>
-            <div className="modal-form" id="update-stock-form">
-                <div className="modal-header-div">
-                    <p className="modal-header">Update Stocks</p>
-                </div>
-
+        <Modal title="Update Stocks" onClose={props.hideForm} width={440}>
+            <div className="contents">
                 <div className="main-form-content">
                     <label htmlFor="">Item
                         <input type="text" />
@@ -36,6 +32,6 @@ export default function UpdateStocks(props:any){
     
                 <CancelSaveBtn hideForm={props.hideForm}/>
             </div>
-        </div>
+        </Modal>
     )
 }

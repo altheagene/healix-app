@@ -1,4 +1,5 @@
 import { apiFetch } from "../api";
+import Modal from "./modal"
 import CancelSaveBtn from "./cancelsavebtn"
 import React from "react"
 
@@ -14,7 +15,7 @@ export default function EditAppointment(props:any){
         const [patientQuery, setPatientQuery] = React.useState('')
         const [filteredPatients, setFilteredPatients] = React.useState<any[]>([])
         const [selectedPatient, setSelectedPatient] = React.useState<any>(null)
-        const [saving, setSaving] = React.useState(false)
+        const [_saving, setSaving] = React.useState(false)
         const [appointments, setAppointments] = React.useState<any[]>([])
         console.log(appointmentDetails)
 
@@ -119,13 +120,8 @@ export default function EditAppointment(props:any){
             }
 
     return(
-        <div className="modal-form-div">
-            <div className="gray-bg"></div>
-            <div className="modal-form">
-                <div className="modal-header-div">
-                    <p className="modal-header">Edit Appointment</p>
-                </div>
-
+        <Modal title="Edit Appointment" onClose={props.hideForm} width={520}>
+            <div className="contents">
                 <div className="main-form-content">
                     
                     <div>
@@ -211,6 +207,6 @@ export default function EditAppointment(props:any){
             </div>
             <CancelSaveBtn hideForm={props.hideForm} submit={handleSubmit}/>         
         </div>
-        </div>
+        </Modal>
     )
 }

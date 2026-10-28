@@ -1,70 +1,19 @@
 import { apiFetch } from "../api";
-import '../inventory.css'
 import AddBatch from '~/components/addbatch'
 import UpdateStocks from '~/components/updatestocks';
 import EditItem from '~/components/edititem';
 import React from 'react'
 import { useParams } from 'react-router';
 import 'bootstrap-icons/font/bootstrap-icons.css';
-import CancelSaveBtn from '~/components/cancelsavebtn';
 import EditStock from '~/components/editstocks';
 import EditBatch from '~/components/editbatch';
 import { useNavigate } from 'react-router';
-import rxsymbol from '../images/rxsymbol.png'
-import equipment from '../images/equipment.png'
-import supplies from '../images/supply.png'
-
-
-// function EditBatch(props:any){
-//     return(
-//         <div className='modal-form-div'>
-//             <div className='gray-bg'></div>
-//             <div className='modal-form'>
-//                 <div className='modal-header-div'>
-//                     <p className='modal-header'>Edit Batch</p>
-//                 </div>
-
-//                 <div className='main-form-content'>
-//                     <label htmlFor="">Supply Name
-//                         <input type="text"/>
-//                     </label>
-
-//                     <label htmlFor="batch-number">Batch Number
-//                         <input type="text" id="batch-number"/>
-//                     </label>
-//                     <div>
-//                         <label htmlFor="expiration-date">Expiration Date
-//                             <input type="date"/>
-//                         </label>
-//                         <div style={{display: 'flex', alignItems: 'center', height: '30px'}}>
-//                             <input type="checkbox"
-//                                     id="noexpiry" 
-//                                     style={{width: '20px', margin: '0 0.5rem 0 0', display: 'inline-block', backgroundColor: 'none'}}
-//                                    /> 
-//                             <label htmlFor="noexpiry" style={{height: '100%', display: 'flex', alignItems: 'center'}}>This has no expiration date</label>
-                            
-//                         </div>
-//                     </div>
-
-//                     <label htmlFor="addstock">Add Stocks
-//                         <input type="number" min='0' id="addstock"/>
-//                     </label>
-
-//                     <label htmlFor="removestock">Remove Stocks
-//                         <input type="number" min='0' id="removestock"/>
-//                     </label>
-//                 </div>
-//                 <CancelSaveBtn></CancelSaveBtn>
-//             </div>
-//         </div>
-//     )
-// }
 
 export default function ItemDetails(){
 
     const { id }  = useParams()
     const navigate = useNavigate()
-    const [itemDetails, setItemDetails] = React.useState<any[]>([]);
+    const [itemDetails, setItemDetails] = React.useState<any>({});
     const [currentBatch, setCurrentBatch] = React.useState()
     const [batches, setBatches] = React.useState<any[]>([]);
     const [showAddBatch, setShowAddBatch] = React.useState(false);
@@ -73,12 +22,9 @@ export default function ItemDetails(){
     const [showEditStock, setShowEditStock] = React.useState(false);
     const [showEditBatch, setShowEditBatch] = React.useState(false)
     const [chosenActive, setChosenActive] = React.useState(true)
+    const [openMenuId, setOpenMenuId] = React.useState<any>(null);
 
     console.log(batches)
-
-
-
-    
 
     React.useEffect(() => {
         apiFetch(`/getsupplydetails?idnum=${id}`).
@@ -117,8 +63,6 @@ export default function ItemDetails(){
         then(res => res.json()).
         then(data => setItemDetails(data[0]))
 
-        apiFetch(`/refreshbatches`)
-                .then(res => res.json())
     }
 
      async function removeBatch( id:any){
@@ -152,117 +96,190 @@ export default function ItemDetails(){
     const filteredBatches = batches.filter(batch => 
         batch.is_active == chosenActive
     )
+
+    function batchStatusClasses(batch: any) {
+        if (new Date(batch.expiration_date) < new Date() && batch.expiration_date) return 'bg-red-50 text-red-700 ring-1 ring-red-200/60'
+        if (batch.stock_level > 20) return 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200/60'
+        return 'bg-teal-50 text-teal-800 ring-1 ring-teal-200/60'
+    }
+
+    function batchStatusLabel(batch: any) {
+        if (new Date(batch.expiration_date) < new Date() && batch.expiration_date) return 'Expired'
+        if (batch.stock_level > 20) return 'In Stock'
+        return 'Low Stock'
+    }
+
     console.log(filteredBatches)
     return(
-        <div className="route-page">
+        <div className="min-h-full font-sans text-slate-900">
+            <div className="mx-auto max-w-full">
+
                 {showEditBatch ? <EditBatch hideForm={() => setShowEditBatch(false)} batch={currentBatch} refetch={refetchBatches}  refetchDetails={refetchDetails}/> : null}
                 {showEditStock ? <EditStock hideForm={hideform} batch={currentBatch} refetch={refetchBatches} refetchDetails={refetchDetails}/> : null}
                 {showEditDetails ? <EditItem  hideForm={() => setShowEditDetails(false)} itemDetails={itemDetails} refetch={refetchDetails}/> : null}
                 {showUpdateStock ? <UpdateStocks hideForm={() => setShowUpdateStock(false)}/> : null}
                 {showAddBatch ? <AddBatch hideForm={() => setShowAddBatch(false)} name={itemDetails?.supply_name} refetch={refetchBatches}/> : null}
-                <div style={{display: 'flex', gap: '1rem'}}>
+
+                {/* HEADER */}
+                <div className="mb-6 flex items-center gap-3">
                     <button
-                    onClick={() => navigate(-1)}
-                    className='back-btn'>
-                        <i className="bi bi-caret-left-fill"></i>
-                    </button>  
-                    <p className="route-header">Item Details</p>
+                        onClick={() => navigate(-1)}
+                        className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50"
+                    >
+                        <i className="bi bi-caret-left-fill" />
+                    </button>
+                    <h1 className="text-[2rem] font-semibold tracking-tight">Item Details</h1>
                 </div>
 
-                <div id="item-information-div">
-                    {/* <img id="item-img" src={itemDetails?.category_name === 'Medicine' ? rxsymbol : itemDetails?.category_name === 'Equipment' ? equipment : supplies} /> */}
-                    <div id="item-text">
-                        <p id="item-name">{itemDetails?.supply_name}</p>
-                        <p id="item-categ">{itemDetails?.category_name}</p>
-                        <p id="item-brand">Brand: {itemDetails?.brand}</p>
-                        <p id="item-desc">Description: {itemDetails?.description}</p>
+                {/* ITEM INFO CARD */}
+                <div className="mb-6 flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                        <p className="text-lg font-semibold text-slate-900">{itemDetails?.supply_name}</p>
+                        <span className="mt-1 inline-flex items-center rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700">
+                            {itemDetails?.category_name}
+                        </span>
+                        <p className="mt-3 text-sm text-slate-500"><span className="font-medium text-slate-700">Brand:</span> {itemDetails?.brand || '-'}</p>
+                        <p className="mt-1 text-sm text-slate-500"><span className="font-medium text-slate-700">Description:</span> {itemDetails?.description || '-'}</p>
                     </div>
-                    <div id="item-edit-button-div">
-                        <button id='edit-details-btn' onClick={() => setShowEditDetails(true)}>Edit Details</button>
-                    </div>
+                    <button
+                        onClick={() => setShowEditDetails(true)}
+                        className="inline-flex flex-shrink-0 items-center gap-2 self-start rounded-lg bg-teal-800 px-4 py-2.5 text-sm font-medium text-white shadow-md transition hover:bg-teal-900"
+                    >
+                        <i className="bi bi-pencil" /> Edit Details
+                    </button>
                 </div>
 
-                <div>
-                   
-                        <p style={{fontSize: '1.5rem', fontWeight: '500', display: 'flex', justifyContent: 'space-between', marginBottom: '1rem'}}>Batches 
-                            <span></span>
-                        </p>
+                {/* BATCHES */}
+                <h2 className="mb-3 text-lg font-semibold text-slate-900">Batches</h2>
 
-                        <div style={{fontSize: '1.5rem', fontWeight: '500', display: 'flex', justifyContent: 'space-between', flexDirection: window.innerWidth < 600 ? 'column-reverse' : 'row'}}>
-                            <div className="status-bar">
-                                <button 
-                                    onClick={() => setChosenActive(true)} 
-                                    className="status-btn"
-                                    style={{backgroundColor: chosenActive ? 'white' : 'transparent'}}>Active Supplies</button>
-                                <button 
-                                    onClick={() => setChosenActive(false)}
-                                    className="status-btn"
-                                    style={{backgroundColor: !chosenActive ? 'white' : 'transparent'}}>Inactive Supplies</button>
-                            </div>
-                            <button id='add-new-batch-btn' className='add-button' onClick={() => setShowAddBatch(true)}> Add new batch</button>
+                <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                    <div className="flex flex-col gap-3 border-b border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex rounded-full bg-slate-100 p-1">
+                            <button
+                                onClick={() => setChosenActive(true)}
+                                className={`rounded-full px-3.5 py-1.5 text-xs font-medium transition ${
+                                    chosenActive ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'
+                                }`}
+                            >
+                                Active Supplies
+                            </button>
+                            <button
+                                onClick={() => setChosenActive(false)}
+                                className={`rounded-full px-3.5 py-1.5 text-xs font-medium transition ${
+                                    !chosenActive ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'
+                                }`}
+                            >
+                                Inactive Supplies
+                            </button>
                         </div>
-                        <div  id='batches-table-container'  className='table-container'>
-                            <table id='batches-table'>
-                                <tr>
-                                    <th>Batch No.</th>
-                                    <th>Stock Level</th>
-                                    <th>Expiration Date</th>
-                                    <th>Status</th>
-                                    <th>Last Updated</th>
-                                    <th>Actions</th>
+
+                        <button
+                            onClick={() => setShowAddBatch(true)}
+                            className="inline-flex items-center gap-2 rounded-lg bg-teal-800 px-4 py-2.5 text-sm font-medium text-white shadow-md transition hover:bg-teal-900"
+                        >
+                            <i className="bi bi-plus-lg" /> Add New Batch
+                        </button>
+                    </div>
+
+                    <div className="overflow-x-auto">
+                        <table className="w-full border-collapse">
+                            <thead>
+                                <tr className="bg-slate-50/60">
+                                    <th className="border-b border-slate-100 px-5 py-3 text-left text-xs font-medium text-slate-400">Batch No.</th>
+                                    <th className="border-b border-slate-100 px-5 py-3 text-left text-xs font-medium text-slate-400">Stock Level</th>
+                                    <th className="border-b border-slate-100 px-5 py-3 text-left text-xs font-medium text-slate-400">Expiration Date</th>
+                                    <th className="w-32 border-b border-slate-100 px-5 py-3 text-left text-xs font-medium text-slate-400">Status</th>
+                                    <th className="border-b border-slate-100 px-5 py-3 text-left text-xs font-medium text-slate-400">Last Updated</th>
+                                    <th className="border-b border-slate-100 px-5 py-3 text-right text-xs font-medium text-slate-400">Actions</th>
                                 </tr>
+                            </thead>
+                            <tbody>
+                                {filteredBatches.length > 0 ? filteredBatches.map((batch) => (
+                                    <tr key={batch.batch_id} className="transition hover:bg-teal-50/40">
+                                        <td className="border-b border-slate-100 px-5 py-3 text-sm font-medium text-slate-900 last:border-none">
+                                            {batch.batch_number}
+                                        </td>
+                                        <td className="border-b border-slate-100 px-5 py-3 text-sm text-slate-500 last:border-none">
+                                            {batch.stock_level}
+                                        </td>
+                                        <td className="border-b border-slate-100 px-5 py-3 text-sm text-slate-500 last:border-none">
+                                            {batch.expiration_date === '' ? 'None' : batch.expiration_date}
+                                        </td>
+                                        <td className="border-b border-slate-100 px-5 py-3 last:border-none">
+                                            <span className={`inline-flex w-[104px] items-center justify-center rounded-full px-2.5 py-1 text-xs font-medium ${batchStatusClasses(batch)}`}>
+                                                {batchStatusLabel(batch)}
+                                            </span>
+                                        </td>
+                                        <td className="border-b border-slate-100 px-5 py-3 text-sm text-slate-500 last:border-none">
+                                            {batch.last_updated || 'None'}
+                                        </td>
+                                        <td className="border-b border-slate-100 px-5 py-3 text-right last:border-none">
+                                            <div className="relative inline-block text-left">
+                                                <button
+                                                    onClick={() => setOpenMenuId(openMenuId === batch.batch_id ? null : batch.batch_id)}
+                                                    className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                                                >
+                                                    <i className="bi bi-three-dots-vertical" />
+                                                </button>
 
-                                {filteredBatches.length > 0 ? filteredBatches.map((batch) => {
-                                    return(
-                                        <tr>
-                                            <td>{batch.batch_number}</td>
-                                            <td>{batch.stock_level}</td>
-                                            <td>{batch.expiration_date === '' ? 'None' : batch.expiration_date}</td>
-                                            <td>{new Date(batch.expiration_date) < new Date() ? 'Expired' :batch.stock_level > 20 ? <p className='in-stock'>In Stock</p> : 'Low-Stock'}</td>
-                                            <td></td>
-                                            <td className="action-cell">
-                                                <div className="action-menu">
-                                                    <button className="action-trigger">
-                                                    <i className="bi bi-three-dots-vertical"></i>
-                                                    </button>
+                                                {openMenuId === batch.batch_id && (
+                                                    <>
+                                                        <div
+                                                            className="fixed inset-0 z-10"
+                                                            onClick={() => setOpenMenuId(null)}
+                                                        />
+                                                        <div className="absolute right-0 z-20 mt-1 w-44 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
+                                                            <button
+                                                                onClick={() => { editStockClick(batch); setOpenMenuId(null); }}
+                                                                className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-slate-700 transition hover:bg-slate-50"
+                                                            >
+                                                                <i className="bi bi-pen-fill" /> Edit Stock
+                                                            </button>
 
-                                                    <div className="action-dropdown">
-                                                    <button onClick={() => editStockClick(batch)}>
-                                                        <i className="bi bi-pen-fill"></i> Edit Stock
-                                                    </button>
+                                                            <button
+                                                                onClick={() => { editBtnClick(batch); setOpenMenuId(null); }}
+                                                                className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-slate-700 transition hover:bg-slate-50"
+                                                            >
+                                                                <i className="bi bi-pencil-square" /> Edit Batch
+                                                            </button>
 
-                                                    <button onClick={() => editBtnClick(batch)}>
-                                                        <i className="bi bi-pencil-square"></i> Edit Batch
-                                                    </button>
-
-                                                    {chosenActive ? (
-                                                        <button onClick={() => removeBatch(batch.batch_id)}>
-                                                        <i className="bi bi-trash"></i> Deactivate
-                                                        </button>
-                                                    ) : (
-                                                        <button onClick={() => reactivateBatch(batch.batch_id)}>
-                                                        <i className="bi bi-arrow-clockwise"></i> Reactivate
-                                                        </button>
-                                                    )}
-                                                    </div>
-                                                </div>
-                                                </td>
-
-                                        </tr>
-                                    )
-                                }) : 
-                                    <tr>
-                                        <td colSpan={7} style={{ textAlign: 'center', padding: '15px' }}>
-                                            No Batches found
+                                                            {chosenActive ? (
+                                                                <button
+                                                                    onClick={() => { removeBatch(batch.batch_id); setOpenMenuId(null); }}
+                                                                    className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-red-600 transition hover:bg-red-50"
+                                                                >
+                                                                    <i className="bi bi-trash" /> Deactivate
+                                                                </button>
+                                                            ) : (
+                                                                <button
+                                                                    onClick={() => { reactivateBatch(batch.batch_id); setOpenMenuId(null); }}
+                                                                    className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-emerald-600 transition hover:bg-emerald-50"
+                                                                >
+                                                                    <i className="bi bi-arrow-clockwise" /> Reactivate
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    </>
+                                                )}
+                                            </div>
                                         </td>
                                     </tr>
-                                }
-                                <tr>
-                                    <td  colSpan={7} style={{ textAlign: 'center', padding: '15px' }}>End of table</td>
-                                </tr>
-                            </table>
+                                )) : (
+                                    <tr>
+                                        <td colSpan={6} className="px-5 py-12 text-center">
+                                            <i className="bi bi-box-seam text-2xl text-slate-300" />
+                                            <p className="mt-2 text-sm text-slate-400">No Batches found</p>
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                        <div className="border-t border-slate-100 px-5 py-3 text-center text-xs text-slate-400">
+                            End of table
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
     )
 }

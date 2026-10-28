@@ -1,10 +1,10 @@
 import { apiFetch } from "../api";
+import Modal from "./modal"
 import React from "react"
 import CancelSaveBtn from "./cancelsavebtn"
 import '../app.css'
 
 export default function EditRecord(props: any) {
-  const now = new Date()
 
   const [services, setServices] = React.useState<any[]>([])
   const [staff, setStaff] = React.useState<any[]>([])
@@ -12,6 +12,7 @@ export default function EditRecord(props: any) {
   const [medications, setMedications] = React.useState<any[]>([])
 
   const [recordDetails, setRecordDetails] = React.useState<any>(null)
+  const [allergies, setAllergies] = React.useState<any[]>([])
 
   /* ------------------ LOAD STATIC DATA ------------------ */
   React.useEffect(() => {
@@ -42,8 +43,16 @@ export default function EditRecord(props: any) {
       visit_datetime: props.record.visit_datetime,
       service_id: props.record.service_id,
       staff_id: props.record.staff_id,
-      notes: props.record.notes ?? ""
+      notes: props.record.notes ?? "",
+      complaint: props.record.complaint ?? "",
+      assessment: props.record.assessment ?? "",
+      treatment: props.record.treatment ?? ""
     })
+
+    // The allergy warning next to the medicines.
+    apiFetch(`/getpatientallergies?idnum=${props.record.patient_id}`)
+      .then(res => res.json())
+      .then(data => setAllergies(Array.isArray(data) ? data : []))
 
     // load existing medications
     apiFetch(`/getmedicationdetails?idnum=${props.record.visit_id}`
@@ -88,24 +97,18 @@ export default function EditRecord(props: any) {
   /* ------------------ SUBMIT UPDATE ------------------ */
   async function handleUpdate() {
     try {
+        // The visit and its medicines are updated together, all or nothing.
         const response = await apiFetch(`/updatevisitlog`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(recordDetails)
+            body: JSON.stringify({ ...recordDetails, medications })
         })
         const result = await response.json()
+        if (!response.ok || !result.success) {
+            alert(result.error || "Failed to update record")
+            return
+        }
 
-        const response2 = await apiFetch(`/updatemedicationdetails`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                visit_id: recordDetails.visit_id,
-                medications
-            })
-        })
-        const result2 = await response2.json()  // ✅ fixed
-
-        console.log(result2)
         props.refetch()
         props.hideForm()
     } catch (err) {
@@ -118,14 +121,8 @@ export default function EditRecord(props: any) {
 
   /* ------------------ UI ------------------ */
   return (
-    <div id="add-record-div" className="modal-form-div">
-      <div className="gray-bg"></div>
-
-      <div id="add-record-form" className="modal-form">
-        <div className="modal-header-div">
-          <p className="modal-header">Edit Visit Record</p>
-        </div>
-
+    <Modal title="Edit Visit Record" onClose={props.hideForm} width={560}>
+      <div className="contents">
         <div className="main-form-content">
           <label>
             Date
@@ -155,6 +152,32 @@ export default function EditRecord(props: any) {
             ))}
           </select>
 
+          <label>
+            Chief complaint
+            <input
+              value={recordDetails.complaint}
+              onChange={e => setRecordDetails({ ...recordDetails, complaint: e.target.value })}
+            />
+          </label>
+
+          <label>
+            Assessment
+            <textarea
+              rows={2}
+              value={recordDetails.assessment}
+              onChange={e => setRecordDetails({ ...recordDetails, assessment: e.target.value })}
+            />
+          </label>
+
+          <label>
+            Treatment
+            <textarea
+              rows={2}
+              value={recordDetails.treatment}
+              onChange={e => setRecordDetails({ ...recordDetails, treatment: e.target.value })}
+            />
+          </label>
+
           <div style={{ display: "flex", gap: "1rem" }}>
             <label>
               Weight
@@ -182,6 +205,13 @@ export default function EditRecord(props: any) {
               />
             </label>
           </div>
+
+          {allergies.length > 0 && (
+            <p role="alert" className="m-0 rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm text-red-800">
+              <i className="bi bi-exclamation-octagon-fill mr-2" aria-hidden="true" />
+              <strong>Allergic to {allergies.map(a => a.allergy_name).join(", ")}.</strong> Check every medicine against this.
+            </p>
+          )}
 
           <label>Medications</label>
           {medications.map((med, index) => (
@@ -236,7 +266,7 @@ export default function EditRecord(props: any) {
           </label>
 
           <label>
-            Notes
+            Other notes
             <textarea
               value={recordDetails.notes}
               onChange={e =>
@@ -251,6 +281,6 @@ export default function EditRecord(props: any) {
 
         <CancelSaveBtn hideForm={props.hideForm} submit={handleUpdate} />
       </div>
-    </div>
+    </Modal>
   )
 }

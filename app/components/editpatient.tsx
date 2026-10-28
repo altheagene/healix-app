@@ -1,10 +1,7 @@
 import { apiFetch } from "../api";
 import type { Allergy, Condition } from "../types";
-
-import '../patients.css';
-import '../app.css';
-import CancelSaveBtn from './cancelsavebtn';
 import React from 'react';
+import 'bootstrap-icons/font/bootstrap-icons.css';
 
 export default function EditPatient(props: any) {
    // ============================================================
@@ -31,9 +28,6 @@ export default function EditPatient(props: any) {
   // dropdowns
   const [showAllergyDropdown, setShowAllergyDropdown] = React.useState(false);
   const [showConditionDropdown, setShowConditionDropdown] = React.useState(false);
-
-  const [allergyElements, setAllergyElements] = React.useState([]); 
-  const [conditionElements, setConditionElements] = React.useState([]);
 
   // ============================================================
   // EFFECTS — LOAD INITIAL DATA
@@ -177,228 +171,328 @@ export default function EditPatient(props: any) {
     }
   }
 
-  // ============================================================
-  // RENDER LISTS
-  // ============================================================
+  const selectedAllergyItems = allergies.filter(a => selectedAllergy.includes(a.allergy_id));
+  const selectedConditionItems = conditions.filter(c => selectedCondition.includes(c.condition_id));
 
-  const allergyCheckboxes = allergies.map(item => (
-    <li key={item.allergy_id}>
-      <input
-        type="checkbox"
-        checked={selectedAllergy.includes(item.allergy_id)}
-        onChange={() =>
-          selectedAllergy.includes(item.allergy_id)
-            ? remove(item, "allergy")
-            : add(item, "allergy")
-        }
-      />
-      <label>{item.allergy_name}</label>
-    </li>
-  ));
+  const inputClasses = "w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-teal-300 focus:ring-2 focus:ring-teal-100";
+  const labelClasses = "mb-1.5 block text-xs font-medium text-slate-500";
 
-  const conditionCheckboxes = conditions.map(item => (
-    <li key={item.condition_id}>
-      <input
-        type="checkbox"
-        checked={selectedCondition.includes(item.condition_id)}
-        onChange={() =>
-          selectedCondition.includes(item.condition_id)
-            ? remove(item, "condition")
-            : add(item, "condition")
-        }
-      />
-      <label>{item.condition_name}</label>
-    </li>
-  ));
   // ---------- JSX ----------
   return (
-    <div id="add-new-patient-div">
-      <div className='gray-bg'></div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
+      <div className="flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-xl">
 
-      <div id="add-patient-form" className='modal-form'>
-        {/* Header */}
-        <div className='modal-header-div'>
-          <p className="modal-header">Edit Patient</p>
+        {/* HEADER */}
+        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+          <button
+            onClick={props.hideForm}
+            className="flex items-center gap-1.5 text-sm font-medium text-slate-500 transition hover:text-slate-800"
+          >
+            <i className="bi bi-x-lg" /> Hide
+          </button>
+          <p className="text-base font-semibold text-slate-900">Edit Patient</p>
+          <div className="w-[52px]" />
         </div>
 
-        <div id='main-add-patient-form'>
-          {/* Search */}
-          <div>
-            <label htmlFor="search-by-id" style={{ display: 'inline-block', marginRight: '1rem' }}>
+        {/* SCROLLABLE BODY */}
+        <div className="flex-1 overflow-y-auto px-6 py-5">
+
+          {/* SEARCH BY ID */}
+          <div className="mb-6">
+            <label className={labelClasses}>Search by ID number</label>
+            <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 focus-within:border-teal-300 focus-within:ring-2 focus-within:ring-teal-100">
+              <i className="bi bi-search text-sm text-slate-400" />
               <input
                 type="text"
-                id='search-by-id'
-                placeholder='Search by ID Number'
-                style={{ width: '250px' }}
+                placeholder="Search by ID Number"
                 value={idnumSearch}
                 onChange={(e) => setIdnumSearch(e.target.value)}
+                className="w-full border-none bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
               />
-            </label>
-            <button
-              style={{ height: '40px', width: '80px', borderRadius: '10px', border: 'none' }}
-            >
-              Search
-            </button>
+              <button
+                className="flex-shrink-0 rounded-lg bg-slate-900 px-3.5 py-1.5 text-xs font-medium text-white transition hover:bg-slate-700"
+              >
+                Search
+              </button>
+            </div>
           </div>
 
-          {/* Student Photo */}
-          {/* <div>
-            <img
-              style={{ width: '150px', height: '150px', borderRadius: '80px', backgroundColor: 'gray' }}
-            />
-          </div> */}
+          {/* STUDENT INFORMATION */}
+          <div className="mb-6">
+            <p className="mb-3 text-sm font-semibold text-slate-900">Student Information</p>
 
-          {/* Student Information */}
-          <div id="student-information" className='form-div'>
-            <p className='form-header'>Student Information</p>
-
-            <div>
-              <label htmlFor="firstname">First Name
-                <input 
-                    type="text" 
-                    id="firstname" 
-                    value={studentData?.first_name || ''}
-                    onChange={(e) => setStudentData({...studentData, first_name: e.target.value})}  />
-              </label>
-              <label htmlFor="middlename">Middle Name
-                <input 
-                    type="text" 
-                    id="middlename" 
-                    value={studentData?.middle_name || ''}
-                    onChange={(e) => setStudentData({...studentData, middle_name: e.target.value})}  />
-              </label>
-              <label htmlFor="lastname">Last Name
-                <input 
-                    type="text" 
-                    id="lastname" 
-                    value={studentData?.last_name || ''} 
-                    onChange={(e) => setStudentData({...studentData, last_name: e.target.value})} />
-              </label>
+            <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-3">
+              <div>
+                <label className={labelClasses}>First Name</label>
+                <input
+                  type="text"
+                  value={studentData?.first_name || ''}
+                  onChange={(e) => setStudentData({ ...studentData, first_name: e.target.value })}
+                  className={inputClasses}
+                />
+              </div>
+              <div>
+                <label className={labelClasses}>Middle Name</label>
+                <input
+                  type="text"
+                  value={studentData?.middle_name || ''}
+                  onChange={(e) => setStudentData({ ...studentData, middle_name: e.target.value })}
+                  className={inputClasses}
+                />
+              </div>
+              <div>
+                <label className={labelClasses}>Last Name</label>
+                <input
+                  type="text"
+                  value={studentData?.last_name || ''}
+                  onChange={(e) => setStudentData({ ...studentData, last_name: e.target.value })}
+                  className={inputClasses}
+                />
+              </div>
             </div>
 
-            <div>
-              <label htmlFor="birthdate">Birthdate
-                <input type="date" id='birthdate' value={studentData?.birthday} onChange={(e)  => setStudentData({...studentData, birthday: e.target.value})}/>
-              </label>
+            <div className="mt-3.5 grid grid-cols-1 gap-3.5 sm:grid-cols-2">
+              <div>
+                <label className={labelClasses}>Birthdate</label>
+                <input
+                  type="date"
+                  value={studentData?.birthday || ''}
+                  onChange={(e) => setStudentData({ ...studentData, birthday: e.target.value })}
+                  className={inputClasses}
+                />
+              </div>
+              <div>
+                <label className={labelClasses}>Sex</label>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setStudentData({ ...studentData, sex: 'Female' })}
+                    className={`flex-1 rounded-xl border px-3.5 py-2.5 text-sm font-medium transition ${
+                      studentData?.sex === 'Female'
+                        ? 'border-teal-300 bg-teal-50 text-teal-800'
+                        : 'border-slate-200 text-slate-500 hover:bg-slate-50'
+                    }`}
+                  >
+                    Female
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setStudentData({ ...studentData, sex: 'Male' })}
+                    className={`flex-1 rounded-xl border px-3.5 py-2.5 text-sm font-medium transition ${
+                      studentData?.sex === 'Male'
+                        ? 'border-teal-300 bg-teal-50 text-teal-800'
+                        : 'border-slate-200 text-slate-500 hover:bg-slate-50'
+                    }`}
+                  >
+                    Male
+                  </button>
+                </div>
+              </div>
+            </div>
 
-              <label style={{ display: 'block' }}>Sex
-                <div id='gender-div'>
-                  <div>
-                    <input type="radio" name="gender" id='female' checked={studentData?.sex === 'Female'} value='Female' onChange={(e)  => setStudentData({...studentData, sex: e.target.value})} />
-                    <label htmlFor="female">Female</label>
+            <div className="mt-3.5 grid grid-cols-1 gap-3.5 sm:grid-cols-2">
+              <div>
+                <label className={labelClasses}>Email</label>
+                <input
+                  type="text"
+                  value={studentData?.email || ''}
+                  onChange={(e) => setStudentData({ ...studentData, email: e.target.value })}
+                  className={inputClasses}
+                />
+              </div>
+              <div>
+                <label className={labelClasses}>Phone</label>
+                <input
+                  type="text"
+                  value={studentData?.phone || ''}
+                  onChange={(e) => setStudentData({ ...studentData, phone: e.target.value })}
+                  className={inputClasses}
+                />
+              </div>
+            </div>
+
+            <div className="mt-3.5 grid grid-cols-1 gap-3.5 sm:grid-cols-3">
+              <div>
+                <label className={labelClasses}>ID Number</label>
+                <input
+                  type="number"
+                  value={studentData?.student_id || ''}
+                  onChange={(e) => setStudentData({ ...studentData, student_id: e.target.value })}
+                  className={inputClasses}
+                />
+              </div>
+              <div>
+                <label className={labelClasses}>Department</label>
+                <input
+                  type="text"
+                  value={studentData?.department || ''}
+                  onChange={(e) => setStudentData({ ...studentData, department: e.target.value })}
+                  className={inputClasses}
+                />
+              </div>
+              <div>
+                <label className={labelClasses}>Level</label>
+                <input
+                  type="number"
+                  value={studentData?.level || ''}
+                  onChange={(e) => setStudentData({ ...studentData, level: e.target.value })}
+                  className={inputClasses}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* MEDICAL INFORMATION */}
+          <div className="mb-6">
+            <p className="mb-3 text-sm font-semibold text-slate-900">Medical Information</p>
+
+            <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
+              {/* ALLERGIES */}
+              <div className="relative">
+                <label className={labelClasses}>Allergies</label>
+                <div
+                  onClick={() => setShowAllergyDropdown(prev => !prev)}
+                  className="flex min-h-[44px] cursor-pointer flex-wrap items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 focus-within:border-teal-300 focus-within:ring-2 focus-within:ring-teal-100"
+                >
+                  {selectedAllergyItems.length > 0 ? (
+                    <>
+                      <span className="inline-flex items-center gap-1 rounded-full bg-teal-50 px-2.5 py-1 text-xs font-medium text-teal-800 ring-1 ring-teal-200/60">
+                        {selectedAllergyItems[0].allergy_name}
+                      </span>
+                      {selectedAllergyItems.length > 1 && (
+                        <span className="text-xs text-slate-400">(+{selectedAllergyItems.length - 1} others)</span>
+                      )}
+                    </>
+                  ) : (
+                    <span className="text-sm text-slate-400">Search allergies</span>
+                  )}
+                  <i className={`bi bi-chevron-down ml-auto text-xs text-slate-400 transition ${showAllergyDropdown ? 'rotate-180' : ''}`} />
+                </div>
+
+                {showAllergyDropdown && (
+                  <div className="absolute z-20 mt-1.5 w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
+                    <ul className="max-h-40 overflow-y-auto py-1">
+                      {allergies.map(item => (
+                        <li key={item.allergy_id}>
+                          <label className="flex cursor-pointer items-center gap-2.5 px-3.5 py-2 text-sm text-slate-700 hover:bg-slate-50">
+                            <input
+                              type="checkbox"
+                              checked={selectedAllergy.includes(item.allergy_id)}
+                              onChange={() =>
+                                selectedAllergy.includes(item.allergy_id)
+                                  ? remove(item, "allergy")
+                                  : add(item, "allergy")
+                              }
+                              className="h-4 w-4 rounded border-slate-300 text-teal-800 focus:ring-teal-200"
+                            />
+                            {item.allergy_name}
+                          </label>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                  <div>
-                    <input type="radio" name="gender" id="male" checked={studentData?.sex === 'Male'} value='Male' onChange={(e)  => setStudentData({...studentData, sex: e.target.value})} />
-                    <label htmlFor="male">Male</label>
+                )}
+              </div>
+
+              {/* CONDITIONS */}
+              <div className="relative">
+                <label className={labelClasses}>Conditions</label>
+                <div
+                  onClick={() => setShowConditionDropdown(prev => !prev)}
+                  className="flex min-h-[44px] cursor-pointer flex-wrap items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 focus-within:border-teal-300 focus-within:ring-2 focus-within:ring-teal-100"
+                >
+                  {selectedConditionItems.length > 0 ? (
+                    <>
+                      <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 ring-1 ring-blue-200/60">
+                        {selectedConditionItems[0].condition_name}
+                      </span>
+                      {selectedConditionItems.length > 1 && (
+                        <span className="text-xs text-slate-400">(+{selectedConditionItems.length - 1} others)</span>
+                      )}
+                    </>
+                  ) : (
+                    <span className="text-sm text-slate-400">Search conditions</span>
+                  )}
+                  <i className={`bi bi-chevron-down ml-auto text-xs text-slate-400 transition ${showConditionDropdown ? 'rotate-180' : ''}`} />
+                </div>
+
+                {showConditionDropdown && (
+                  <div className="absolute z-20 mt-1.5 w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
+                    <ul className="max-h-40 overflow-y-auto py-1">
+                      {conditions.map(item => (
+                        <li key={item.condition_id}>
+                          <label className="flex cursor-pointer items-center gap-2.5 px-3.5 py-2 text-sm text-slate-700 hover:bg-slate-50">
+                            <input
+                              type="checkbox"
+                              checked={selectedCondition.includes(item.condition_id)}
+                              onChange={() =>
+                                selectedCondition.includes(item.condition_id)
+                                  ? remove(item, "condition")
+                                  : add(item, "condition")
+                              }
+                              className="h-4 w-4 rounded border-slate-300 text-teal-800 focus:ring-teal-200"
+                            />
+                            {item.condition_name}
+                          </label>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                </div>
-              </label>
+                )}
+              </div>
             </div>
 
-            <div>
-              <label htmlFor="email">Email
-                <input type="text" id='email' value={studentData?.email} onChange={(e)  => setStudentData({...studentData, email: e.target.value})}/>
-              </label>
-
-              <label htmlFor="phone">Phone
-                <input type="text" id='phone' value={studentData?.phone} onChange={(e)  => setStudentData({...studentData, phone: e.target.value})}/>
-              </label>
-            </div>
-
-            <div>
-              <label htmlFor="idno">ID Number
-                <input 
-                    type="number" 
-                    id="idno" 
-                    value={studentData?.student_id || ''} 
-                    onChange={(e) => setStudentData({...studentData, student_id: e.target.value})} />
-              </label>
-              <label htmlFor="department">Department
-                <input 
-                    type='text' 
-                    value={studentData?.department || ''}
-                    onChange={(e) => setStudentData({...studentData, department: e.target.value})}  />
-              </label>
-              <label htmlFor="level">Level
-                <input 
-                    type='number' 
-                    id='level' 
-                    value={studentData?.level || ''}
-                    onChange={(e) => setStudentData({...studentData, level: e.target.value})}  />
-              </label>
+            <div className="mt-3.5">
+              <label className={labelClasses}>Notes</label>
+              <input
+                type="text"
+                value={studentData?.notes || ''}
+                onChange={(e) => setStudentData({ ...studentData, notes: e.target.value })}
+                className={inputClasses}
+              />
             </div>
           </div>
 
-          {/* Medical Information */}
-          <div id="medical-information" className='form-div'>
-            <p className='form-header'>Medical Information</p>
-
-            <div>
-                {/* Allergies */}
-                <div>
-                    <label>Allergies</label>
-                    <input
-                        type="text"
-                        placeholder="Search Allergies"
-                        onClick={() => setShowAllergyDropdown(prev => !prev)}
-                    />
-                    {showAllergyDropdown && (
-                        <div className='dropdown'>
-                        <ul>{allergyCheckboxes}</ul>
-                        </div>
-                    )}
-
-                </div>
-
-                {/* Conditions */}
-                <div>
-                    <label>Conditions</label>
-                    <input
-                        type="text"
-                        placeholder="Search Conditions"
-                        onClick={() => setShowConditionDropdown(prev => !prev)}
-                    />
-                    {showConditionDropdown && (
-                        <div className='dropdown'>
-                        <ul>{conditionCheckboxes}</ul>
-                        </div>
-                    )}
-                </div>
-
-                <div style={{display: 'block'}}>
-                  <label htmlFor="notes">Notes
-                    <input type="text"  onChange={(e) => setStudentData({...studentData, notes: e.target.value})}/>
-                  </label>
-                </div>
-            </div>
-            
-          </div>
-
-          {/* Emergency Contact */}
-          <div id="emergency-contact-information" className='form-div'>
-            <p className='form-header'>Emergency Contact Information</p>
-            <div>
-              <label htmlFor="ec-fullname">Full Name
-                <input 
-                    type="text" 
-                    id="ec-fullname" 
-                    value={studentData?.emergency_contact_name || ''} 
-                    onChange={(e) => setStudentData({...studentData, emergency_contact_name: e.target.value})} />
-              </label>
-              <label htmlFor="phone">Phone
-                <input 
-                    type="text" 
-                    id="phone" 
-                    value={studentData?.emergency_contact_phone || ''}
-                    onChange={(e) => setStudentData({...studentData, emergency_contact_phone: e.target.value})} />
-              </label>
+          {/* EMERGENCY CONTACT */}
+          <div>
+            <p className="mb-3 text-sm font-semibold text-slate-900">Emergency Contact Information</p>
+            <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
+              <div>
+                <label className={labelClasses}>Full Name</label>
+                <input
+                  type="text"
+                  value={studentData?.emergency_contact_name || ''}
+                  onChange={(e) => setStudentData({ ...studentData, emergency_contact_name: e.target.value })}
+                  className={inputClasses}
+                />
+              </div>
+              <div>
+                <label className={labelClasses}>Phone</label>
+                <input
+                  type="text"
+                  value={studentData?.emergency_contact_phone || ''}
+                  onChange={(e) => setStudentData({ ...studentData, emergency_contact_phone: e.target.value })}
+                  className={inputClasses}
+                />
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Cancel / Save Buttons */}
-        <div id='cancel-save-div'>
-          <CancelSaveBtn hideForm={props.hideForm} submit={handleSubmit} />
+        {/* FOOTER */}
+        <div className="flex justify-end gap-2 border-t border-slate-100 px-6 py-4">
+          <button
+            onClick={props.hideForm}
+            className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSubmit}
+            className="rounded-xl bg-teal-800 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-teal-900"
+          >
+            Save Changes
+          </button>
         </div>
       </div>
     </div>

@@ -1,462 +1,7 @@
 import { apiFetch } from "../api";
-
-// import '../patients.css';
-// import '../app.css';
-// import CancelSaveBtn from './cancelsavebtn';
-// import React from 'react';
-
-// export default function AddPatient(props: any) {
-//   // ---------- STATE ----------
-//   const [idnumSearch, setIdnumSearch] = React.useState('');
-//   const [studentData, setStudentData] = React.useState({});
-//   const [allergies, setAllergies] = React.useState<any[]>([]);
-//   const [conditions, setConditions] = React.useState<any[]>([]);
-//   const [selectedAllergy, setSelectedAllergy] = React.useState<number[]>([]);
-//   const [selectedCondition, setSelectedCondition] = React.useState<number[]>([]);
-//   const [showAllergyDropdown, setShowAllergyDropdown] = React.useState(false);
-//   const [showConditionDropdown, setShowConditionDropdown] = React.useState(false);
-//   const [allergyElements, setAllergyElements] = React.useState([]);
-//   const [conditionElements, setConditionElements] = React.useState([]);
-//   const [allergySearch, setAllergySearch] = React.useState('');
-//   const [conditionSearch, setConditionSearch] = React.useState('');
-//   const [flashMessage, setFlashMessage] = React.useState('');
-//   const [found, setFound] = React.useState(false)
-
-//   const filteredAllergies = allergies.filter(a =>
-//     a.allergy_name.toLowerCase().includes(allergySearch.toLowerCase())
-//   );
-
-//   const filteredConditions = conditions.filter(c =>
-//     c.condition_name.toLowerCase().includes(conditionSearch.toLowerCase())
-//   );
-
-  
-
-
-//   async function handleSubmit(){
-//     console.log(studentData);
-    
-//     let success = true;
-//     const response = await apiFetch(`/addpatient`,
-//         {
-//             method: 'POST',
-//             headers:{
-//                 'Content-Type': 'application/json'
-//             },
-//             body: JSON.stringify(studentData)
-//         }
-//     )
-//     success = await response.json()
-//     console.log(success)
-
-//     if (!success.success){
-//       setFound(false)
-//       setFlashMessage('This patient already exists!')
-//       setTimeout(() => setFlashMessage(""), 3000)
-//       return;
-//     }else{
-//       setFound(true)
-//       setFlashMessage('Successfully saved new patient!')
-//       setTimeout(() => setFlashMessage(""), 3000)
-//     }
-
-//     console.log(selectedAllergy)
-//     if (selectedAllergy.length > 0){
-//         const id = await apiFetch(`/getmaxpatientid`).
-//         then(res => res.json())
-        
-//         await apiFetch(`/addpatientallergies`, {
-//             method: 'POST',
-//             headers: { 'Content-Type': 'application/json' },
-//             body: JSON.stringify({
-//                 'patient_id': id[0].last_id,
-//                 'allergies' : selectedAllergy
-//             })
-//         });
-//     }
-
-//     if (selectedCondition.length > 0){
-//         const id = await apiFetch(`/getmaxpatientid`).
-//         then(res => res.json())
-        
-//         await apiFetch(`/addpatientconditions`, {
-//             method: 'POST',
-//             headers: { 'Content-Type': 'application/json' },
-//             body: JSON.stringify({
-//                 'patient_id': id[0].last_id,
-//                 'conditions' : selectedCondition
-//             })
-//         });
-//       }
-//     props.refetchPatients()
-//   }
-//   // ---------- EFFECTS ----------
-
-//   React.useEffect(() => {
-//     apiFetch(`/getallergies`)
-//       .then(res => res.json())
-//       .then(data =>
-//         setAllergies(
-//           data.sort((a, b) =>
-//             a.allergy_name.toLowerCase().localeCompare(b.allergy_name.toLowerCase())
-//           )
-//         )
-//       );
-//   }, []);
-
-//   React.useEffect(() => {
-//     apiFetch(`/getconditions`)
-//       .then(res => res.json())
-//       .then(data =>
-//         setConditions(
-//           data.sort((a, b) =>
-//             a.condition_name.toLowerCase().localeCompare(b.condition_name.toLowerCase())
-//           )
-//         )
-//       );
-//   }, []);
-
-//   // ---------- FUNCTIONS ----------
-//   function refetchAllergyAndCondi(){
-//      apiFetch(`/getallergies`)
-//       .then(res => res.json())
-//       .then(data =>
-//         setAllergies(
-//           data.sort((a, b) =>
-//             a.allergy_name.toLowerCase().localeCompare(b.allergy_name.toLowerCase())
-//           )
-//         )
-//       );
-
-//       apiFetch(`/getconditions`)
-//       .then(res => res.json())
-//       .then(data =>
-//         setConditions(
-//           data.sort((a, b) =>
-//             a.condition_name.toLowerCase().localeCompare(b.condition_name.toLowerCase())
-//           )
-//         )
-//       );
-//   }
-//   async function findStudent() {
-//     const idnum = idnumSearch.trim();
-//     const response = await apiFetch(`/getstudent?idnum=${idnum}`);
-
-//       // const response = await apiFetch(`/getstudent?idnum=${idnum}`)
-//       // .then(res => res.json())
-//       // .then(data => setStudentData({...data[0], is_student:true}));
-
-
-//     const jsonified = await response.json()
-//     if (jsonified.length > 0){
-//       setStudentData({...jsonified[0], is_student:true})
-//       setFound(true);
-//       setFlashMessage('Student found!')
-//       setTimeout(() => setFlashMessage(''), 3000)
-//     }else{
-//       setFound(false);
-//       setFlashMessage('This student does not exist!')
-//      setTimeout(() => setFlashMessage(''), 3000)
-//     }
-//     setSelectedAllergy([])
-//     setSelectedCondition([])
-//     setShowAllergyDropdown(false)
-//     setShowConditionDropdown(false)
-//   }
-
-// async function addNewAllergy(name: string) {
-//   if (!name.trim()) return;
-//   const response = await apiFetch(`/addnewallergy`, {
-//     method: 'POST',
-//     headers: { 'Content-Type': 'application/json' },
-//     body: JSON.stringify({ allergy_name: name.trim() }),
-//   });
-//   const result = await response.json();
-//   if (result.success) {
-//     setAllergies(prev => [...prev, { allergy_id: result.id, allergy_name: name.trim() }]);
-//     setSelectedAllergy(prev => [...prev, result.id]); // select it automatically
-//     setAllergySearch(''); // clear search
-//   }
-
-//   refetchAllergyAndCondi()
-// }
-
-// async function addNewCondition(name: string) {
-//   if (!name.trim()) return;
-//   const response = await apiFetch(`/addnewcondition`, {
-//     method: 'POST',
-//     headers: { 'Content-Type': 'application/json' },
-//     body: JSON.stringify({ condition_name: name.trim() }),
-//   });
-//   const result = await response.json();
-//   if (result.success) {
-//     setConditions(prev => [...prev, { condition_id: result.id, condition_name: name.trim() }]);
-//     setSelectedCondition(prev => [...prev, result.id]);
-//     setConditionSearch('');
-//   }
-//   refetchAllergyAndCondi()
-// }
-  
-
-//   function toggleOption(id: number, type: 'allergy' | 'condition') {
-//     if (type === 'allergy') {
-//       if (!selectedAllergy.includes(id)) setSelectedAllergy(prev => [...prev, id]);
-//       else setSelectedAllergy(prev => prev.filter(item => item !== id));
-//     } else {
-//       if (!selectedCondition.includes(id)) setSelectedCondition(prev => [...prev, id]);
-//       else setSelectedCondition(prev => prev.filter(item => item !== id));
-//     }
-//   }
-
-//   // ---------- CHECKBOXES ----------
-// const allergyCheckboxes = filteredAllergies.map(item => (
-//   <li key={item.allergy_id}>
-//     <input
-//       type="checkbox"
-//       id={`allergy-${item.allergy_id}`}
-//       checked={selectedAllergy.includes(item.allergy_id)}
-//       onChange={() => toggleOption(item.allergy_id, 'allergy')}
-//     />
-//     <label htmlFor={`allergy-${item.allergy_id}`}>{item.allergy_name}</label>
-//   </li>
-// ));
-
-// const conditionsCheckboxes = filteredConditions.map(item => (
-//   <li key={item.condition_id}>
-//     <input
-//       type="checkbox"
-//       id={`condition-${item.condition_id}`}
-//       checked={selectedCondition.includes(item.condition_id)}
-//       onChange={() => toggleOption(item.condition_id, 'condition')}
-//     />
-//     <label htmlFor={`condition-${item.condition_id}`}>{item.condition_name}</label>
-//   </li>
-// ));
-
-
-
-
-//   // ---------- JSX ----------
-//   return (
-//     <div id="add-new-patient-div">
-//       <div className='gray-bg'></div>
-
-//       <div id="add-patient-form" className='modal-form'>
-//         {/* Header */}
-//         <div className='modal-header-div'>
-//           <p className="modal-header">Add Patient</p>
-//         </div>
-
-//         <div id='main-add-patient-form'>
-//           {/* Search */}
-//           {flashMessage.length > 0 ?
-//           <div className='flash-message' style={{background: found ? '#4caf50' : '#FF3838'}}>
-//             {flashMessage}
-//           </div>
-//           : null}
-//           <div>
-//             <label htmlFor="search-by-id" style={{ display: 'inline-block', marginRight: '1rem' }}> Find student by ID Number
-//               <input
-//                 type="text"
-//                 id='search-by-id'
-//                 placeholder='Search by ID Number'
-//                 style={{ width: '250px' }}
-//                 value={idnumSearch}
-//                 onChange={(e) => setIdnumSearch(e.target.value)}
-//               />
-//             </label>
-//             <button
-//               style={{ height: '40px', width: '80px', borderRadius: '10px', border: 'none' }}
-//               onClick={findStudent}
-//             >
-//               Search
-//             </button>
-//           </div>
-
-//           {/* Student Photo */}
-//           {/* <div>
-//             <img
-//               style={{ width: '150px', height: '150px', borderRadius: '80px', backgroundColor: 'gray' }}
-//             />
-//           </div> */}
-
-//           {/* Student Information */}
-//           <div id="student-information" className='form-div'>
-//             <p className='form-header'>Student Information</p>
-
-//             <div>
-//               <label htmlFor="firstname">First Name
-//                 <input 
-//                     type="text" 
-//                     id="firstname" 
-//                     value={studentData?.first_name || ''}
-//                     onChange={(e) => setStudentData({...studentData, first_name: e.target.value})}  />
-//               </label>
-//               <label htmlFor="middlename">Middle Name
-//                 <input 
-//                     type="text" 
-//                     id="middlename" 
-//                     value={studentData?.middle_name || ''}
-//                     onChange={(e) => setStudentData({...studentData, middle_name: e.target.value})}  />
-//               </label>
-//               <label htmlFor="lastname">Last Name
-//                 <input 
-//                     type="text" 
-//                     id="lastname" 
-//                     value={studentData?.last_name || ''} 
-//                     onChange={(e) => setStudentData({...studentData, last_name: e.target.value})} />
-//               </label>
-//             </div>
-
-//             <div>
-//               <label htmlFor="birthdate">Birthdate
-//                 <input type="date" id='birthdate' value={studentData?.birthday} onChange={(e)  => setStudentData({...studentData, birthday: e.target.value})}/>
-//               </label>
-
-//               <label style={{ display: 'block' }}>Sex
-//                 <div id='gender-div'>
-//                   <div>
-//                     <input type="radio" name="gender" id='female' checked={studentData?.sex === 'Female'} />
-//                     <label htmlFor="female">Female</label>
-//                   </div>
-//                   <div>
-//                     <input type="radio" name="gender" id="male" checked={studentData?.sex === 'Male'} />
-//                     <label htmlFor="male">Male</label>
-//                   </div>
-//                 </div>
-//               </label>
-//             </div>
-
-//             <div>
-//               <label htmlFor="email">Email
-//                 <input type="text" id='email' value={studentData?.email} onChange={(e)  => setStudentData({...studentData, email: e.target.value})}/>
-//               </label>
-
-//               <label htmlFor="phone">Phone
-//                 <input type="text" id='phone' value={studentData?.phone} onChange={(e)  => setStudentData({...studentData, phone: e.target.value})}/>
-//               </label>
-//             </div>
-
-//             <div>
-//               <label htmlFor="idno">ID Number
-//                 <input 
-//                     type="number" 
-//                     id="idno" 
-//                     value={studentData?.student_id || ''} 
-//                     onChange={(e) => setStudentData({...studentData, student_id: e.target.value})} />
-//               </label>
-//               <label htmlFor="department">Department
-//                 <input 
-//                     type='text' 
-//                     value={studentData?.department || ''}
-//                     onChange={(e) => setStudentData({...studentData, department: e.target.value})}  />
-//               </label>
-//               <label htmlFor="level">Level
-//                 <input 
-//                     type='number' 
-//                     id='level' 
-//                     value={studentData?.level || ''}
-//                     onChange={(e) => setStudentData({...studentData, level: e.target.value})}  />
-//               </label>
-//             </div>
-//           </div>
-
-//           {/* Medical Information */}
-//           <div id="medical-information" className='form-div'>
-//             <p className='form-header'>Medical Information</p>
-
-//             <div>
-//                 {/* Allergies */}
-//                 <div>
-//                   <label>Allergies</label>
-
-//                   <input
-//                     type="text"
-//                     placeholder="Search Allergies"
-//                     onClick={() => setShowAllergyDropdown(prev => !prev)}
-//                     onChange={e => setAllergySearch(e.target.value)}
-//                   />
-
-//                   {showAllergyDropdown && (
-//                     <div className="dropdown">
-//                       <ul>{allergyCheckboxes}</ul>
-//                       {allergySearch && !filteredAllergies.some(a => a.allergy_name.toLowerCase() === allergySearch.toLowerCase()) && (
-//                         <li style={{ cursor: 'pointer', fontWeight: 'bold' }} onClick={() => addNewAllergy(allergySearch)}>
-//                           + Add "{allergySearch}"
-//                         </li>
-//                       )}
-//                     </div>
-//                   )}
-//                 </div>
-
-//                 {/* Conditions */}
-//                 <div>
-//                   <label>Conditions</label>
-
-//                   <input
-//                     type="text"
-//                     placeholder="Search Conditions"
-//                     onClick={() => setShowConditionDropdown(prev => !prev)}
-//                     onChange={e => setConditionSearch(e.target.value)}
-//                   />
-
-//                   {showConditionDropdown && (
-//                     <div className="dropdown">
-//                       <ul>{conditionsCheckboxes}</ul>
-//                       {conditionSearch && !filteredConditions.some(c => c.condition_name.toLowerCase() === conditionSearch.toLowerCase()) && (
-//                         <li style={{ cursor: 'pointer', fontWeight: 'bold' }} onClick={() => addNewCondition(conditionSearch)}>
-//                           + Add "{conditionSearch}"
-//                         </li>
-//                       )}
-//                     </div>
-//                   )}
-//                 </div>
-
-//                 <div style={{display: 'block'}}>
-//                   <label htmlFor="notes">Notes
-//                     <input type="text"  onChange={(e) => setStudentData({...studentData, notes: e.target.value})}/>
-//                   </label>
-//                 </div>
-//             </div>
-            
-//           </div>
-
-//           {/* Emergency Contact */}
-//           <div id="emergency-contact-information" className='form-div'>
-//             <p className='form-header'>Emergency Contact Information</p>
-//             <div>
-//               <label htmlFor="ec-fullname">Full Name
-//                 <input 
-//                     type="text" 
-//                     id="ec-fullname" 
-//                     value={studentData?.emergency_contact_name || ''} 
-//                     onChange={(e) => setStudentData({...studentData, emergency_contact_name: e.target.value})} />
-//               </label>
-//               <label htmlFor="phone">Phone
-//                 <input 
-//                     type="text" 
-//                     id="phone" 
-//                     value={studentData?.emergency_contact_phone || ''}
-//                     onChange={(e) => setStudentData({...studentData, emergency_contact_phone: e.target.value})} />
-//               </label>
-//             </div>
-//           </div>
-//         </div>
-
-//         {/* Cancel / Save Buttons */}
-//         <div id='cancel-save-div'>
-//           <CancelSaveBtn hideForm={props.hideForm} submit={handleSubmit} />
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
-
-import '../patients.css';
-import '../app.css';
-import CancelSaveBtn from './cancelsavebtn';
+import type { Allergy, Condition } from "../types";
 import React from 'react';
+import 'bootstrap-icons/font/bootstrap-icons.css';
 
 export default function AddPatient(props: any) {
   // ---------- STATE ----------
@@ -472,6 +17,8 @@ export default function AddPatient(props: any) {
   const [conditionSearch, setConditionSearch] = React.useState('');
   const [flashMessage, setFlashMessage] = React.useState('');
   const [found, setFound] = React.useState(false);
+  // Staff, faculty and visitors are patients too; they have no student record.
+  const [isStudent, setIsStudent] = React.useState(true);
 
   const filteredAllergies = allergies.filter(a =>
     a.allergy_name.toLowerCase().includes(allergySearch.toLowerCase())
@@ -485,7 +32,7 @@ export default function AddPatient(props: any) {
   React.useEffect(() => {
     apiFetch(`/getallergies`)
       .then(res => res.json())
-      .then(data =>
+      .then((data: Allergy[]) =>
         setAllergies(
           data.sort((a, b) =>
             a.allergy_name.toLowerCase().localeCompare(b.allergy_name.toLowerCase())
@@ -497,7 +44,7 @@ export default function AddPatient(props: any) {
   React.useEffect(() => {
     apiFetch(`/getconditions`)
       .then(res => res.json())
-      .then(data =>
+      .then((data: Condition[]) =>
         setConditions(
           data.sort((a, b) =>
             a.condition_name.toLowerCase().localeCompare(b.condition_name.toLowerCase())
@@ -505,6 +52,15 @@ export default function AddPatient(props: any) {
         )
       );
   }, []);
+
+  // Opened from the check-in box with an ID: look that student up straight away.
+  React.useEffect(() => {
+    if (props.initialStudentId) {
+      setIdnumSearch(props.initialStudentId);
+      findStudent(props.initialStudentId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.initialStudentId]);
 
   // ---------- FUNCTIONS ----------
   function showFlash(message: string, success: boolean = true) {
@@ -515,26 +71,26 @@ export default function AddPatient(props: any) {
 
   async function handleSubmit() {
     // ---------- VALIDATION ----------
-    const requiredFields = [
-      'first_name',
-      'middle_name',
-      'last_name',
-      'birthday',
-      'sex',
-      'email',
-      'phone',
-      'student_id',
-      'department',
-      'level',
-      'emergency_contact_name',
-      'emergency_contact_phone'
-    ];
+    const requiredFields: Record<string, string> = {
+      first_name: 'First name',
+      middle_name: 'Middle name',
+      last_name: 'Last name',
+      birthday: 'Birthday',
+      sex: 'Sex',
+      email: 'Email',
+      phone: 'Phone',
+      ...(isStudent ? { student_id: 'Student ID', department: 'Department', level: 'Level' } : {}),
+      emergency_contact_name: 'Emergency contact name',
+      emergency_contact_phone: 'Emergency contact phone',
+    };
 
-    for (let field of requiredFields) {
-      if (!studentData[field] || studentData[field].toString().trim() === '') {
-        showFlash('Please fill all required fields!', false);
-        return;
-      }
+    // Say which fields are missing, not just that something is.
+    const missing = Object.entries(requiredFields)
+      .filter(([field]) => !studentData[field] || studentData[field].toString().trim() === '')
+      .map(([, label]) => label);
+    if (missing.length > 0) {
+      showFlash(`Please fill in: ${missing.join(', ')}`, false);
+      return;
     }
 
     // ---------- SUBMIT STUDENT ----------
@@ -544,7 +100,8 @@ export default function AddPatient(props: any) {
       // Allergies and conditions are saved with the patient, all or nothing.
       body: JSON.stringify({
         ...studentData,
-        is_student: true,
+        is_student: isStudent,
+        ...(isStudent ? {} : { student_id: null }),
         allergies: selectedAllergy,
         conditions: selectedCondition,
       })
@@ -552,7 +109,8 @@ export default function AddPatient(props: any) {
 
     const success = await response.json();
     if (!success.success) {
-      showFlash('This patient already exists!', false);
+      // A 400 carries the server's reason; a refused save with no reason is a duplicate.
+      showFlash(success.error || 'This patient already exists!', false);
       return;
     }
 
@@ -561,13 +119,13 @@ export default function AddPatient(props: any) {
     props.refetchPatients();
   }
 
-  async function findStudent() {
-    const idnum = idnumSearch.trim();
+  async function findStudent(idOverride?: string) {
+    const idnum = (idOverride ?? idnumSearch).trim();
     if (idnum.length === 0){
       setFlashMessage('Please enter an id number!')
       return;
     }
-    const response = await apiFetch(`/getstudent?idnum=${idnum}`);
+    const response = await apiFetch(`/getstudent?idnum=${encodeURIComponent(idnum)}`);
     const jsonified = await response.json();
 
     if (jsonified.length > 0) {
@@ -622,243 +180,406 @@ export default function AddPatient(props: any) {
     }
   }
 
-  // ---------- CHECKBOX ELEMENTS ----------
-  const allergyCheckboxes = filteredAllergies.map(item => (
-    <li key={item.allergy_id}>
-      <input
-        type="checkbox"
-        id={`allergy-${item.allergy_id}`}
-        checked={selectedAllergy.includes(item.allergy_id)}
-        onChange={() => toggleOption(item.allergy_id, 'allergy')}
-      />
-      <label htmlFor={`allergy-${item.allergy_id}`}>{item.allergy_name}</label>
-    </li>
-  ));
+  const selectedAllergyItems = allergies.filter(a => selectedAllergy.includes(a.allergy_id));
+  const selectedConditionItems = conditions.filter(c => selectedCondition.includes(c.condition_id));
 
-  const conditionsCheckboxes = filteredConditions.map(item => (
-    <li key={item.condition_id}>
-      <input
-        type="checkbox"
-        id={`condition-${item.condition_id}`}
-        checked={selectedCondition.includes(item.condition_id)}
-        onChange={() => toggleOption(item.condition_id, 'condition')}
-      />
-      <label htmlFor={`condition-${item.condition_id}`}>{item.condition_name}</label>
-    </li>
-  ));
+  const inputClasses = "w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-teal-300 focus:ring-2 focus:ring-teal-100";
+  const labelClasses = "mb-1.5 block text-xs font-medium text-slate-500";
 
   // ---------- JSX ----------
   return (
-    <div id="add-new-patient-div">
-      <div className='gray-bg'></div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
+      <div className="flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-xl">
 
-      <div id="add-patient-form" className='modal-form'>
-        {/* Header */}
-        <div className='modal-header-div'>
-          <p className="modal-header">Add Patient</p>
+        {/* HEADER */}
+        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+          <button
+            onClick={props.hideForm}
+            className="flex items-center gap-1.5 text-sm font-medium text-slate-500 transition hover:text-slate-800"
+          >
+            <i className="bi bi-x-lg" /> Hide
+          </button>
+          <p className="text-base font-semibold text-slate-900">Add Patient</p>
+          <button
+            onClick={() => { setStudentData({}); setIdnumSearch(''); setSelectedAllergy([]); setSelectedCondition([]); }}
+            className="flex items-center gap-1.5 text-sm font-medium text-slate-500 transition hover:text-slate-800"
+          >
+            <i className="bi bi-eraser" /> Clear
+          </button>
         </div>
 
-        <div id='main-add-patient-form'>
-          {/* Search */}
-          {flashMessage.length > 0 ?
-          <div className='flash-message' style={{background: found ? '#4caf50' : '#FF3838'}}>
-            {flashMessage}
+        {/* SCROLLABLE BODY */}
+        <div className="flex-1 overflow-y-auto px-6 py-5">
+
+          {flashMessage.length > 0 && (
+            <div role="alert" className={`mb-4 rounded-xl px-4 py-2.5 text-sm font-medium text-white ${found ? 'bg-emerald-500' : 'bg-red-500'}`}>
+              {flashMessage}
+            </div>
+          )}
+
+          {/* PATIENT TYPE */}
+          <div className="mb-5 inline-flex rounded-xl border border-slate-200 bg-slate-50 p-1" role="radiogroup" aria-label="Patient type">
+            {[[true, 'Student'], [false, 'Staff or visitor']].map(([value, label]) => (
+              <button
+                key={String(value)}
+                type="button"
+                role="radio"
+                aria-checked={isStudent === value}
+                onClick={() => setIsStudent(value as boolean)}
+                className={`rounded-lg px-3.5 py-1.5 text-sm font-medium transition ${isStudent === value ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+              >
+                {label as string}
+              </button>
+            ))}
           </div>
-          : null}
-          <div>
-            <label htmlFor="search-by-id" style={{ display: 'inline-block', marginRight: '1rem' }}> Find student by ID Number
+
+          {/* SEARCH BY ID */}
+          {isStudent && <div className="mb-6">
+            <label className={labelClasses}>Find student by ID number</label>
+            <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 focus-within:border-teal-300 focus-within:ring-2 focus-within:ring-teal-100">
+              <i className="bi bi-search text-sm text-slate-400" />
               <input
                 type="text"
-                id='search-by-id'
-                placeholder='Search by ID Number'
-                style={{ width: '250px' }}
+                placeholder="Search by ID Number"
                 value={idnumSearch}
                 onChange={(e) => setIdnumSearch(e.target.value)}
+                className="w-full border-none bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
               />
-            </label>
-            <button
-              style={{ height: '40px', width: '80px', borderRadius: '10px', border: 'none' }}
-              onClick={findStudent}
-            >
-              Search
-            </button>
-          </div>
+              <button
+                onClick={() => findStudent()}
+                className="flex-shrink-0 rounded-lg bg-slate-900 px-3.5 py-1.5 text-xs font-medium text-white transition hover:bg-slate-700"
+              >
+                Search
+              </button>
+            </div>
+          </div>}
 
-          {/* Student Photo */}
-          {/* <div>
-            <img
-              style={{ width: '150px', height: '150px', borderRadius: '80px', backgroundColor: 'gray' }}
-            />
-          </div> */}
+          {/* STUDENT INFORMATION */}
+          <div className="mb-6">
+            <p className="mb-3 text-sm font-semibold text-slate-900">
+              {isStudent ? 'Student Information' : 'Personal Information'} <span className="text-red-500">*</span>
+            </p>
 
-          {/* Student Information */}
-          <div id="student-information" className='form-div'>
-            <p className='form-header'>Student Information <span style={{ color: 'red' }}>*</span></p>
-
-            <div>
-              <label htmlFor="firstname">First Name
-                <input 
-                    type="text" 
-                    id="firstname" 
-                    value={studentData?.first_name || ''}
-                    onChange={(e) => setStudentData({...studentData, first_name: e.target.value})} required />
-              </label>
-              <label htmlFor="middlename">Middle Name
-                <input 
-                    type="text" 
-                    id="middlename" 
-                    value={studentData?.middle_name || ''}
-                    onChange={(e) => setStudentData({...studentData, middle_name: e.target.value})}  required/>
-              </label>
-              <label htmlFor="lastname">Last Name
-                <input 
-                    type="text" 
-                    id="lastname" 
-                    value={studentData?.last_name || ''} 
-                    onChange={(e) => setStudentData({...studentData, last_name: e.target.value})} required/>
-              </label>
+            <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-3">
+              <div>
+                <label className={labelClasses}>First Name</label>
+                <input
+                  type="text"
+                  value={studentData?.first_name || ''}
+                  onChange={(e) => setStudentData({ ...studentData, first_name: e.target.value })}
+                  className={inputClasses}
+                  required
+                />
+              </div>
+              <div>
+                <label className={labelClasses}>Middle Name</label>
+                <input
+                  type="text"
+                  value={studentData?.middle_name || ''}
+                  onChange={(e) => setStudentData({ ...studentData, middle_name: e.target.value })}
+                  className={inputClasses}
+                  required
+                />
+              </div>
+              <div>
+                <label className={labelClasses}>Last Name</label>
+                <input
+                  type="text"
+                  value={studentData?.last_name || ''}
+                  onChange={(e) => setStudentData({ ...studentData, last_name: e.target.value })}
+                  className={inputClasses}
+                  required
+                />
+              </div>
             </div>
 
-            <div>
-              <label htmlFor="birthdate">Birthdate
-                <input type="date" id='birthdate' value={studentData?.birthday} onChange={(e)  => setStudentData({...studentData, birthday: e.target.value})} required/>
-              </label>
+            <div className="mt-3.5 grid grid-cols-1 gap-3.5 sm:grid-cols-2">
+              <div>
+                <label className={labelClasses}>Birthdate</label>
+                <input
+                  type="date"
+                  value={studentData?.birthday || ''}
+                  onChange={(e) => setStudentData({ ...studentData, birthday: e.target.value })}
+                  className={inputClasses}
+                  required
+                />
+              </div>
+              <div>
+                <label className={labelClasses}>Sex</label>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setStudentData({ ...studentData, sex: 'Female' })}
+                    className={`flex-1 rounded-xl border px-3.5 py-2.5 text-sm font-medium transition ${
+                      studentData?.sex === 'Female'
+                        ? 'border-teal-300 bg-teal-50 text-teal-800'
+                        : 'border-slate-200 text-slate-500 hover:bg-slate-50'
+                    }`}
+                  >
+                    Female
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setStudentData({ ...studentData, sex: 'Male' })}
+                    className={`flex-1 rounded-xl border px-3.5 py-2.5 text-sm font-medium transition ${
+                      studentData?.sex === 'Male'
+                        ? 'border-teal-300 bg-teal-50 text-teal-800'
+                        : 'border-slate-200 text-slate-500 hover:bg-slate-50'
+                    }`}
+                  >
+                    Male
+                  </button>
+                </div>
+              </div>
+            </div>
 
-              <label style={{ display: 'block' }}>Sex
-                <div id='gender-div'>
-                  <div>
-                    <input type="radio" name="gender" id='female' checked={studentData?.sex === 'Female'} value='Female' onChange={(e)  => setStudentData({...studentData, sex: e.target.value})} required/>
-                    <label htmlFor="female">Female</label>
-                  </div>
-                  <div>
-                    <input type="radio" name="gender" id="male" checked={studentData?.sex === 'Male'} value='Male' onChange={(e)  => setStudentData({...studentData, sex: e.target.value})} required/>
-                    <label htmlFor="male">Male</label>
+            <div className="mt-3.5 grid grid-cols-1 gap-3.5 sm:grid-cols-2">
+              <div>
+                <label className={labelClasses}>Email</label>
+                <input
+                  type="text"
+                  value={studentData?.email || ''}
+                  onChange={(e) => setStudentData({ ...studentData, email: e.target.value })}
+                  className={inputClasses}
+                />
+              </div>
+              <div>
+                <label className={labelClasses}>Phone</label>
+                <input
+                  type="text"
+                  value={studentData?.phone || ''}
+                  onChange={(e) => setStudentData({ ...studentData, phone: e.target.value })}
+                  className={inputClasses}
+                />
+              </div>
+            </div>
+
+            {isStudent && <div className="mt-3.5 grid grid-cols-1 gap-3.5 sm:grid-cols-3">
+              <div>
+                <label className={labelClasses}>ID Number</label>
+                <input
+                  type="number"
+                  value={studentData?.student_id || ''}
+                  onChange={(e) => setStudentData({ ...studentData, student_id: e.target.value })}
+                  className={inputClasses}
+                />
+              </div>
+              <div>
+                <label className={labelClasses}>Department</label>
+                <input
+                  type="text"
+                  value={studentData?.department || ''}
+                  onChange={(e) => setStudentData({ ...studentData, department: e.target.value })}
+                  className={inputClasses}
+                />
+              </div>
+              <div>
+                <label className={labelClasses}>Level</label>
+                <input
+                  type="number"
+                  min="1"
+                  max="12"
+                  value={studentData?.level || ''}
+                  onChange={(e) =>
+                    setStudentData({
+                      ...studentData,
+                      level: parseInt(e.target.value) <= 0 ? 1 : parseInt(e.target.value) > 12 ? 12 : parseInt(e.target.value)
+                    })
+                  }
+                  className={inputClasses}
+                />
+              </div>
+            </div>}
+          </div>
+
+          {/* MEDICAL INFORMATION */}
+          <div className="mb-6">
+            <p className="mb-3 text-sm font-semibold text-slate-900">Medical Information</p>
+
+            <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
+              {/* ALLERGIES */}
+              <div className="relative">
+                <label className={labelClasses}>Allergies</label>
+                <div
+                  onClick={() => setShowAllergyDropdown(prev => !prev)}
+                  className="flex min-h-[44px] cursor-pointer flex-wrap items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 focus-within:border-teal-300 focus-within:ring-2 focus-within:ring-teal-100"
+                >
+                  {selectedAllergyItems.length > 0 ? (
+                    <>
+                      <span className="inline-flex items-center gap-1 rounded-full bg-teal-50 px-2.5 py-1 text-xs font-medium text-teal-800 ring-1 ring-teal-200/60">
+                        {selectedAllergyItems[0].allergy_name}
+                      </span>
+                      {selectedAllergyItems.length > 1 && (
+                        <span className="text-xs text-slate-400">(+{selectedAllergyItems.length - 1} others)</span>
+                      )}
+                    </>
+                  ) : (
+                    <span className="text-sm text-slate-400">Search allergies</span>
+                  )}
+                  <div className="ml-auto flex items-center gap-1.5">
+                    {selectedAllergyItems.length > 0 && (
+                      <i
+                        className="bi bi-x-lg text-xs text-slate-400 hover:text-slate-700"
+                        onClick={(e) => { e.stopPropagation(); setSelectedAllergy([]); }}
+                      />
+                    )}
+                    <i className={`bi bi-chevron-down text-xs text-slate-400 transition ${showAllergyDropdown ? 'rotate-180' : ''}`} />
                   </div>
                 </div>
-              </label>
-            </div>
 
-            <div>
-              <label htmlFor="email">Email
-                <input type="text" id='email' value={studentData?.email} onChange={(e)  => setStudentData({...studentData, email: e.target.value})}/>
-              </label>
-
-              <label htmlFor="phone">Phone
-                <input type="text" id='phone' value={studentData?.phone} onChange={(e)  => setStudentData({...studentData, phone: e.target.value})}/>
-              </label>
-            </div>
-
-            <div>
-              <label htmlFor="idno">ID Number
-                <input 
-                    type="number" 
-                    id="idno" 
-                    value={studentData?.student_id || ''} 
-                    onChange={(e) => setStudentData({...studentData, student_id: e.target.value})} />
-              </label>
-              <label htmlFor="department">Department
-                <input 
-                    type='text' 
-                    value={studentData?.department || ''}
-                    onChange={(e) => setStudentData({...studentData, department: e.target.value})}  />
-              </label>
-              <label htmlFor="level">Level
-                <input 
-                    type='number' 
-                    id='level' 
-                    min = '1'
-                    max = '12'
-                    value={studentData?.level || ''}
-                    onChange={(e) => setStudentData({...studentData, level: parseInt(e.target.value) <= 0 ? 1 : parseInt(e.target.value) > 12 ? 12 : parseInt(e.target.value)})}  />
-              </label>
-            </div>
-          </div>
-
-          {/* Medical Information */}
-          <div id="medical-information" className='form-div'>
-            <p className='form-header'>Medical Information</p>
-
-            <div>
-                {/* Allergies */}
-                <div>
-                  <label>Allergies</label>
-
-                  <input
-                    type="text"
-                    placeholder="Search Allergies"
-                    onClick={() => setShowAllergyDropdown(prev => !prev)}
-                    onChange={e => setAllergySearch(e.target.value)}
-                  />
-
-                  {showAllergyDropdown && (
-                    <div className="dropdown">
-                      <ul>{allergyCheckboxes}</ul>
+                {showAllergyDropdown && (
+                  <div className="absolute z-20 mt-1.5 w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
+                    <div className="border-b border-slate-100 p-2">
+                      <input
+                        type="text"
+                        autoFocus
+                        placeholder="Search allergies"
+                        onChange={e => setAllergySearch(e.target.value)}
+                        className="w-full rounded-lg border-none bg-slate-50 px-3 py-2 text-sm outline-none placeholder:text-slate-400"
+                      />
+                    </div>
+                    <ul className="max-h-40 overflow-y-auto py-1">
+                      {filteredAllergies.map(item => (
+                        <li key={item.allergy_id}>
+                          <label className="flex cursor-pointer items-center gap-2.5 px-3.5 py-2 text-sm text-slate-700 hover:bg-slate-50">
+                            <input
+                              type="checkbox"
+                              checked={selectedAllergy.includes(item.allergy_id)}
+                              onChange={() => toggleOption(item.allergy_id, 'allergy')}
+                              className="h-4 w-4 rounded border-slate-300 text-teal-800 focus:ring-teal-200"
+                            />
+                            {item.allergy_name}
+                          </label>
+                        </li>
+                      ))}
                       {allergySearch && !filteredAllergies.some(a => a.allergy_name.toLowerCase() === allergySearch.toLowerCase()) && (
-                        <li style={{ cursor: 'pointer', fontWeight: 'bold' }} onClick={() => addNewAllergy(allergySearch)}>
+                        <li
+                          onClick={() => addNewAllergy(allergySearch)}
+                          className="cursor-pointer px-3.5 py-2 text-sm font-medium text-teal-900 hover:bg-teal-50"
+                        >
                           + Add "{allergySearch}"
                         </li>
                       )}
-                    </div>
+                    </ul>
+                  </div>
+                )}
+              </div>
+
+              {/* CONDITIONS */}
+              <div className="relative">
+                <label className={labelClasses}>Conditions</label>
+                <div
+                  onClick={() => setShowConditionDropdown(prev => !prev)}
+                  className="flex min-h-[44px] cursor-pointer flex-wrap items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 focus-within:border-teal-300 focus-within:ring-2 focus-within:ring-teal-100"
+                >
+                  {selectedConditionItems.length > 0 ? (
+                    <>
+                      <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 ring-1 ring-blue-200/60">
+                        {selectedConditionItems[0].condition_name}
+                      </span>
+                      {selectedConditionItems.length > 1 && (
+                        <span className="text-xs text-slate-400">(+{selectedConditionItems.length - 1} others)</span>
+                      )}
+                    </>
+                  ) : (
+                    <span className="text-sm text-slate-400">Search conditions</span>
                   )}
+                  <div className="ml-auto flex items-center gap-1.5">
+                    {selectedConditionItems.length > 0 && (
+                      <i
+                        className="bi bi-x-lg text-xs text-slate-400 hover:text-slate-700"
+                        onClick={(e) => { e.stopPropagation(); setSelectedCondition([]); }}
+                      />
+                    )}
+                    <i className={`bi bi-chevron-down text-xs text-slate-400 transition ${showConditionDropdown ? 'rotate-180' : ''}`} />
+                  </div>
                 </div>
 
-                {/* Conditions */}
-                <div>
-                  <label>Conditions</label>
-
-                  <input
-                    type="text"
-                    placeholder="Search Conditions"
-                    onClick={() => setShowConditionDropdown(prev => !prev)}
-                    onChange={e => setConditionSearch(e.target.value)}
-                  />
-
-                  {showConditionDropdown && (
-                    <div className="dropdown">
-                      <ul>{conditionsCheckboxes}</ul>
+                {showConditionDropdown && (
+                  <div className="absolute z-20 mt-1.5 w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
+                    <div className="border-b border-slate-100 p-2">
+                      <input
+                        type="text"
+                        autoFocus
+                        placeholder="Search conditions"
+                        onChange={e => setConditionSearch(e.target.value)}
+                        className="w-full rounded-lg border-none bg-slate-50 px-3 py-2 text-sm outline-none placeholder:text-slate-400"
+                      />
+                    </div>
+                    <ul className="max-h-40 overflow-y-auto py-1">
+                      {filteredConditions.map(item => (
+                        <li key={item.condition_id}>
+                          <label className="flex cursor-pointer items-center gap-2.5 px-3.5 py-2 text-sm text-slate-700 hover:bg-slate-50">
+                            <input
+                              type="checkbox"
+                              checked={selectedCondition.includes(item.condition_id)}
+                              onChange={() => toggleOption(item.condition_id, 'condition')}
+                              className="h-4 w-4 rounded border-slate-300 text-teal-800 focus:ring-teal-200"
+                            />
+                            {item.condition_name}
+                          </label>
+                        </li>
+                      ))}
                       {conditionSearch && !filteredConditions.some(c => c.condition_name.toLowerCase() === conditionSearch.toLowerCase()) && (
-                        <li style={{ cursor: 'pointer', fontWeight: 'bold' }} onClick={() => addNewCondition(conditionSearch)}>
+                        <li
+                          onClick={() => addNewCondition(conditionSearch)}
+                          className="cursor-pointer px-3.5 py-2 text-sm font-medium text-teal-900 hover:bg-teal-50"
+                        >
                           + Add "{conditionSearch}"
                         </li>
                       )}
-                    </div>
-                  )}
-                </div>
-
-                <div style={{display: 'block'}}>
-                  <label htmlFor="notes">Notes
-                    <input type="text"  onChange={(e) => setStudentData({...studentData, notes: e.target.value})}/>
-                  </label>
-                </div>
+                    </ul>
+                  </div>
+                )}
+              </div>
             </div>
-            
+
+            <div className="mt-3.5">
+              <label className={labelClasses}>Notes</label>
+              <input
+                type="text"
+                onChange={(e) => setStudentData({ ...studentData, notes: e.target.value })}
+                className={inputClasses}
+              />
+            </div>
           </div>
 
-          {/* Emergency Contact */}
-          <div id="emergency-contact-information" className='form-div'>
-            <p className='form-header'>Emergency Contact Information <span style={{ color: 'red' }}>*</span></p>
-            <div>
-              <label htmlFor="ec-fullname">Full Name
-                <input 
-                    type="text" 
-                    id="ec-fullname" 
-                    value={studentData?.emergency_contact_name || ''} 
-                    onChange={(e) => setStudentData({...studentData, emergency_contact_name: e.target.value})} />
-              </label>
-              <label htmlFor="phone">Phone
-                <input 
-                    type="text" 
-                    id="phone" 
-                    value={studentData?.emergency_contact_phone || ''}
-                    onChange={(e) => setStudentData({...studentData, emergency_contact_phone: e.target.value})} />
-              </label>
+          {/* EMERGENCY CONTACT */}
+          <div>
+            <p className="mb-3 text-sm font-semibold text-slate-900">
+              Emergency Contact Information <span className="text-red-500">*</span>
+            </p>
+            <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
+              <div>
+                <label className={labelClasses}>Full Name</label>
+                <input
+                  type="text"
+                  value={studentData?.emergency_contact_name || ''}
+                  onChange={(e) => setStudentData({ ...studentData, emergency_contact_name: e.target.value })}
+                  className={inputClasses}
+                />
+              </div>
+              <div>
+                <label className={labelClasses}>Phone</label>
+                <input
+                  type="text"
+                  value={studentData?.emergency_contact_phone || ''}
+                  onChange={(e) => setStudentData({ ...studentData, emergency_contact_phone: e.target.value })}
+                  className={inputClasses}
+                />
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Cancel / Save Buttons */}
-        <div id='cancel-save-div'>
-          <CancelSaveBtn hideForm={props.hideForm} submit={handleSubmit} />
+        {/* FOOTER */}
+        <div className="border-t border-slate-100 px-6 py-4">
+          <button
+            onClick={handleSubmit}
+            className="w-full rounded-xl bg-teal-800 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-teal-900"
+          >
+            Save Patient
+          </button>
         </div>
       </div>
     </div>

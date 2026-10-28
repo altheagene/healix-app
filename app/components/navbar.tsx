@@ -1,159 +1,98 @@
-import { apiFetch } from "../api";
-import { NavLink } from "react-router";
-import React from "react";
-import { useNavigate } from "react-router";
-import img  from '../images/user.png'
+import { NavLink, useLocation } from "react-router";
 
+const NAV_ITEMS = [
+    { route: "/", text: "Dashboard", icon: "bi-clock", match: ["/"] },
+    { route: "/appointments", text: "Appointments", icon: "bi-calendar-date", match: ["/appointments", "/addappointment", "/appointmentreports"] },
+    { route: "/patients", text: "Student Records", icon: "bi-folder", match: ["/patients", "/patientdetails", "/addnewpatient"] },
+    { route: "/records", text: "Clinic Visits", icon: "bi-file-earmark-text", match: ["/records", "/patientreport", "/others"] },
+    { route: "/inventory", text: "Medicine Inventory", icon: "bi-box", match: ["/inventory", "/itemdetails", "/inventoryreport"] },
+    { route: "/staff", text: "Staff", icon: "bi-people", match: ["/staff"] },
+]
 
-export default function Navbar(props:any){
-    const [width, setWidth] = React.useState(0)
-    const navigate = useNavigate()
-    const [user, setUser] = React.useState<any[]>()
-    const id = localStorage.getItem('userid')
+function sectionActive(pathname: string, prefixes: string[]) {
+    return prefixes.some(prefix =>
+        prefix === "/"
+            ? pathname === "/"
+            : pathname === prefix || pathname.startsWith(`${prefix}/`)
+    )
+}
 
-    React.useEffect(() => {
-        // Safe: window exists ONLY in the browser
-        const handleResize = () => setWidth(window.innerWidth);
+export default function Navbar(props: {
+    expanded: boolean
+    onToggle: () => void
+    onLogout?: () => void
+}) {
+    const expanded = props.expanded
+    const { pathname } = useLocation()
 
-        handleResize(); // set initial width
-        window.addEventListener("resize", handleResize);
+    return (
+        <nav className={`flex h-full flex-shrink-0 flex-col border-r border-[#e4ebe6] bg-white transition-all duration-200 ${expanded ? "w-56" : "w-[72px]"}`}>
+            <button
+                type="button"
+                title={expanded ? "Collapse menu" : "Expand menu"}
+                onClick={props.onToggle}
+                className={`mt-3 flex h-12 items-center border-none bg-transparent text-xl text-[#0b3d3a] ${expanded ? "justify-start px-5" : "w-full justify-center"}`}
+            >
+                <i className="bi bi-list" />
+            </button>
 
-        return () => window.removeEventListener("resize", handleResize);
-    }, []);
-
-    React.useEffect(() => {
-        apiFetch(`/finduser?id=${id}`)
-        .then(res => res.json())
-        .then(data => setUser(data[0]))
-    }, [])
-
-    const [routeChosen, setRouteChosen] = React.useState('Dashboard')
-    const navbarObj = [
-        {
-            route: "/",
-            text: 'Dashboard',
-            icon: 'bi bi-speedometer2'
-        },
-        {
-            route: "/patients",
-            text: 'Patients',
-            icon: 'bi bi-person'
-        },
-        {
-         route: "/records",
-            text: 'Records',
-            icon: 'bi bi-file'
-        },{
-            route: "/appointments",
-            text: 'Appointments',
-            icon: 'bi bi-calendar-date'
-        },
-        {
-            route: "/inventory",
-            text: 'Inventory',
-            icon: 'bi bi-box'
-        },
-        {
-            route: "/staff",
-            text: 'Staff' ,
-            icon: 'bi bi-people'
-        },
-        {
-            route: "#",
-            text: 'Reports' ,
-            icon: 'bi bi-file-earmark',
-            subroutes: [
-                {
-                    route: '/patientreport',
-                    text: 'Clinic Visit Reports'
-                },
-                {
-                    route: '/inventoryreport',
-                    text: 'Inventory Reports'
-                },
-                {
-                    route: '/appointmentreports',
-                    text: 'Appointment Reports'
-                }
-
-            ]
-        }
-    
-    ]
-
-    const navListComponents = navbarObj.map((obj) => {
-
-
-        const subroutes = obj.hasOwnProperty('subroutes') ? obj.subroutes : null;
-        const subroutesElements = subroutes ? subroutes.map(subroute => {
-            return(
-                <li>
-                    <NavLink to={subroute.route}
-                            className={({ isActive }) =>
-                                isActive ? "nav-active" : "nav-inactive"
-                            }>
-                        {subroute.text}</NavLink>
-                </li>
-            )
-        }) : null
-
-        return(
-            <li >
-                <div className="navlist-bg" 
-                    style={{backgroundColor: routeChosen === obj.text ? '#b1c1ffac' : 'transparent',
-                                                    width: routeChosen === obj.text ? '100%' : '0px',
-                    }}
-                    >
-                    <NavLink 
-                        to={obj.route ||'#'} 
-                        onClick={() => {setRouteChosen(obj.text); navigate(obj.route)}}
+            <ul className="mt-2 flex w-full flex-col gap-1 px-2">
+                {NAV_ITEMS.map((item) => {
+                    const active = sectionActive(pathname, item.match)
+                    return (
+                    <li key={item.route} title={expanded ? undefined : item.text}>
+                        <NavLink
+                            to={item.route}
+                            className={`relative flex h-11 items-center rounded-lg text-[0.95rem] font-medium transition ${
+                                expanded ? "gap-3 px-3" : "justify-center px-0"
+                            } ${
+                                active
+                                    ? "bg-[#f3f8f4] text-[#0b3d3a]"
+                                    : "text-[#8aa39c] hover:bg-[#f7faf7] hover:text-[#0b3d3a]"
+                            }`}
                         >
-                        <i 
-                            className={obj.icon} 
-                            style={{
-                                marginRight: '1.3rem', 
-                                fontSize: '1.3rem', 
-                                fontWeight: 700, color:  routeChosen === obj.text ? '#1c1c1c' : '#2b2b2bdb'}}></i>
-                        <p 
-                            // style={{color:  routeChosen === obj.text ? '#1c1c1c' : '#2b2b2bb0'}}
-                            >
-                            {obj.text}</p>
-                    </NavLink>
-                </div>
-
-                {subroutes ? 
-                <div id="subroute-div" 
-                    style={{height: routeChosen === obj.text ? '300px' : '0px',
-                                             margin: routeChosen === obj.text ? '1rem 0 1rem 2rem' : '0 0 0  2.5rem'
-                }}>
-                    <ul>
-                        {subroutesElements}
-                    </ul>
-                </div> : null}
-
-            </li>
-        )
-    })
-    return(
-        <nav id="navbar"
-                // className={`${props.showNavbar ? "show-navbar" : "hide-navbar"} ${width < 1000 ? "navbar-mobile" : ""}`} 
-                className={width < 1300 ? 'navbar-mobile' : ''}
-                style={{
-                    // transform: props.showNavbar ? 'translateX(0%)' : 'translateX(-100%)',
-                    position: width < 1300 ? 'absolute' : 'relative',
-                    display: props.showNavbar ? 'block' : 'none',
-                    zIndex: width < 1300 ? '1' : 0,
-                    
-                }}>
-            <ul> 
-                {navListComponents}
+                            <i className={`bi ${item.icon} text-xl`} />
+                            {expanded && <span className="truncate">{item.text}</span>}
+                            {active && (
+                                <span className="absolute right-0 h-6 w-[3px] rounded-l-full bg-[#0b3d3a]" />
+                            )}
+                        </NavLink>
+                    </li>
+                    )
+                })}
             </ul>
-            <div style={{display: 'flex', gap: '1rem', alignItems: 'center', position: 'absolute', bottom: '1rem', left: '0.5rem'}}>
-                <div style={{height: 50, width: 50, overflow:"hidden", borderRadius: '50%'}}>
-                    <img style={{objectFit: 'cover', height: 'auto', width: '100%'}} src={img}></img>
-                </div>
-                
-                <p style={{fontWeight: '600'}}>{user?.first_name} {user?.last_name}</p>
+
+            <div className="mb-5 mt-auto flex flex-col gap-1 px-2">
+                <NavLink
+                    to="/profile"
+                    title={expanded ? undefined : "Profile"}
+                    className={`relative flex h-11 items-center rounded-lg text-[0.95rem] font-medium transition ${
+                        expanded ? "gap-3 px-3" : "justify-center px-0"
+                    } ${
+                        pathname === "/profile"
+                            ? "bg-[#f3f8f4] text-[#0b3d3a]"
+                            : "text-[#8aa39c] hover:bg-[#f7faf7] hover:text-[#0b3d3a]"
+                    }`}
+                >
+                    <i className="bi bi-person-circle text-xl" />
+                    {expanded && <span className="truncate">Profile</span>}
+                    {pathname === "/profile" && (
+                        <span className="absolute right-0 h-6 w-[3px] rounded-l-full bg-[#0b3d3a]" />
+                    )}
+                </NavLink>
+                {props.onLogout && (
+                    <button
+                        type="button"
+                        onClick={props.onLogout}
+                        title="Logout"
+                        className={`flex h-11 items-center border-none bg-transparent text-[#8aa39c] hover:text-[#0b3d3a] ${
+                            expanded ? "gap-3 rounded-lg px-3 text-[0.95rem] font-medium" : "w-full justify-center text-xl"
+                        }`}
+                    >
+                        <i className="bi bi-box-arrow-right text-xl" />
+                        {expanded && <span>Logout</span>}
+                    </button>
+                )}
             </div>
         </nav>
     )

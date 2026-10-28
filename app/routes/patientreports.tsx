@@ -113,7 +113,6 @@ import { apiFetch } from "../api";
 
 import React from "react"
 import { PieChart, Pie, Cell, Legend, Tooltip, ResponsiveContainer } from "recharts";
-import {API_BASE_URL} from '../config'
 
 
 export default function PatientReports()
@@ -138,6 +137,20 @@ export default function PatientReports()
             serviceCounts.push({ name, value });
         }
     }
+
+    // Most common complaints. Grouped case-insensitively, shown capitalised.
+    const complaintCounts = new Map<string, { label: string; count: number }>();
+    visitLogs?.forEach(v => {
+        const text = (v.complaint || "").trim();
+        if (!text) return;
+        const key = text.toLowerCase();
+        const label = text.charAt(0).toUpperCase() + text.slice(1);
+        const entry = complaintCounts.get(key) ?? { label, count: 0 };
+        entry.count += 1;
+        complaintCounts.set(key, entry);
+    });
+    const topComplaints = [...complaintCounts.values()].sort((a, b) => b.count - a.count).slice(0, 8);
+    const visitsWithoutComplaint = (visitLogs?.length ?? 0) - [...complaintCounts.values()].reduce((sum, c) => sum + c.count, 0);
      React.useEffect(() => {
         apiFetch(`/clinic_visits?fromdate=${dateRange.from_date}&todate=${dateRange.to_date}`)
         .then(res => res.json())
@@ -150,9 +163,6 @@ export default function PatientReports()
         .then(data => setVisitLogs(data))
     }, [dateRange])
 
-    function downloadReports(){
-        apiFetch(`/generateclinicreport?fromdate=${dateRange.from_date}&todate=${dateRange.to_date}`)
-    }`${API_BASE_URL}/generateclinicreport?fromdate=${dateRange.from_date}&todate=${dateRange.to_date}`
 
    const downloadReport = async () => {
     const response = await apiFetch(`/generateclinicreport?fromdate=${encodeURIComponent(dateRange.from_date)}&todate=${encodeURIComponent(dateRange.to_date)}`);
@@ -269,6 +279,30 @@ export default function PatientReports()
                 </div>
             </div>
               
+            <section className="my-4 rounded-xl border border-slate-200 bg-white p-6" aria-labelledby="top-complaints">
+                <h3 id="top-complaints" className="m-0 mb-3 text-base font-semibold">Most common complaints</h3>
+                {topComplaints.length === 0 ? (
+                    <p className="m-0 text-sm text-slate-500">No complaints recorded in this period.</p>
+                ) : (
+                    <ol className="m-0 list-none space-y-2 p-0">
+                        {topComplaints.map(({ label, count }) => (
+                            <li key={label} className="flex items-center gap-3 text-sm">
+                                <span className="w-48 truncate" title={label}>{label}</span>
+                                <span className="h-2.5 flex-1 overflow-hidden rounded-full bg-slate-100" aria-hidden="true">
+                                    <span className="block h-full rounded-full bg-teal-700" style={{ width: `${(count / topComplaints[0].count) * 100}%` }} />
+                                </span>
+                                <span className="w-16 text-right tabular-nums text-slate-600">{count} visit{count === 1 ? "" : "s"}</span>
+                            </li>
+                        ))}
+                    </ol>
+                )}
+                {visitsWithoutComplaint > 0 && (
+                    <p className="m-0 mt-3 text-xs text-slate-500">
+                        {visitsWithoutComplaint} visit{visitsWithoutComplaint === 1 ? "" : "s"} in this period had no complaint recorded.
+                    </p>
+                )}
+            </section>
+
             <div className="table-container">
                 <table>
                     <thead>
