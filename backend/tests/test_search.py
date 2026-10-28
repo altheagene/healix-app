@@ -1,13 +1,13 @@
-def _add(client, h, student_id, first, last, sex="female", department="Nursing"):
+def _add(client, h, student_id, first, last, sex="female", department="College of Nursing"):
     body = {"first_name": first, "middle_name": "M", "last_name": last, "birthday": "2005-01-01",
-            "sex": sex, "student_id": student_id, "department": department, "is_student": True}
+            "sex": sex, "student_id": student_id, "department": department, "level": 1, "is_student": True}
     assert client.post("/addpatient", headers=h, json=body).json["success"]
 
 
 def test_search_pages_and_counts(client, headers):
     h = headers("staff")
     for i in range(12):
-        _add(client, h, f"S-1{i:02d}", f"Maria{i}", "Santos", department="Nursing" if i % 2 else "IT")
+        _add(client, h, f"S-1{i:02d}", f"Maria{i}", "Santos", department="College of Nursing" if i % 2 else "College of Computer Studies")
     first = client.get("/searchpatients?q=santos&page=1&page_size=5", headers=h).json
     third = client.get("/searchpatients?q=santos&page=3&page_size=5", headers=h).json
     assert first["total"] == 12 and len(first["patients"]) == 5 and len(third["patients"]) == 2

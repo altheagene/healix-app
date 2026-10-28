@@ -27,6 +27,7 @@ from models.patient_model import (
 )
 from views.api_view import json_data, json_success
 import validation
+from school import level_problem
 
 patient_bp = Blueprint("patients", __name__)
 
@@ -67,6 +68,7 @@ def search_patients_route():
     filters = {
         "department": args.get("department") or None,
         "level": args.get("level") or None,
+        "stage": args.get("stage") or None,
         "sex": args.get("sex") or None,
         "patient_type": args.get("patient_type") or None,
         "has_allergies": args.get("has_allergies") == "1",
@@ -145,6 +147,7 @@ def add_patient_route():
     conditions = data.pop("conditions", [])
     validation.require(data, "first_name", "middle_name", "last_name", "birthday", "sex")
     data["birthday"] = validation.iso_date(data["birthday"], "birthday")
+    _check_department(data)
     # Saved in one transaction, so a failure never leaves a patient without
     # the allergies the nurse entered.
     patient_id = add_patient(allergies=allergies, conditions=conditions, **data)
@@ -180,7 +183,27 @@ def update_patient_route():
     patient_id = data.pop("patient_id")
     if data.get("birthday"):
         data["birthday"] = validation.iso_date(data["birthday"], "birthday")
+    if any(key in data for key in ("department", "level", "strand")):
+        # Check the combination as it will be saved, filling in what was not sent.
+        current = (get_patient("patients", patient_id=patient_id) or [{}])[0]
+        merged = {key: data.get(key, current.get(key)) for key in ("department", "level", "strand")}
+        _check_department(merged)
+        if "strand" in data:
+            data["strand"] = merged["strand"]  # "" becomes NULL
     return json_success(update_patient(patient_id, **data))
+
+
+def _check_department(data):
+    """Department, level and strand must fit together (see school.py). All three may be
+    blank, for staff and visitors; the form requires them for students."""
+    if not data.get("department") and data.get("level") in (None, "") and not data.get("strand"):
+        data["strand"] = None
+        return
+    problem = level_problem(data.get("department"), data.get("level"), data.get("strand") or None)
+    if problem:
+        raise validation.ValidationError(problem)
+    if not data.get("strand"):
+        data["strand"] = None
 
 
 @patient_bp.route("/deletepatientallergies", methods=["POST"])

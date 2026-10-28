@@ -1,6 +1,7 @@
 import { apiFetch } from "../api";
 import React from "react";
 import { useNavigate, useParams } from "react-router";
+import { describeLevel } from "../school";
 
 interface Visit {
     at: string
@@ -94,7 +95,7 @@ export default function PatientSummary() {
                         <Field label="Birthday" value={p.birthday} />
                         <Field label="Sex" value={p.sex} />
                         <Field label="Department" value={p.department} />
-                        <Field label="Level" value={p.level} />
+                        <Field label="Level" value={describeLevel(p.department as string, p.level, p.strand as string)} />
                         <Field label="Phone" value={p.phone} />
                         <Field label="Email" value={p.email} />
                     </section>

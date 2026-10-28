@@ -1,5 +1,6 @@
 import { apiFetch } from "../api";
 import type { Allergy, Condition } from "../types";
+import DepartmentFields from "./departmentfields";
 import React from 'react';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
@@ -321,24 +322,12 @@ export default function EditPatient(props: any) {
                   className={inputClasses}
                 />
               </div>
-              <div>
-                <label className={labelClasses}>Department</label>
-                <input
-                  type="text"
-                  value={studentData?.department || ''}
-                  onChange={(e) => setStudentData({ ...studentData, department: e.target.value })}
-                  className={inputClasses}
-                />
-              </div>
-              <div>
-                <label className={labelClasses}>Level</label>
-                <input
-                  type="number"
-                  value={studentData?.level || ''}
-                  onChange={(e) => setStudentData({ ...studentData, level: e.target.value })}
-                  className={inputClasses}
-                />
-              </div>
+              <DepartmentFields
+                value={studentData || {}}
+                onChange={(patch) => setStudentData({ ...studentData, ...patch })}
+                inputClasses={inputClasses}
+                labelClasses={labelClasses}
+              />
             </div>
           </div>
 

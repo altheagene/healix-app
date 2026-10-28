@@ -11,6 +11,7 @@ import user from '../images/user.png'
 import EditRecord from '~/components/editrecord'
 import { VisitOutcomeDialog } from '~/components/visitoutcome'
 import { DISPOSITIONS, DISPOSITION_SHORT, DISPOSITION_TONES, NOTIFY_METHODS } from '../visitOutcomes'
+import { describeLevel } from '../school'
 
 export default function PatientDetails(){
     const role = localStorage.getItem('role');
@@ -201,7 +202,10 @@ export default function PatientDetails(){
                                     {studentData?.first_name} {studentData?.middle_name} {studentData?.last_name}
                                 </p>
                                 <p className="m-0 mt-0.5 truncate text-sm text-[#7b8c87]">
-                                    {[studentData?.department, studentData?.level && `Level ${studentData.level}`].filter(Boolean).join(' · ') || (studentData?.is_student ? 'Student' : 'Staff or visitor')}
+                                    {studentData?.department || (studentData?.is_student ? 'Student' : 'Staff or visitor')}
+                                </p>
+                                <p className="m-0 mt-0.5 text-sm font-medium text-[#0b3d3a]">
+                                    {describeLevel(studentData?.department, studentData?.level, studentData?.strand)}
                                 </p>
                             </div>
                         </div>

@@ -2,6 +2,7 @@ import { apiFetch } from "../api";
 import AddPatient from '~/components/addpatient'
 import Pagination from '~/components/pagination'
 import ClinicNow from '~/components/clinicnow'
+import { DEPARTMENTS, STAGES, describeLevel, levelOptions } from '../school'
 import React from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import 'bootstrap-icons/font/bootstrap-icons.css';
@@ -15,6 +16,7 @@ interface Patient {
     level?: string
     sex?: string
     is_student?: number
+    strand?: string | null
     last_visit?: string | null
     allergies?: string | null
     frequent_visitor?: boolean
@@ -42,6 +44,7 @@ interface SearchResult {
 interface Filters {
     department: string
     level: string
+    stage: string
     sex: string
     patient_type: string
     visited_within: string
@@ -61,7 +64,7 @@ const EMPTY_RESULT: SearchResult = {
 }
 
 const NO_FILTERS: Filters = {
-    department: "", level: "", sex: "", patient_type: "", visited_within: "", flag: "",
+    department: "", level: "", stage: "", sex: "", patient_type: "", visited_within: "", flag: "",
     has_allergies: false, has_conditions: false, archived: false,
 }
 
@@ -220,10 +223,16 @@ export default function Patients() {
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Filter patients">
-                        <FilterSelect label="Department" value={filters.department} onChange={v => updateFilter("department", v)}
-                            options={[["", "All departments"], ...result.departments.map(d => [d, d] as [string, string])]} />
-                        <FilterSelect label="Level" value={filters.level} onChange={v => updateFilter("level", v)}
-                            options={[["", "All levels"], ...Array.from({ length: 12 }, (_, i) => [String(i + 1), `Level ${i + 1}`] as [string, string])]} />
+                        <FilterSelect label="Department" value={filters.department}
+                            onChange={v => { setFilters(current => ({ ...current, department: v, level: "", stage: "" })); setCurrentPage(1) }}
+                            options={[["", "All departments"], ...departmentChoices(result.departments).map(d => [d, d] as [string, string])]} />
+                        <FilterSelect label="Basic Education stage" value={filters.stage}
+                            onChange={v => { setFilters(current => ({ ...current, stage: v, department: v ? "" : current.department, level: "" })); setCurrentPage(1) }}
+                            options={[["", "All stages"], ...Object.entries(STAGES).map(([key, s]) => [key, s.label] as [string, string])]} />
+                        {filters.department && (
+                            <FilterSelect label="Level" value={filters.level} onChange={v => updateFilter("level", v)}
+                                options={[["", "All levels"], ...levelOptions(filters.department).flatMap(g => g.options).map(([n, label]) => [String(n), label] as [string, string])]} />
+                        )}
                         <FilterSelect label="Sex" value={filters.sex} onChange={v => updateFilter("sex", v)}
                             options={[["", "Any sex"], ["male", "Male"], ["female", "Female"]]} />
                         <FilterSelect label="Patient type" value={filters.patient_type} onChange={v => updateFilter("patient_type", v)}
@@ -293,9 +302,12 @@ export default function Patients() {
                                     </td>
                                     <td className="border-b border-neutral-200 px-5 py-3 text-sm text-neutral-400 last:border-none">{patient.department}</td>
                                     <td className="border-b border-neutral-200 px-5 py-3 last:border-none">
-                                        {patient.level && (
-                                            <span className="inline-block rounded-full border border-neutral-200 bg-neutral-50 px-2.5 py-1 text-xs">
-                                                {patient.level}
+                                        {patient.level !== null && patient.level !== undefined && patient.level !== "" && (
+                                            <span
+                                                title={describeLevel(patient.department, patient.level, patient.strand)}
+                                                className="inline-block whitespace-nowrap rounded-full border border-neutral-200 bg-neutral-50 px-2.5 py-1 text-xs"
+                                            >
+                                                {describeLevel(patient.department, patient.level, patient.strand, true)}
                                             </span>
                                         )}
                                     </td>
@@ -326,6 +338,11 @@ export default function Patients() {
             </div>
         </div>
     )
+}
+
+/** The school's departments, plus any other names still found in older records. */
+function departmentChoices(fromServer: string[]) {
+    return [...DEPARTMENTS, ...fromServer.filter(d => !DEPARTMENTS.includes(d))]
 }
 
 /** Type or scan a student ID: opens the patient ready for a visit, or starts a new patient. */

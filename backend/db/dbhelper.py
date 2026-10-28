@@ -7,7 +7,7 @@ WRITABLE_COLUMNS = {
               "birthday", "sex", "phone", "email", "username", "password"},
     "patients": {"patient_id", "is_student", "student_id", "department", "level", "first_name",
                  "middle_name", "last_name", "birthday", "sex", "email", "phone", "notes",
-                 "emergency_contact_name", "emergency_contact_phone", "archived"},
+                 "emergency_contact_name", "emergency_contact_phone", "archived", "strand"},
     "allergies": {"allergy_id", "allergy_name"},
     "conditions": {"condition_id", "condition_name"},
     "patient_allergies": {"patient_id", "allergy_id"},

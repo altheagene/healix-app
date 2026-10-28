@@ -1,5 +1,7 @@
 import { apiFetch } from "../api";
 import type { Allergy, Condition } from "../types";
+import DepartmentFields from "./departmentfields";
+import { isBasicEducation, stageOf } from "../school";
 import React from 'react';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
@@ -86,8 +88,11 @@ export default function AddPatient(props: any) {
 
     // Say which fields are missing, not just that something is.
     const missing = Object.entries(requiredFields)
-      .filter(([field]) => !studentData[field] || studentData[field].toString().trim() === '')
+      .filter(([field]) => studentData[field] === undefined || studentData[field] === null || studentData[field].toString().trim() === '')
       .map(([, label]) => label);
+    if (isStudent && isBasicEducation(studentData.department) && stageOf(studentData.level) === 'senior_high' && !studentData.strand) {
+      missing.push('Senior High strand');
+    }
     if (missing.length > 0) {
       showFlash(`Please fill in: ${missing.join(', ')}`, false);
       return;
@@ -364,31 +369,12 @@ export default function AddPatient(props: any) {
                   className={inputClasses}
                 />
               </div>
-              <div>
-                <label className={labelClasses}>Department</label>
-                <input
-                  type="text"
-                  value={studentData?.department || ''}
-                  onChange={(e) => setStudentData({ ...studentData, department: e.target.value })}
-                  className={inputClasses}
-                />
-              </div>
-              <div>
-                <label className={labelClasses}>Level</label>
-                <input
-                  type="number"
-                  min="1"
-                  max="12"
-                  value={studentData?.level || ''}
-                  onChange={(e) =>
-                    setStudentData({
-                      ...studentData,
-                      level: parseInt(e.target.value) <= 0 ? 1 : parseInt(e.target.value) > 12 ? 12 : parseInt(e.target.value)
-                    })
-                  }
-                  className={inputClasses}
-                />
-              </div>
+              <DepartmentFields
+                value={studentData || {}}
+                onChange={(patch) => setStudentData({ ...studentData, ...patch })}
+                inputClasses={inputClasses}
+                labelClasses={labelClasses}
+              />
             </div>}
           </div>
 

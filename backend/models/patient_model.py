@@ -5,6 +5,7 @@ from sqlite3 import Row, connect
 
 from db.connection import REJECTED_WRITE, database, getprocess, studentdb
 from db.dbhelper import addrecord, checked_columns, deletemedical, updaterecord
+from school import BASIC_EDUCATION, STAGES
 
 
 def find_student_record(table, **kwargs):
@@ -61,7 +62,7 @@ SORTS = {
 _PATIENT_ROWS = """
     SELECT
         p.patient_id, p.student_id, p.first_name, p.last_name, p.department, p.level, p.sex,
-        p.is_student, coalesce(p.archived, 0) AS archived,
+        p.is_student, p.strand, coalesce(p.archived, 0) AS archived,
         (SELECT MAX(v.visit_datetime) FROM visit_logs v WHERE v.patient_id = p.patient_id) AS last_visit,
         (SELECT COUNT(*) FROM visit_logs v
            WHERE v.patient_id = p.patient_id AND v.visit_datetime >= :frequent_since) AS recent_visits,
@@ -100,6 +101,10 @@ def search_patients(query="", page=1, page_size=10, filters=None, sort="patient_
     if filters.get("level") not in (None, ""):
         clauses.append("CAST(level AS TEXT) = :level")
         params["level"] = str(filters["level"])
+    if filters.get("stage") in STAGES:
+        levels = list(STAGES[filters["stage"]][1])
+        clauses.append(f"department = :basic_education AND level BETWEEN {levels[0]} AND {levels[-1]}")
+        params["basic_education"] = BASIC_EDUCATION
     if filters.get("sex") in ("male", "female"):
         clauses.append("lower(coalesce(sex, '')) LIKE :sex")
         params["sex"] = filters["sex"][0] + "%"
@@ -237,7 +242,7 @@ def patient_summary(patient_id):
     """What a referral letter or a parent needs: who, allergies, conditions, recent care."""
     patients = getprocess(
         """SELECT patient_id, student_id, first_name, middle_name, last_name, birthday, sex,
-                  department, level, phone, email, emergency_contact_name, emergency_contact_phone, notes
+                  department, level, strand, phone, email, emergency_contact_name, emergency_contact_phone, notes
            FROM patients WHERE patient_id = ?""",
         [patient_id],
     )

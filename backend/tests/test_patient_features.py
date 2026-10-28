@@ -7,6 +7,8 @@ TODAY = date.today()
 
 
 def _add_patient(client, h, student_id, first, last, **extra):
+    if "department" in extra:
+        extra.setdefault("level", 1)
     body = {"first_name": first, "middle_name": "M", "last_name": last, "birthday": "2005-01-01",
             "sex": "female", "student_id": student_id, "is_student": True,
             "emergency_contact_name": "Parent", "emergency_contact_phone": "0917", **extra}
@@ -43,12 +45,12 @@ def test_rows_carry_allergies_last_visit_and_flags(client, headers):
 
 def test_filters_combine(client, headers):
     nurse = headers("nurse")
-    a = _add_patient(client, nurse, "S-0101", "Cara", "Lim", department="Nursing", allergies=[1])
-    _add_patient(client, nurse, "S-0102", "Dan", "Lim", department="IT", sex="male")
+    a = _add_patient(client, nurse, "S-0101", "Cara", "Lim", department="College of Nursing", allergies=[1])
+    _add_patient(client, nurse, "S-0102", "Dan", "Lim", department="College of Computer Studies", sex="male")
     _visit(client, nurse, a, days_ago=2)
     ids = lambda result: {p["student_id"] for p in result["patients"]}  # noqa: E731
     assert ids(_search(client, nurse, has_allergies=1)) == {"S-0101"}
-    assert ids(_search(client, nurse, department="IT")) == {"S-0102"}
+    assert ids(_search(client, nurse, department="College of Computer Studies")) == {"S-0102"}
     assert ids(_search(client, nurse, sex="male")) == {"S-0102"}
     assert ids(_search(client, nurse, visited_within=7)) == {"S-0101"}
     assert ids(_search(client, nurse, q="lim", has_allergies=1)) == {"S-0101"}
