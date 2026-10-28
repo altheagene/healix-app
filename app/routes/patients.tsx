@@ -1,6 +1,7 @@
 import { apiFetch } from "../api";
 import AddPatient from '~/components/addpatient'
 import Pagination from '~/components/pagination'
+import ClinicNow from '~/components/clinicnow'
 import React from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import 'bootstrap-icons/font/bootstrap-icons.css';
@@ -162,6 +163,8 @@ export default function Patients() {
                 onExistingPatient={(id) => navigate(`/patientdetails/${id}?visit=new`)}
                 onNewPatient={openAddPatient}
             />
+
+            <ClinicNow />
 
             <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
                 <StatCard icon="bi-people" value={stats.total} label="Total Patients" />

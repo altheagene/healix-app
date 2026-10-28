@@ -1,5 +1,6 @@
 import { apiFetch } from "../api";
 import React from "react";
+import { DISPOSITIONS, NOTIFY_METHODS } from "../visitOutcomes";
 
 export default function ViewVisit(props: any) {
   const [visitInfo, setVisitInfo] = React.useState<any>(false);
@@ -50,6 +51,25 @@ export default function ViewVisit(props: any) {
               {visitInfo?.complaint && <p className="m-0"><span className="font-semibold text-slate-900">Complaint:</span> {visitInfo.complaint}</p>}
               {visitInfo?.assessment && <p className="m-0"><span className="font-semibold text-slate-900">Assessment:</span> {visitInfo.assessment}</p>}
               {visitInfo?.treatment && <p className="m-0"><span className="font-semibold text-slate-900">Treatment:</span> {visitInfo.treatment}</p>}
+            </div>
+          )}
+
+          {(visitInfo?.disposition || visitInfo?.time_in) && (
+            <div className="mt-5 space-y-1.5 border-t border-slate-100 pt-4 text-sm text-slate-700">
+              <p className="m-0"><span className="font-semibold text-slate-900">Outcome:</span>{" "}
+                {visitInfo?.disposition ? DISPOSITIONS[visitInfo.disposition] || visitInfo.disposition : "Still in the clinic"}
+                {visitInfo?.referred_to ? ` (${visitInfo.referred_to})` : ""}
+              </p>
+              {visitInfo?.time_in && (
+                <p className="m-0"><span className="font-semibold text-slate-900">In / out:</span> {visitInfo.time_in.slice(11, 16)}
+                  {visitInfo?.time_out ? ` to ${visitInfo.time_out.slice(11, 16)}` : ""}</p>
+              )}
+              {visitInfo?.picked_up_by && <p className="m-0"><span className="font-semibold text-slate-900">Picked up by:</span> {visitInfo.picked_up_by}</p>}
+              <p className="m-0"><span className="font-semibold text-slate-900">Parent notified:</span>{" "}
+                {visitInfo?.parent_notified
+                  ? `Yes, by ${(NOTIFY_METHODS[visitInfo.notified_method] || visitInfo.notified_method || "").toLowerCase()} at ${String(visitInfo.notified_at || "").slice(11, 16)}${visitInfo.notified_by ? ` (${visitInfo.notified_by})` : ""}`
+                  : "No"}
+              </p>
             </div>
           )}
 

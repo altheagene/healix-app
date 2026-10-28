@@ -22,7 +22,8 @@ WRITABLE_COLUMNS = {
     "services": {"service_id", "service_name"},
     "visit_logs": {"visit_id", "appointment_id", "patient_id", "service_id", "staff_id",
                    "visit_datetime", "weight", "temperature", "notes",
-                   "complaint", "assessment", "treatment"},
+                   "complaint", "assessment", "treatment", "time_in", "time_out", "disposition",
+                   "referred_to", "picked_up_by", "picked_up_at"},
 }
 
 # updaterecord always matches rows on this column, never on a key the client picked.

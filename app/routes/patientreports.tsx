@@ -113,6 +113,7 @@ import { apiFetch } from "../api";
 
 import React from "react"
 import { PieChart, Pie, Cell, Legend, Tooltip, ResponsiveContainer } from "recharts";
+import { DISPOSITIONS } from "../visitOutcomes";
 
 
 export default function PatientReports()
@@ -149,6 +150,11 @@ export default function PatientReports()
         entry.count += 1;
         complaintCounts.set(key, entry);
     });
+    // How visits ended: how many students went back to class, home, or on to a hospital.
+    const outcomeCounts = Object.keys(DISPOSITIONS).map(key => ({
+        key, label: DISPOSITIONS[key], count: visitLogs?.filter(v => v.disposition === key).length ?? 0,
+    }));
+    const outcomesRecorded = outcomeCounts.reduce((sum, o) => sum + o.count, 0);
     const topComplaints = [...complaintCounts.values()].sort((a, b) => b.count - a.count).slice(0, 8);
     const visitsWithoutComplaint = (visitLogs?.length ?? 0) - [...complaintCounts.values()].reduce((sum, c) => sum + c.count, 0);
      React.useEffect(() => {
@@ -300,6 +306,22 @@ export default function PatientReports()
                     <p className="m-0 mt-3 text-xs text-slate-500">
                         {visitsWithoutComplaint} visit{visitsWithoutComplaint === 1 ? "" : "s"} in this period had no complaint recorded.
                     </p>
+                )}
+            </section>
+
+            <section className="my-4 rounded-xl border border-slate-200 bg-white p-6" aria-labelledby="visit-outcomes">
+                <h3 id="visit-outcomes" className="m-0 mb-3 text-base font-semibold">Visit outcomes</h3>
+                {outcomesRecorded === 0 ? (
+                    <p className="m-0 text-sm text-slate-500">No outcomes recorded in this period.</p>
+                ) : (
+                    <dl className="m-0 grid grid-cols-2 gap-3 sm:grid-cols-5">
+                        {outcomeCounts.map(({ key, label, count }) => (
+                            <div key={key} className="rounded-lg border border-slate-100 px-3 py-2">
+                                <dt className="text-xs text-slate-500">{label}</dt>
+                                <dd className="m-0 text-xl font-semibold tabular-nums">{count}</dd>
+                            </div>
+                        ))}
+                    </dl>
                 )}
             </section>
 

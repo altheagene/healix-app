@@ -25,7 +25,7 @@ _EVERYONE_GET = (
     "/getmedicationdetails", "/getpatient", "/getpatientallergies",
     "/getpatientcliniclogs", "/getpatientconditions",
     "/getstaffandcateg", "/getstaffcategories", "/getstudent", "/getsupplydetails",
-    "/getvisitlogs", "/me", "/searchpatients", "/checkin", "/patienttimeline",
+    "/getvisitlogs", "/me", "/searchpatients", "/checkin", "/patienttimeline", "/clinicnow",
 )
 _EVERYONE_POST = (
     "/addallergies", "/addappointment", "/addbatch", "/addconditions", "/additem",
@@ -46,6 +46,9 @@ ROUTE_ROLES = {
     ("POST", "/addmedicationdetails"): CLINICIANS,
     ("POST", "/updatevisitlog"): CLINICIANS,
     ("POST", "/updatemedicationdetails"): CLINICIANS,
+    ("POST", "/visitoutcome"): CLINICIANS,
+    # Anyone at the front desk may log that a parent was called.
+    ("POST", "/notifyparent"): EVERYONE,
     # Printable summaries leave the system, and archiving hides a record: clinicians only.
     ("GET", "/patientsummary"): CLINICIANS,
     ("POST", "/archivepatient"): CLINICIANS,

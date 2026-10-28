@@ -11,6 +11,18 @@ COLUMNS = [
     ("visit_logs", "complaint", "TEXT"),
     ("visit_logs", "assessment", "TEXT"),
     ("visit_logs", "treatment", "TEXT"),
+    # How the visit ended and whether a parent was told. Visits saved before these
+    # existed have no time_in, so they never show as "still in the clinic".
+    ("visit_logs", "time_in", "TEXT"),
+    ("visit_logs", "time_out", "TEXT"),
+    ("visit_logs", "disposition", "TEXT"),
+    ("visit_logs", "referred_to", "TEXT"),
+    ("visit_logs", "picked_up_by", "TEXT"),
+    ("visit_logs", "picked_up_at", "TEXT"),
+    ("visit_logs", "parent_notified", "INTEGER NOT NULL DEFAULT 0"),
+    ("visit_logs", "notified_at", "TEXT"),
+    ("visit_logs", "notified_method", "TEXT"),
+    ("visit_logs", "notified_by", "TEXT"),
 ]
 
 

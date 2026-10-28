@@ -12,6 +12,15 @@ from models.visit_model import (
     replace_visit_medications,
     update_visit,
 )
+from models.visit_outcome_model import (
+    DISPOSITIONS,
+    NOTIFY_METHODS,
+    notify_parent,
+    now_local,
+    open_visits,
+    record_outcome,
+    visit_exists,
+)
 import validation
 from views.api_view import json_data, json_error, json_success
 from views.report_view import clinic_visits_csv
@@ -50,10 +59,60 @@ def add_visit_log_route():
     # Medicines are saved with the visit, so stock is never deducted for a visit that failed.
     medications = validation.medications(data.pop("medications", None))
     validation.require(data, "patient_id", "service_id", "staff_id", "visit_datetime")
+    # The student is in the clinic from now until an outcome is recorded.
+    data.setdefault("time_in", data["visit_datetime"])
+    if data.get("disposition"):
+        _check_outcome(data)
+        data.setdefault("time_out", now_local())
+    else:
+        for key in ("disposition", "referred_to", "picked_up_by", "picked_up_at", "time_out"):
+            data.pop(key, None)
     visit_id = add_visit_log(medications=medications, **data)
     if not visit_id:
         return json_error("Could not save the visit", 400)
     return jsonify({"success": True, "visit_id": visit_id})
+
+
+def _check_outcome(data):
+    if data.get("disposition") not in DISPOSITIONS:
+        raise validation.ValidationError(f"disposition must be one of: {', '.join(DISPOSITIONS)}")
+    if data["disposition"] in ("referred", "emergency") and not (data.get("referred_to") or "").strip():
+        raise validation.ValidationError("Say where the student was referred or taken")
+    if data["disposition"] == "sent_home" and not (data.get("picked_up_by") or "").strip():
+        raise validation.ValidationError("Say who picked the student up")
+
+
+@visit_bp.route("/clinicnow", methods=["GET"])
+def clinic_now_route():
+    return json_data(open_visits())
+
+
+@visit_bp.route("/visitoutcome", methods=["POST"])
+def visit_outcome_route():
+    data = request.get_json() or {}
+    validation.require(data, "visit_id", "disposition")
+    _check_outcome(data)
+    if not visit_exists(data["visit_id"]):
+        return json_error("No such visit", 404)
+    return json_success(record_outcome(
+        data["visit_id"],
+        data["disposition"],
+        time_out=data.get("time_out"),
+        referred_to=(data.get("referred_to") or "").strip() or None,
+        picked_up_by=(data.get("picked_up_by") or "").strip() or None,
+        picked_up_at=data.get("picked_up_at"),
+    ))
+
+
+@visit_bp.route("/notifyparent", methods=["POST"])
+def notify_parent_route():
+    data = request.get_json() or {}
+    validation.require(data, "visit_id", "method")
+    if data["method"] not in NOTIFY_METHODS:
+        raise validation.ValidationError(f"method must be one of: {', '.join(NOTIFY_METHODS)}")
+    if not visit_exists(data["visit_id"]):
+        return json_error("No such visit", 404)
+    return json_success(notify_parent(data["visit_id"], data["method"], request.staff.get("username")))
 
 
 @visit_bp.route("/addmedicationdetails", methods=["POST"])

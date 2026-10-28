@@ -184,6 +184,7 @@ def patient_timeline(patient_id):
     visits = getprocess(
         """
         SELECT v.visit_id, v.visit_datetime AS at, v.notes, v.complaint, v.assessment, v.treatment,
+               v.disposition, v.referred_to, v.picked_up_by, v.parent_notified, v.notified_method, v.time_out,
                v.Weight AS weight, v.Temperature AS temperature, s.service_name,
                st.first_name || ' ' || st.last_name AS staff_name,
                (SELECT group_concat(m.quantity || ' x ' || su.supply_name, ', ')

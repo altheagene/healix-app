@@ -62,6 +62,8 @@ ACTION_BY_PATH = {
     "/patienttimeline": "patient_view",
     "/patientsummary": "patient_summary_export",
     "/archivepatient": "patient_archive",
+    "/visitoutcome": "visit_outcome",
+    "/notifyparent": "parent_notified",
 }
 
 # Reading someone's health record is logged too, not only changes to it.
@@ -171,7 +173,7 @@ def resource_for(path):
         return "staff"
     if any(part in name for part in ("patient", "allerg", "condition", "student")):
         return "patient"
-    if any(part in name for part in ("visit", "clinic", "medication")):
+    if any(part in name for part in ("visit", "clinic", "medication", "notifyparent")):
         return "visit"
     if any(part in name for part in ("batch", "item", "supply", "stock", "inv", "medicine")):
         return "inventory"

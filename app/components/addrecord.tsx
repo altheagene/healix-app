@@ -1,6 +1,7 @@
 import { apiFetch } from "../api";
 import { useParams } from "react-router"
 import React from "react"
+import { DISPOSITIONS, LEAVES_SCHOOL, localDateTime } from "../visitOutcomes"
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
 export default function AddRecord(props:any){
@@ -16,13 +17,18 @@ export default function AddRecord(props:any){
         appointment_id: null,
         weight: '',
         temperature: '',
-        visit_datetime : now.toISOString().replace('T', ' ').slice(0, 19),
+        // Local clinic time; toISOString() gave UTC, hours off from the wall clock.
+        visit_datetime : localDateTime(now),
         service_id: 1,
         staff_id: 0,
         notes: '',
         complaint: '',
         assessment: '',
         treatment: '',
+        // Empty means the student stays in the clinic and shows on the board.
+        disposition: '',
+        referred_to: '',
+        picked_up_by: '',
     })
     const [medicines, setMedicine] = React.useState<any[]>();
     const [medications, setMedications] = React.useState<{ supply_id: number | null; auto_deduct: false | true; quantity: number }[]>([]);
@@ -155,7 +161,8 @@ export default function AddRecord(props:any){
                         <label className={labelClasses}>Date <span className="text-red-500">*</span></label>
                         <input
                             type="date"
-                            value={new Date().toISOString().split("T")[0]}
+                            value={recordDetails.visit_datetime.slice(0, 10)}
+                            readOnly
                             className={inputClasses}
                         />
                     </div>
@@ -332,6 +339,37 @@ export default function AddRecord(props:any){
                                 <option key={person.staff_id} value={person.staff_id}>{person.first_name} {person.last_name}</option>
                             ))}
                         </select>
+                    </div>
+
+                    <div>
+                        <label className={labelClasses} htmlFor="disposition">How did the visit end?</label>
+                        <select
+                            id="disposition"
+                            value={recordDetails.disposition}
+                            onChange={(e) => setRecordDetails({...recordDetails, disposition: e.target.value})}
+                            className={inputClasses}
+                        >
+                            <option value="">Still in the clinic (close it later)</option>
+                            {Object.entries(DISPOSITIONS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                        </select>
+                        {(recordDetails.disposition === 'referred' || recordDetails.disposition === 'emergency') && (
+                            <input
+                                aria-label={recordDetails.disposition === 'emergency' ? 'Taken to' : 'Referred to'}
+                                placeholder={recordDetails.disposition === 'emergency' ? 'Taken to, e.g. City General Hospital' : 'Referred to, e.g. dentist, guidance office'}
+                                value={recordDetails.referred_to}
+                                onChange={(e) => setRecordDetails({...recordDetails, referred_to: e.target.value})}
+                                className={`${inputClasses} mt-2`}
+                            />
+                        )}
+                        {LEAVES_SCHOOL.has(recordDetails.disposition) && (
+                            <input
+                                aria-label="Picked up by"
+                                placeholder="Picked up by, e.g. Maria Cruz (mother)"
+                                value={recordDetails.picked_up_by}
+                                onChange={(e) => setRecordDetails({...recordDetails, picked_up_by: e.target.value})}
+                                className={`${inputClasses} mt-2`}
+                            />
+                        )}
                     </div>
 
                     <div>
