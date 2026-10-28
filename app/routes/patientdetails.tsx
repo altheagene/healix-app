@@ -9,6 +9,8 @@ import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, X
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import user from '../images/user.png'
 import EditRecord from '~/components/editrecord'
+import { VisitOutcomeDialog } from '~/components/visitoutcome'
+import { DISPOSITIONS, DISPOSITION_SHORT, DISPOSITION_TONES, NOTIFY_METHODS } from '../visitOutcomes'
 
 export default function PatientDetails(){
     const role = localStorage.getItem('role');
@@ -23,6 +25,7 @@ export default function PatientDetails(){
     const [showEditRecord, setShowEditRecord] = React.useState(false)
     const [recordToEdit, _setRecordToEdit] = React.useState()
     const [visitChosen, setVisitChosen] = React.useState(false)
+    const [closingVisit, setClosingVisit] = React.useState<any>(null)
 
     const [studentData, setStudentData] = React.useState<any>()
     const [allergies, setAllergies] = React.useState<any[]>()
@@ -106,19 +109,28 @@ export default function PatientDetails(){
             {showEditRecord && <EditRecord record={recordToEdit} hideForm={() => setShowEditRecord(false)} refetch={refetch}/>}
             {showVisit && visitChosen? <ViewVisit visit={visitChosen} hideForm={() => setShowVisit(false)}/> : null}
             {showEdit ? <EditPatient studentData={studentData} allergies={allergies} conditions={conditions} refetch={refetch} hideForm={() => setShowEdit(false)}/> : null}
+            {closingVisit && (
+                <VisitOutcomeDialog
+                    visit={{ ...closingVisit, first_name: studentData?.first_name, last_name: studentData?.last_name,
+                             emergency_contact_name: studentData?.emergency_contact_name,
+                             emergency_contact_phone: studentData?.emergency_contact_phone }}
+                    onClose={() => setClosingVisit(null)}
+                    onDone={() => { setClosingVisit(null); refetch() }}
+                />
+            )}
             {showAddRecord ? <AddRecord hideForm={closeAddRecord} refetch={refetch} allergies={allergies} /> : null}
 
-            <div className="mb-6 flex items-start justify-between gap-4">
+            <div className="mb-6 flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
                 <div>
                     <button
                         onClick={() => navigate('/patients')}
-                        className="inline-flex items-center gap-1.5 border-none bg-transparent p-0 text-sm text-[#7b8c87] transition hover:text-[#0b3d3a]"
+                        className="inline-flex items-center gap-1.5 whitespace-nowrap border-none bg-transparent p-0 text-sm text-[#7b8c87] transition hover:text-[#0b3d3a]"
                     >
-                        <i className="bi bi-arrow-left" /> Back to student records
+                        <i className="bi bi-arrow-left" /> Back to patients
                     </button>
-                    <h1 className="mt-2 text-[2rem] font-semibold tracking-tight">Patient Details</h1>
+                    <h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-[2rem]">Patient Details</h1>
                 </div>
-                <div className="flex items-center gap-3 pt-1">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 sm:pt-1">
                     {isClinician && (
                         <>
                             <button
@@ -140,12 +152,12 @@ export default function PatientDetails(){
                     )}
                     <button
                         type="button"
-                        className="flex h-9 w-9 items-center justify-center rounded-full border-none bg-transparent text-[#7b8c87]"
+                        className="hidden h-9 w-9 items-center justify-center rounded-full border-none bg-transparent text-[#7b8c87] sm:flex"
                         title="Notifications"
                     >
                         <i className="bi bi-bell" />
                     </button>
-                    <img src={user} alt="" className="h-8 w-8 rounded-full object-cover" />
+                    <img src={user} alt="" className="hidden h-8 w-8 rounded-full object-cover sm:block" />
                     <div className="hidden sm:block">
                         <p className="text-sm font-medium leading-none">{userName || "Staff"}</p>
                         {userRole && <p className="mt-1 text-xs text-[#7b8c87]">{userRole}</p>}
@@ -178,163 +190,168 @@ export default function PatientDetails(){
                 </div>
             )}
 
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-                <div className="flex flex-col gap-4">
-                    <div className="rounded-3xl bg-white p-6">
-                        <div className="flex flex-col items-center text-center">
-                            <img
-                                src={user}
-                                className="h-24 w-24 rounded-2xl object-cover"
-                            />
-                            <p className="mt-4 text-base font-semibold">
-                                {studentData?.first_name} {studentData?.middle_name} {studentData?.last_name}
-                            </p>
-                            <p className="mt-1 text-sm text-[#7b8c87]">{studentData?.department}</p>
-                            <button
-                                onClick={() => setShowEdit(true)}
-                                className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#7dcf8a] px-6 py-2 text-sm font-semibold text-[#0b3d3a] transition hover:bg-[#6bc37a]"
-                            >
-                                Edit
-                            </button>
+            <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
+                {/* LEFT PANEL: who the patient is, what to watch for, who to call */}
+                <aside className="flex flex-col gap-4 lg:sticky lg:top-4">
+                    <section className="rounded-3xl bg-white p-5">
+                        <div className="flex items-center gap-4">
+                            <img src={user} alt="" className="h-16 w-16 flex-shrink-0 rounded-2xl object-cover" />
+                            <div className="min-w-0">
+                                <p className="m-0 break-words text-base font-semibold">
+                                    {studentData?.first_name} {studentData?.middle_name} {studentData?.last_name}
+                                </p>
+                                <p className="m-0 mt-0.5 truncate text-sm text-[#7b8c87]">
+                                    {[studentData?.department, studentData?.level && `Level ${studentData.level}`].filter(Boolean).join(' · ') || (studentData?.is_student ? 'Student' : 'Staff or visitor')}
+                                </p>
+                            </div>
                         </div>
-                    </div>
+                        <button
+                            onClick={() => setShowEdit(true)}
+                            className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full border border-[#dfe7e2] bg-white px-4 py-2 text-sm font-semibold text-[#0b3d3a] transition hover:bg-[#f3f8f4]"
+                        >
+                            <i className="bi bi-pencil" aria-hidden="true" /> Edit details
+                        </button>
+                    </section>
 
-                    <div className="rounded-3xl bg-white p-6">
-                        <p className="mb-4 text-sm font-semibold">Information</p>
-                        <dl className="space-y-3 text-sm">
+                    <section className="rounded-3xl bg-white p-5" aria-labelledby="info-heading">
+                        <h2 id="info-heading" className="m-0 mb-3 text-sm font-semibold">Information</h2>
+                        <dl className="m-0 space-y-2.5 text-sm">
+                            <InfoRow label="ID number" value={studentData?.student_id} />
                             <InfoRow label="Sex" value={studentData?.sex} />
-                            <InfoRow label="Level" value={studentData?.level} />
-                            <InfoRow label="ID Number" value={studentData?.student_id} />
+                            <InfoRow label="Birthday" value={birthdayLabel(studentData?.birthday)} />
                             <InfoRow label="Email" value={studentData?.email} />
                             <InfoRow label="Phone" value={studentData?.phone} />
                         </dl>
-                    </div>
-                </div>
+                    </section>
 
-                <div className="flex flex-col gap-4 lg:col-span-2">
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                        <StatCard icon="bi-heart-pulse" iconClass="text-red-400" label="Allergies" value={allergies?.length ?? 0} />
-                        <StatCard icon="bi-clipboard2-pulse" iconClass="text-sky-400" label="Conditions" value={conditions?.length ?? 0} />
-                        <StatCard icon="bi-calendar-check" iconClass="text-amber-400" label="Total Visits" value={clinicLogs?.length ?? 0} />
-                    </div>
-
-                    <div className="rounded-3xl bg-white p-6">
-                        <p className="mb-4 text-sm font-semibold">Medical Information</p>
-                        <div className="space-y-4">
-                            <div>
-                                <p className="mb-2 text-xs text-[#7b8c87]">Allergies</p>
-                                <div className="flex flex-wrap gap-1.5">
-                                    {allergies && allergies.length > 0 ? allergies.map((allergy, idx) => (
-                                        <span key={idx} className="rounded-full bg-red-50 px-2.5 py-1 text-xs font-medium text-red-600">
-                                            {allergy.allergy_name}
-                                        </span>
-                                    )) : (
-                                        <span className="text-sm text-[#9aaea8]">None recorded</span>
-                                    )}
-                                </div>
-                            </div>
-                            <div>
-                                <p className="mb-2 text-xs text-[#7b8c87]">Conditions</p>
-                                <div className="flex flex-wrap gap-1.5">
-                                    {conditions && conditions.length > 0 ? conditions.map((condition, idx) => (
-                                        <span key={idx} className="rounded-full bg-sky-50 px-2.5 py-1 text-xs font-medium text-sky-600">
-                                            {condition.condition_name}
-                                        </span>
-                                    )) : (
-                                        <span className="text-sm text-[#9aaea8]">None recorded</span>
-                                    )}
-                                </div>
-                            </div>
-                            <p className="text-sm text-[#5b716d]">
-                                <span className="font-medium text-[#0b3d3a]">Notes: </span>
-                                {studentData?.notes || 'None'}
-                            </p>
+                    <section className="rounded-3xl bg-white p-5" aria-labelledby="medical-heading">
+                        <h2 id="medical-heading" className="m-0 mb-3 text-sm font-semibold">Medical</h2>
+                        <p className="m-0 mb-1.5 text-xs text-[#7b8c87]">Allergies</p>
+                        <div className="mb-4 flex flex-wrap gap-1.5">
+                            {allergies && allergies.length > 0 ? allergies.map((allergy, idx) => (
+                                <span key={idx} className="rounded-full bg-red-50 px-2.5 py-1 text-xs font-medium text-red-600">
+                                    {allergy.allergy_name}
+                                </span>
+                            )) : (
+                                <span className="text-sm text-[#9aaea8]">None recorded</span>
+                            )}
                         </div>
-                    </div>
-
-                    <div className="rounded-3xl bg-white p-6">
-                        <p className="mb-4 text-sm font-semibold">Emergency Contact</p>
-                        <div className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
-                            <InfoRow label="Name" value={studentData?.emergency_contact_name} stacked />
-                            <InfoRow label="Contact no" value={studentData?.emergency_contact_phone} stacked />
+                        <p className="m-0 mb-1.5 text-xs text-[#7b8c87]">Conditions</p>
+                        <div className="mb-4 flex flex-wrap gap-1.5">
+                            {conditions && conditions.length > 0 ? conditions.map((condition, idx) => (
+                                <span key={idx} className="rounded-full bg-sky-50 px-2.5 py-1 text-xs font-medium text-sky-600">
+                                    {condition.condition_name}
+                                </span>
+                            )) : (
+                                <span className="text-sm text-[#9aaea8]">None recorded</span>
+                            )}
                         </div>
+                        <p className="m-0 mb-1.5 text-xs text-[#7b8c87]">Notes</p>
+                        <p className="m-0 whitespace-pre-line text-sm text-[#5b716d]">{studentData?.notes || 'None'}</p>
+                    </section>
+
+                    <section className="rounded-3xl bg-white p-5" aria-labelledby="contact-heading">
+                        <h2 id="contact-heading" className="m-0 mb-3 text-sm font-semibold">Emergency contact</h2>
+                        {studentData?.emergency_contact_name || studentData?.emergency_contact_phone ? (
+                            <>
+                                <p className="m-0 text-sm font-medium">{studentData?.emergency_contact_name || 'Name not recorded'}</p>
+                                <p className="m-0 mt-0.5 text-sm text-[#5b716d]">{studentData?.emergency_contact_phone || 'No phone number'}</p>
+                            </>
+                        ) : (
+                            <p className="m-0 text-sm text-[#9aaea8]">None recorded</p>
+                        )}
                         {studentData?.emergency_contact_phone && (
                             <a
                                 href={`tel:${String(studentData.emergency_contact_phone).replace(/[^\d+]/g, '')}`}
-                                className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#0b3d3a] px-4 py-2 text-sm font-semibold text-white no-underline transition hover:bg-[#082e2c]"
+                                className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#0b3d3a] px-4 py-2 text-sm font-semibold text-white no-underline transition hover:bg-[#082e2c]"
                             >
                                 <i className="bi bi-telephone-fill" aria-hidden="true" />
                                 Call {studentData?.emergency_contact_name || 'emergency contact'}
                             </a>
                         )}
+                    </section>
+                </aside>
+
+                {/* MAIN: care history */}
+                <div className="flex min-w-0 flex-col gap-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                        <StatCard icon="bi-calendar-check" iconClass="text-amber-500" label="Total visits" value={clinicLogs?.length ?? 0} />
+                        <StatCard icon="bi-clock-history" iconClass="text-teal-600" label="Last visit" value={lastVisitLabel(clinicLogs)} />
+                        <StatCard icon="bi-arrow-repeat" iconClass="text-sky-500" label="Visits in the last 30 days" value={visitsWithinDays(clinicLogs, 30)} />
                     </div>
-                </div>
-            </div>
 
-            <div className="mt-4 rounded-3xl bg-white">
-                <div className="flex items-center justify-between px-6 py-5">
-                    <h2 className="m-0 text-sm font-semibold">Clinic Visits</h2>
-                    {isClinician && (
-                        <button
-                            onClick={() => setShowAddRecord(true)}
-                            className="inline-flex items-center gap-2 rounded-full bg-[#7dcf8a] px-4 py-2 text-sm font-semibold text-[#0b3d3a] transition hover:bg-[#6bc37a]"
-                        >
-                            <i className="bi bi-plus-lg" /> Add Record
-                        </button>
-                    )}
-                </div>
-
-                <div className="overflow-x-auto px-2 pb-2">
-                    <table className="w-full border-collapse">
-                        <thead>
-                            <tr>
-                                <th className="px-5 py-3 text-left text-xs font-medium text-[#9aaea8]">Date</th>
-                                <th className="px-5 py-3 text-left text-xs font-medium text-[#9aaea8]">Reason</th>
-                                <th className="px-5 py-3 text-left text-xs font-medium text-[#9aaea8]">Attending</th>
-                                <th className="px-5 py-3 text-left text-xs font-medium text-[#9aaea8]">Notes</th>
-                                <th className="px-5 py-3 text-right text-xs font-medium text-[#9aaea8]">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {clinicLogs && clinicLogs.length > 0 ? clinicLogs.map((log, idx) => (
-                                <tr key={idx}>
-                                    <td className="border-t border-[#eef2ef] px-5 py-3.5 text-sm text-[#5b716d]">
-                                        {log.visit_datetime}
-                                    </td>
-                                    <td className="border-t border-[#eef2ef] px-5 py-3.5">
-                                        <span className="inline-flex items-center rounded-full bg-[#eaf6a8] px-2.5 py-1 text-xs font-medium text-[#0b3d3a]">
-                                            {log.service_name}
-                                        </span>
-                                        {log.complaint && <p className="m-0 mt-1 text-xs text-[#5b716d]">{log.complaint}</p>}
-                                    </td>
-                                    <td className="border-t border-[#eef2ef] px-5 py-3.5 text-sm font-medium">
-                                        {log.staff_name}
-                                    </td>
-                                    <td className="border-t border-[#eef2ef] px-5 py-3.5 text-sm text-[#5b716d]">
-                                        {log.notes}
-                                    </td>
-                                    <td className="border-t border-[#eef2ef] px-5 py-3.5 text-right">
-                                        <button
-                                            onClick={() => { setShowVisit(true); setVisitChosen(log); }}
-                                            className="inline-flex h-8 w-8 items-center justify-center rounded-full border-none bg-transparent text-[#7b8c87] transition hover:bg-[#f3f8f4] hover:text-[#0b3d3a]"
-                                        >
-                                            <i className="bi bi-eye" />
-                                        </button>
-                                    </td>
-                                </tr>
-                            )) : (
-                                <tr>
-                                    <td colSpan={5} className="border-t border-[#eef2ef] px-5 py-12 text-center">
-                                        <p className="text-sm text-[#9aaea8]">No Clinic Records found</p>
-                                    </td>
-                                </tr>
+                    <section className="rounded-3xl bg-white" aria-labelledby="visits-heading">
+                        <div className="flex items-center justify-between px-6 py-5">
+                            <h2 id="visits-heading" className="m-0 text-sm font-semibold">Clinic visits</h2>
+                            {isClinician && (
+                                <button
+                                    onClick={() => setShowAddRecord(true)}
+                                    className="inline-flex items-center gap-2 rounded-full bg-[#7dcf8a] px-4 py-2 text-sm font-semibold text-[#0b3d3a] transition hover:bg-[#6bc37a]"
+                                >
+                                    <i className="bi bi-plus-lg" /> Add record
+                                </button>
                             )}
-                        </tbody>
-                    </table>
+                        </div>
+
+                        <div className="overflow-x-auto px-2 pb-2">
+                            <table className="w-full border-collapse">
+                                <thead>
+                                    <tr>
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-[#9aaea8]">Date</th>
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-[#9aaea8]">Reason</th>
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-[#9aaea8]">Attending</th>
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-[#9aaea8]">Outcome</th>
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-[#9aaea8]">Notes</th>
+                                        <th className="px-4 py-3 text-right text-xs font-medium text-[#9aaea8]"><span className="sr-only">Actions</span></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {clinicLogs && clinicLogs.length > 0 ? [...clinicLogs].reverse().map((log, idx) => (
+                                        <tr key={idx} className="align-top">
+                                            <td className="whitespace-nowrap border-t border-[#eef2ef] px-4 py-3.5 text-sm">
+                                                <span className="block font-medium">{String(log.visit_datetime).slice(0, 10)}</span>
+                                                <span className="block text-xs text-[#7b8c87]">{String(log.visit_datetime).slice(11, 16)}</span>
+                                            </td>
+                                            <td className="border-t border-[#eef2ef] px-4 py-3.5">
+                                                <span className="inline-flex items-center rounded-full bg-[#eaf6a8] px-2.5 py-1 text-xs font-medium text-[#0b3d3a]">
+                                                    {log.service_name}
+                                                </span>
+                                                {log.complaint && <p className="m-0 mt-1 text-xs text-[#5b716d]">{log.complaint}</p>}
+                                            </td>
+                                            <td className="border-t border-[#eef2ef] px-4 py-3.5 text-sm font-medium">
+                                                {log.staff_name}
+                                            </td>
+                                            <td className="border-t border-[#eef2ef] px-4 py-3.5 text-sm">
+                                                <OutcomeCell log={log} canClose={isClinician} onClose={() => setClosingVisit(log)} />
+                                            </td>
+                                            <td className="max-w-[16rem] border-t border-[#eef2ef] px-4 py-3.5 text-sm text-[#5b716d]">
+                                                <span className="line-clamp-2" title={log.notes || undefined}>{log.notes}</span>
+                                            </td>
+                                            <td className="border-t border-[#eef2ef] px-4 py-3.5 text-right">
+                                                <button
+                                                    onClick={() => { setShowVisit(true); setVisitChosen(log); }}
+                                                    aria-label={`View visit on ${String(log.visit_datetime).slice(0, 10)}`}
+                                                    className="inline-flex h-8 w-8 items-center justify-center rounded-full border-none bg-transparent text-[#7b8c87] transition hover:bg-[#f3f8f4] hover:text-[#0b3d3a]"
+                                                >
+                                                    <i className="bi bi-eye" aria-hidden="true" />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    )) : (
+                                        <tr>
+                                            <td colSpan={6} className="border-t border-[#eef2ef] px-5 py-12 text-center">
+                                                <p className="text-sm text-[#9aaea8]">No clinic visits yet</p>
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+
+                    <PatientTimeline timeline={timeline} />
                 </div>
             </div>
-
-            <PatientTimeline timeline={timeline} />
         </div>
     )
 }
@@ -352,6 +369,41 @@ interface TimelineEvent {
     status?: string
     action?: string
     username?: string
+    disposition?: string
+    referred_to?: string
+    picked_up_by?: string
+    parent_notified?: number
+    notified_method?: string
+}
+
+/** How a visit ended, or "In clinic" with a Close button while it is still open. */
+function OutcomeCell({ log, canClose, onClose }: { log: any; canClose: boolean; onClose: () => void }) {
+    if (!log.disposition) {
+        if (!log.time_in) return <span className="text-xs text-[#9aaea8]">Not recorded</span>
+        return (
+            <span className="inline-flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-800">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" aria-hidden="true" /> In clinic
+                </span>
+                {canClose && (
+                    <button type="button" onClick={onClose} className="text-xs font-semibold text-[#0b3d3a] underline">Close visit</button>
+                )}
+            </span>
+        )
+    }
+    return (
+        <span className="inline-flex flex-col gap-0.5">
+            <span
+                title={DISPOSITIONS[log.disposition] || log.disposition}
+                className={`inline-flex w-fit items-center whitespace-nowrap rounded-full border px-2.5 py-1 text-xs font-medium ${DISPOSITION_TONES[log.disposition] || ''}`}
+            >
+                {DISPOSITION_SHORT[log.disposition] || log.disposition}
+            </span>
+            {log.referred_to && <span className="text-xs text-[#5b716d]">{log.referred_to}</span>}
+            {log.picked_up_by && <span className="text-xs text-[#5b716d]">Picked up by {log.picked_up_by}</span>}
+            {log.parent_notified ? <span className="text-xs text-emerald-700">Parent notified</span> : null}
+        </span>
+    )
 }
 
 interface Timeline {
@@ -376,8 +428,8 @@ function PatientTimeline({ timeline }: { timeline: Timeline }) {
     const hasTemperature = timeline.vitals.some(v => v.temperature !== null)
 
     return (
-        <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-5">
-            <div className="rounded-3xl bg-white p-6 lg:col-span-2">
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-5">
+            <div className="rounded-3xl bg-white p-6 xl:col-span-2">
                 <h2 className="m-0 mb-4 text-sm font-semibold">Vitals over time</h2>
                 {timeline.vitals.length >= 2 ? (
                     <div className="h-56" role="img" aria-label={`Weight and temperature across ${timeline.vitals.length} visits`}>
@@ -401,7 +453,7 @@ function PatientTimeline({ timeline }: { timeline: Timeline }) {
                 )}
             </div>
 
-            <div className="rounded-3xl bg-white p-6 lg:col-span-3">
+            <div className="rounded-3xl bg-white p-6 xl:col-span-3">
                 <h2 className="m-0 mb-4 text-sm font-semibold">Timeline</h2>
                 {events.length === 0 ? (
                     <p className="text-sm text-[#9aaea8]">Nothing recorded yet.</p>
@@ -424,6 +476,14 @@ function PatientTimeline({ timeline }: { timeline: Timeline }) {
                                         {event.treatment && <p className="m-0 text-[#5b716d]">Treatment: {event.treatment}</p>}
                                         {event.medicines && <p className="m-0 text-[#5b716d]">Medicines: {event.medicines}</p>}
                                         {event.notes && <p className="m-0 text-[#5b716d]">{event.notes}</p>}
+                                        {event.disposition && (
+                                            <p className="m-0 text-[#5b716d]">
+                                                Outcome: {DISPOSITIONS[event.disposition] || event.disposition}
+                                                {event.referred_to && ` (${event.referred_to})`}
+                                                {event.picked_up_by && `, picked up by ${event.picked_up_by}`}
+                                                {event.parent_notified ? ` · parent notified${event.notified_method ? ` by ${(NOTIFY_METHODS[event.notified_method] || event.notified_method).toLowerCase()}` : ''}` : ''}
+                                            </p>
+                                        )}
                                     </div>
                                 )}
                                 {event.type === 'appointment' && (
@@ -449,6 +509,30 @@ function PatientTimeline({ timeline }: { timeline: Timeline }) {
     )
 }
 
+function birthdayLabel(birthday?: string) {
+    if (!birthday) return undefined
+    const born = new Date(`${birthday}T00:00:00`)
+    if (Number.isNaN(born.getTime())) return birthday
+    const today = new Date()
+    let age = today.getFullYear() - born.getFullYear()
+    if (today < new Date(today.getFullYear(), born.getMonth(), born.getDate())) age -= 1
+    return `${birthday} (${age})`
+}
+
+function lastVisitLabel(logs?: any[]) {
+    if (!logs || logs.length === 0) return 'Never'
+    const latest = logs.map(log => String(log.visit_datetime)).sort().at(-1) as string
+    const days = Math.floor((Date.now() - new Date(latest.replace(' ', 'T')).getTime()) / 86_400_000)
+    if (days <= 0) return 'Today'
+    if (days === 1) return 'Yesterday'
+    return days < 30 ? `${days} days ago` : latest.slice(0, 10)
+}
+
+function visitsWithinDays(logs: any[] | undefined, days: number) {
+    const since = Date.now() - days * 86_400_000
+    return (logs ?? []).filter(log => new Date(String(log.visit_datetime).replace(' ', 'T')).getTime() >= since).length
+}
+
 function InfoRow({ label, value, stacked }: { label: string; value?: string | number; stacked?: boolean }) {
     return (
         <div className={stacked ? "space-y-1" : "flex items-center justify-between gap-3"}>
@@ -458,7 +542,7 @@ function InfoRow({ label, value, stacked }: { label: string; value?: string | nu
     )
 }
 
-function StatCard({ icon, iconClass, label, value }: { icon: string; iconClass: string; label: string; value: number }) {
+function StatCard({ icon, iconClass, label, value }: { icon: string; iconClass: string; label: string; value: number | string }) {
     return (
         <div className="rounded-3xl bg-white px-5 py-6 text-center">
             <i className={`bi ${icon} text-xl ${iconClass}`} />
