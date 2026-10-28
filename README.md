@@ -78,19 +78,57 @@ The databases hold student health records and staff passwords. They are listed i
 `.gitignore` and must never be committed. To share the table structure, update
 `backend/db/schema.sql` instead.
 
-## Tests
+## Tests and checks
 
 ```bash
 cd backend
-python -m pytest
+python -m pytest          # tests
+python -m ruff check .    # lint
 ```
 
 The tests build a throwaway database from `db/schema.sql` with made-up data. They never
 touch `db/clinic.db`.
 
+For the frontend:
+
+```bash
+npm run typecheck
+npm run lint
+```
+
+CI runs all of these, plus a production build, on every push.
+
+## Backups
+
+```bash
+cd backend
+python backup_db.py
+```
+
+This copies the database to `backend/backups/` while the server keeps running, and keeps
+the 14 newest copies (`HEALIX_BACKUPS_TO_KEEP` changes that; `HEALIX_BACKUP_DIR` changes
+where they go). Run it daily with Windows Task Scheduler or cron, and copy the backups
+somewhere other than the server itself. Backups contain patient data: store them as
+carefully as the database.
+
 ## Deploying
 
-- **Backend:** `backend/Procfile` runs the API with waitress. Set `HEALIX_SECRET`,
-  `HEALIX_ALLOWED_ORIGINS` and, behind a proxy, `HEALIX_TRUST_PROXY=1`. Keep the database
-  on persistent storage and point `HEALIX_DB` at it.
-- **Frontend:** build with `VITE_API_URL` set, then run `npm start`, or use the `Dockerfile`.
+### Frontend: Vercel
+
+Import the repository in Vercel; it detects React Router. Set `VITE_API_URL` to the API's
+public address in the project's environment variables, then deploy. The Vercel preset in
+`react-router.config.ts` switches on automatically during Vercel builds.
+
+### Backend: a host with a persistent disk
+
+The API keeps its data in a SQLite file, so it needs a server whose disk survives
+restarts. Vercel's Python functions do not have one: the database would be lost.
+Any small VM or a platform with persistent volumes works (for example Railway or Render
+with a volume, or Fly.io). `backend/Procfile` starts it with waitress. Set:
+
+- `HEALIX_SECRET`, a long random value
+- `HEALIX_ALLOWED_ORIGINS`, your Vercel URL, e.g. `https://healix.vercel.app`
+- `HEALIX_TRUST_PROXY=1`, as these platforms put a proxy in front
+- `HEALIX_DB`, pointing at the persistent volume, e.g. `/data/clinic.db`
+
+Then run `python setup_db.py` once on the server, and schedule `python backup_db.py`.

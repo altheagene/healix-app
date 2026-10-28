@@ -21,3 +21,8 @@ myenv/
 backend/react_build/
 *.exe
 .pytest_cache/
+backend/backups/
+.vercel/
+
+# Local-only login for development. Never commit.
+backend/dev_credentials.txt

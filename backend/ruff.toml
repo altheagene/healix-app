@@ -1,0 +1,11 @@
+# Lint settings. Run:  python -m ruff check .
+line-length = 120
+extend-exclude = ["venv", "react_build", "backups"]
+
+[lint]
+# Pyflakes (real bugs: undefined names, unused imports) and pycodestyle errors.
+select = ["E", "F"]
+
+[lint.per-file-ignores]
+# One-line assertions read better than wrapped ones.
+"tests/*" = ["E501"]

@@ -18,6 +18,7 @@ jobs:
           cache: pip
           cache-dependency-path: backend/requirements-dev.txt
       - run: pip install -r requirements-dev.txt
+      - run: python -m ruff check .
       # The tests build their own throwaway database; no real data is needed here.
       - run: python -m pytest
 
@@ -30,4 +31,6 @@ jobs:
           node-version: "20"
           cache: npm
       - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
       - run: npm run build
