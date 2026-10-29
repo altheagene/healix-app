@@ -1,4 +1,5 @@
 import { apiFetch } from "../api";
+import RowActions, { rowLinkClass } from "~/components/rowactions"
 import React from "react"
 import 'bootstrap-icons/font/bootstrap-icons.css'
 import StaffDialog from "~/components/staffdialog"
@@ -29,7 +30,6 @@ export default function Staff() {
     const [adding, setAdding] = React.useState(false)
     const [editingId, setEditingId] = React.useState<number | null>(null)
     const [viewing, setViewing] = React.useState<any>(null)
-    const [openMenuId, setOpenMenuId] = React.useState<number | null>(null)
     const [notice, setNotice] = React.useState<{ ok: boolean; text: string } | null>(null)
 
     const refetch = React.useCallback(() => {
@@ -42,7 +42,6 @@ export default function Staff() {
     const canEdit = (person: any) => isAdmin || person.staff_id === myId
 
     async function setActive(person: any, active: boolean) {
-        setOpenMenuId(null)
         if (!active && !window.confirm(`Switch off ${fullName(person)}'s account? They are signed out and cannot sign in until an admin turns it back on. Their name stays on past records.`)) return
         const response = await apiFetch(`/setstaffactive`, {
             method: "POST",
@@ -176,8 +175,7 @@ export default function Staff() {
                                             <div className="mt-1"><RoleBadge role={person.category_name} /></div>
                                             <div className="mt-2 space-y-0.5 text-sm"><Contact person={person} /></div>
                                         </div>
-                                        <RowMenu person={person} open={openMenuId === person.staff_id} setOpen={setOpenMenuId}
-                                            onView={() => setViewing(person)} onEdit={canEdit(person) ? () => setEditingId(person.staff_id) : undefined}
+                                        <RowMenu person={person} onView={() => setViewing(person)} onEdit={canEdit(person) ? () => setEditingId(person.staff_id) : undefined}
                                             onToggle={isAdmin && person.staff_id !== myId ? () => setActive(person, person.is_active === 0) : undefined} />
                                     </li>
                                 ))}
@@ -206,8 +204,7 @@ export default function Staff() {
                                                     <td className="whitespace-nowrap border-b border-sage-100 px-5 py-3 text-sm text-sage-500">{lastSignIn(person.last_login)}</td>
                                                 )}
                                                 <td className="border-b border-sage-100 px-5 py-3 text-right">
-                                                    <RowMenu person={person} open={openMenuId === person.staff_id} setOpen={setOpenMenuId}
-                                                        onView={() => setViewing(person)} onEdit={canEdit(person) ? () => setEditingId(person.staff_id) : undefined}
+                                                    <RowMenu person={person} onView={() => setViewing(person)} onEdit={canEdit(person) ? () => setEditingId(person.staff_id) : undefined}
                                                         onToggle={isAdmin && person.staff_id !== myId ? () => setActive(person, person.is_active === 0) : undefined} />
                                                 </td>
                                             </tr>
@@ -229,7 +226,7 @@ export default function Staff() {
 function NameButton({ person, isMe, onOpen }: { person: any; isMe: boolean; onOpen: () => void }) {
     return (
         <span className="inline-flex flex-wrap items-center gap-2">
-            <button type="button" onClick={onOpen} className="text-left text-sm font-medium text-sage-900 hover:underline">{fullName(person)}</button>
+            <button type="button" onClick={onOpen} className={`${rowLinkClass} text-sm`}>{fullName(person)}</button>
             {isMe && <span className="rounded-full bg-brand-800 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">You</span>}
         </span>
     )
@@ -261,54 +258,16 @@ function Contact({ person, cells }: { person: any; cells?: boolean }) {
     return (<><span className="block">{phone}</span><span className="block">{email}</span></>)
 }
 
-function RowMenu({ person, open, setOpen, onView, onEdit, onToggle }: {
-    person: any; open: boolean; setOpen: (id: number | null) => void
-    onView: () => void; onEdit?: () => void; onToggle?: () => void
+function RowMenu({ person, onView, onEdit, onToggle }: {
+    person: any; onView: () => void; onEdit?: () => void; onToggle?: () => void
 }) {
-    const item = "flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm transition"
-    // Placed against the window, so the table's scroll area cannot clip it on the last rows.
-    const [place, setPlace] = React.useState<React.CSSProperties>({})
-    function toggle(event: React.MouseEvent<HTMLButtonElement>) {
-        const rect = event.currentTarget.getBoundingClientRect()
-        const opensUp = rect.bottom + 170 > window.innerHeight
-        setPlace({
-            position: "fixed",
-            right: window.innerWidth - rect.right,
-            ...(opensUp ? { bottom: window.innerHeight - rect.top + 4 } : { top: rect.bottom + 4 }),
-        })
-        setOpen(open ? null : person.staff_id)
-    }
+    const off = person.is_active === 0
     return (
-        <div className="relative inline-block text-left">
-            <button type="button" aria-label={`Actions for ${fullName(person)}`} aria-expanded={open}
-                onClick={toggle}
-                className="flex h-8 w-8 items-center justify-center rounded-full text-sage-400 transition hover:bg-sage-100 hover:text-sage-700">
-                <i className="bi bi-three-dots-vertical" aria-hidden="true" />
-            </button>
-            {open && (
-                <>
-                    <div className="fixed inset-0 z-10" onClick={() => setOpen(null)} />
-                    <div style={place} className="z-20 w-48 overflow-hidden rounded-xl border border-sage-200 bg-white shadow-lg">
-                        <button type="button" onClick={() => { setOpen(null); onView() }} className={`${item} text-sage-700 hover:bg-sage-50`}>
-                            <i className="bi bi-eye" aria-hidden="true" /> View
-                        </button>
-                        {onEdit && (
-                            <button type="button" onClick={() => { setOpen(null); onEdit() }} className={`${item} text-sage-700 hover:bg-sage-50`}>
-                                <i className="bi bi-pencil" aria-hidden="true" /> Edit
-                            </button>
-                        )}
-                        {onToggle && (person.is_active === 0 ? (
-                            <button type="button" onClick={onToggle} className={`${item} text-emerald-700 hover:bg-emerald-50`}>
-                                <i className="bi bi-arrow-clockwise" aria-hidden="true" /> Turn back on
-                            </button>
-                        ) : (
-                            <button type="button" onClick={onToggle} className={`${item} text-red-600 hover:bg-red-50`}>
-                                <i className="bi bi-person-slash" aria-hidden="true" /> Switch off account
-                            </button>
-                        ))}
-                    </div>
-                </>
-            )}
-        </div>
+        <RowActions label={`Actions for ${fullName(person)}`} actions={[
+            { label: "View details", icon: "bi-person-vcard", onSelect: onView },
+            { label: "Edit", icon: "bi-pencil", hidden: !onEdit, onSelect: () => onEdit?.() },
+            { label: "Turn account back on", icon: "bi-arrow-counterclockwise", hidden: !onToggle || !off, onSelect: () => onToggle?.() },
+            { label: "Switch off account", icon: "bi-person-slash", danger: true, hidden: !onToggle || off, onSelect: () => onToggle?.() },
+        ]} />
     )
 }

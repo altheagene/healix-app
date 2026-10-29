@@ -1,4 +1,5 @@
 import { apiFetch } from "../api";
+import RowActions, { rowLinkClass } from "~/components/rowactions";
 import { notify } from "../notify";
 import { ROLES, STAFF_ROLE_NAME } from "../roles";
 import AddRecord from '~/components/addrecord'
@@ -11,7 +12,7 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import user from '../images/user.png'
 import EditRecord from '~/components/editrecord'
 import { VisitOutcomeDialog } from '~/components/visitoutcome'
-import { DISPOSITIONS, DISPOSITION_SHORT, DISPOSITION_TONES, NOTIFY_METHODS } from '../visitOutcomes'
+import { DISPOSITIONS, DISPOSITION_SHORT, DISPOSITION_TONES, NOTIFY_METHODS, visitDateParts } from '../visitOutcomes'
 import { describeLevel } from '../school'
 
 export default function PatientDetails(){
@@ -25,7 +26,7 @@ export default function PatientDetails(){
     const [showEdit, setShowEdit] = React.useState(false)
     const [showVisit, setShowVisit] = React.useState(false)
     const [showEditRecord, setShowEditRecord] = React.useState(false)
-    const [recordToEdit, _setRecordToEdit] = React.useState()
+    const [recordToEdit, setRecordToEdit] = React.useState<any>()
     const [visitChosen, setVisitChosen] = React.useState(false)
     const [closingVisit, setClosingVisit] = React.useState<any>(null)
 
@@ -316,8 +317,10 @@ export default function PatientDetails(){
                                     {clinicLogs && clinicLogs.length > 0 ? [...clinicLogs].reverse().map((log, idx) => (
                                         <tr key={idx} className="align-top">
                                             <td className="whitespace-nowrap border-t border-sage-100 px-4 py-3.5 text-sm">
-                                                <span className="block font-medium">{String(log.visit_datetime).slice(0, 10)}</span>
-                                                <span className="block text-xs text-sage-500">{String(log.visit_datetime).slice(11, 16)}</span>
+                                                <button type="button" onClick={() => { setShowVisit(true); setVisitChosen(log); }} className={rowLinkClass}>
+                                                    {visitDateParts(log.visit_datetime).date}
+                                                </button>
+                                                <span className="block text-xs text-sage-500">{visitDateParts(log.visit_datetime).time}</span>
                                             </td>
                                             <td className="border-t border-sage-100 px-4 py-3.5">
                                                 <span className="inline-flex items-center rounded-full bg-citron-200 px-2.5 py-1 text-xs font-medium text-brand-800">
@@ -335,13 +338,10 @@ export default function PatientDetails(){
                                                 <span className="line-clamp-2" title={log.notes || undefined}>{log.notes}</span>
                                             </td>
                                             <td className="border-t border-sage-100 px-4 py-3.5 text-right">
-                                                <button
-                                                    onClick={() => { setShowVisit(true); setVisitChosen(log); }}
-                                                    aria-label={`View visit on ${String(log.visit_datetime).slice(0, 10)}`}
-                                                    className="inline-flex h-8 w-8 items-center justify-center rounded-full border-none bg-transparent text-sage-500 transition hover:bg-brand-50 hover:text-brand-800"
-                                                >
-                                                    <i className="bi bi-eye" aria-hidden="true" />
-                                                </button>
+                                                <RowActions label={`Actions for the visit on ${visitDateParts(log.visit_datetime).date}`} actions={[
+                                                    { label: "View visit", icon: "bi-file-earmark-text", onSelect: () => { setShowVisit(true); setVisitChosen(log); } },
+                                                    { label: "Edit visit", icon: "bi-pencil", hidden: !isClinician, onSelect: () => { setRecordToEdit(log); setShowEditRecord(true); } },
+                                                ]} />
                                             </td>
                                         </tr>
                                     )) : (

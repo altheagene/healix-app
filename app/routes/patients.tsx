@@ -6,6 +6,9 @@ import { DEPARTMENTS, STAGES, describeLevel, levelOptions } from '../school'
 import React from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import RowActions, { rowLinkClass } from '~/components/rowactions'
+import { STAFF_ROLE_NAME } from '../roles'
+import { notify } from '../notify'
 
 interface Patient {
     patient_id: string | number
@@ -82,6 +85,25 @@ export default function Patients() {
     const [currentPage, setCurrentPage] = React.useState(1)
     const [result, setResult] = React.useState<SearchResult>(EMPTY_RESULT)
     const [reloadKey, setReloadKey] = React.useState(0)
+    const [isClinician, setIsClinician] = React.useState(false)
+    React.useEffect(() => { setIsClinician(localStorage.getItem("role") !== STAFF_ROLE_NAME) }, [])
+
+    async function setArchived(patient: any, archived: boolean) {
+        const name = `${patient.first_name} ${patient.last_name}`
+        const question = archived
+            ? `Archive ${name}? They are hidden from the patient list and pickers, but nothing is deleted.`
+            : `Restore ${name} to the active list?`
+        if (!window.confirm(question)) return
+        const response = await apiFetch(`/archivepatient`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ patient_id: patient.patient_id, archived }),
+        }).catch(() => null)
+        const outcome = await response?.json().catch(() => ({}))
+        if (!response?.ok || !outcome?.success) return notify(outcome?.error || 'Could not update the patient.', 'error')
+        notify(archived ? `${name} archived.` : `${name} restored.`)
+        setReloadKey(key => key + 1)
+    }
 
     // Wait for a pause in typing before searching, and start again from page 1.
     React.useEffect(() => {
@@ -256,6 +278,7 @@ export default function Patients() {
                                 <SortHeader label="Level" sortKey="level" sort={sort} onSort={toggleSort} />
                                 <SortHeader label="Last visit" sortKey="last_visit" sort={sort} onSort={toggleSort} />
                                 <SortHeader label="Sex" sortKey="sex" sort={sort} onSort={toggleSort} />
+                                <th className="w-14 border-b border-sage-200 px-5 py-3"><span className="sr-only">Actions</span></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -279,7 +302,7 @@ export default function Patients() {
                                             <Link
                                                 to={`/patientdetails/${patient.patient_id}`}
                                                 onClick={(e) => e.stopPropagation()}
-                                                className="rounded text-inherit no-underline hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
+                                                className={`${rowLinkClass} rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700`}
                                             >
                                                 {patient.first_name} {patient.last_name}
                                             </Link>
@@ -317,11 +340,20 @@ export default function Patients() {
                                             : <span className="text-sage-300">Never</span>}
                                     </td>
                                     <td className="border-b border-sage-200 px-5 py-3 text-sm text-sage-400 last:border-none">{patient.sex}</td>
+                                    <td className="border-b border-sage-200 px-5 py-3 text-right last:border-none" onClick={(e) => e.stopPropagation()}>
+                                        <RowActions label={`Actions for ${patient.first_name} ${patient.last_name}`} actions={[
+                                            { label: "Open patient", icon: "bi-person", onSelect: () => navigate(`/patientdetails/${patient.patient_id}`) },
+                                            { label: "Record a visit", icon: "bi-clipboard2-plus", hidden: !isClinician || filters.archived, onSelect: () => navigate(`/patientdetails/${patient.patient_id}?visit=new`) },
+                                            { label: "Print summary", icon: "bi-printer", hidden: !isClinician, onSelect: () => navigate(`/patientsummary/${patient.patient_id}`) },
+                                            { label: "Restore patient", icon: "bi-arrow-counterclockwise", hidden: !isClinician || !filters.archived, onSelect: () => setArchived(patient, false) },
+                                            { label: "Archive patient", icon: "bi-archive", danger: true, hidden: !isClinician || filters.archived, onSelect: () => setArchived(patient, true) },
+                                        ]} />
+                                    </td>
                                 </tr>
                             ))}
                             {result.patients.length === 0 && (
                                 <tr>
-                                    <td colSpan={7} className="px-5 py-8 text-center text-sm text-sage-400">
+                                    <td colSpan={8} className="px-5 py-8 text-center text-sm text-sage-400">
                                         No patients match that search.
                                     </td>
                                 </tr>

@@ -3,6 +3,9 @@ import React from 'react'
 import { useNavigate } from 'react-router'
 import 'bootstrap-icons/font/bootstrap-icons.css'
 import EditAppointment from '~/components/editappointment'
+import RowActions, { inlineActionClass, rowLinkClass } from '~/components/rowactions'
+import { notify } from '../notify'
+import { visitDateParts } from '../visitOutcomes'
 
 export default function Appointments() {
     const [_width, setWidth] = React.useState(0)
@@ -20,12 +23,10 @@ export default function Appointments() {
     const [appointments, setAppointments] = React.useState<any[]>([])
     const [searchQuery, setSearchQuery] = React.useState('')
     const [showEdit, setShowEdit] = React.useState(false)
-    const [flashMessage, setFlashMessage] = React.useState<{type: 'success' | 'error', message: string} | null>(null)
     const [selectedDate, setSelectedDate] = React.useState(); // default to today
 
 
     const navigate = useNavigate()
-    console.log(today)
 
     // Fetch appointments
     React.useEffect(() => {
@@ -38,42 +39,20 @@ export default function Appointments() {
             .then(data => setAppointments(data))
     }
 
-    // Show flash message
-    const showFlash = (type: 'success' | 'error', message: string) => {
-        setFlashMessage({ type, message })
-        setTimeout(() => setFlashMessage(null), 2000)
-    }
-
-    // Mark completed
-    async function markCompleted(appointment_id: any) {
-        try {
-            await apiFetch(`/updateappointment`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ appointment_id, status: 'Completed' })
-            })
-            refetchAppts()
-            showFlash('success', 'Appointment marked as Completed')
-        } catch (err) {
-            console.error(err)
-            showFlash('error', 'Failed to update appointment')
+    async function setStatus(appt: any, status: 'Completed' | 'Cancelled') {
+        if (status === 'Cancelled' && !window.confirm(`Cancel ${appt.patient_name}'s appointment on ${visitDateParts(appt.appointment_date).date} at ${appt.start_time}?`)) return
+        const response = await apiFetch(`/updateappointment`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ appointment_id: appt.appointment_id, status })
+        }).catch(() => null)
+        const result = await response?.json().catch(() => ({}))
+        if (!response?.ok || result?.success === false) {
+            notify(result?.error || 'Could not update the appointment.', 'error')
+            return
         }
-    }
-
-    // Cancel appointment
-    async function cancelAppt(appointment_id: any) {
-        try {
-            await apiFetch(`/updateappointment`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ appointment_id, status: 'Cancelled' })
-            })
-            refetchAppts()
-            showFlash('success', 'Appointment Cancelled')
-        } catch (err) {
-            console.error(err)
-            showFlash('error', 'Failed to update appointment')
-        }
+        notify(status === 'Completed' ? `${appt.patient_name}'s appointment is marked completed.` : 'Appointment cancelled.')
+        refetchAppts()
     }
 
     const filteredAppointments = appointments
@@ -112,19 +91,6 @@ export default function Appointments() {
     return (
         <div className="min-h-full font-sans text-sage-900">
             <div className="mx-auto max-w-full">
-
-                {/* FLASH MESSAGE */}
-                {flashMessage && (
-                    <div
-                        className={`mb-4 rounded-xl border px-4 py-2.5 text-sm font-medium ${
-                            flashMessage.type === 'success'
-                                ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-                                : 'border-red-200 bg-red-50 text-red-700'
-                        }`}
-                    >
-                        {flashMessage.message}
-                    </div>
-                )}
 
                 {showEdit && <EditAppointment appt={apptID} hideForm={() => setShowEdit(false)} refetch={refetchAppts} />}
 
@@ -198,20 +164,22 @@ export default function Appointments() {
                                     <th className="border-b border-sage-100 px-5 py-3 text-left text-xs font-medium text-sage-400">Date</th>
                                     <th className="border-b border-sage-100 px-5 py-3 text-left text-xs font-medium text-sage-400">Time</th>
                                     <th className="border-b border-sage-100 px-5 py-3 text-left text-xs font-medium text-sage-400">Status</th>
-                                    <th className="border-b border-sage-100 px-5 py-3 text-right text-xs font-medium text-sage-400">Actions</th>
+                                    <th className="border-b border-sage-100 px-5 py-3 text-right text-xs font-medium text-sage-400"><span className="sr-only">Actions</span></th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {filteredAppointments.length > 0 ? filteredAppointments.map(appt => (
                                     <tr key={appt.appointment_id} className="transition hover:bg-brand-50/40">
-                                        <td className="border-b border-sage-100 px-5 py-3 text-sm font-medium text-sage-900 last:border-none">
-                                            {appt.patient_name}
+                                        <td className="border-b border-sage-100 px-5 py-3 text-sm last:border-none">
+                                            <button type="button" onClick={() => navigate(`/patientdetails/${appt.patient_id}`)} className={rowLinkClass}>
+                                                {appt.patient_name}
+                                            </button>
                                         </td>
                                         <td className="border-b border-sage-100 px-5 py-3 text-sm text-sage-500 last:border-none">
                                             {appt.service_name}
                                         </td>
                                         <td className="border-b border-sage-100 px-5 py-3 text-sm text-sage-500 last:border-none">
-                                            {appt.appointment_date}
+                                            {visitDateParts(appt.appointment_date).date}
                                         </td>
                                         <td className="border-b border-sage-100 px-5 py-3 text-sm text-sage-500 last:border-none">
                                             {appt.start_time}
@@ -222,32 +190,17 @@ export default function Appointments() {
                                             </span>
                                         </td>
                                         <td className="border-b border-sage-100 px-5 py-3 last:border-none">
-                                            <div className="flex items-center justify-end gap-1.5">
-                                                <button
-                                                    title="Mark as Completed"
-                                                    disabled={appt.status === 'Completed'}
-                                                    onClick={() => markCompleted(appt.appointment_id)}
-                                                    className="flex h-8 w-8 items-center justify-center rounded-full text-emerald-600 transition hover:bg-emerald-50 disabled:cursor-not-allowed disabled:text-sage-300 disabled:hover:bg-transparent"
-                                                >
-                                                    <i className="bi bi-check-lg text-base" />
-                                                </button>
-
-                                                <button
-                                                    title="Cancel Appointment"
-                                                    disabled={appt.status === 'Cancelled'}
-                                                    onClick={() => cancelAppt(appt.appointment_id)}
-                                                    className="flex h-8 w-8 items-center justify-center rounded-full text-red-500 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:text-sage-300 disabled:hover:bg-transparent"
-                                                >
-                                                    <i className="bi bi-x-lg text-base" />
-                                                </button>
-
-                                                <button
-                                                    title="Edit Appointment"
-                                                    onClick={() => { setApptId(appt); setShowEdit(true) }}
-                                                    className="flex h-8 w-8 items-center justify-center rounded-full text-sage-400 transition hover:bg-sage-100 hover:text-sage-700"
-                                                >
-                                                    <i className="bi bi-pencil text-sm" />
-                                                </button>
+                                            <div className="flex items-center justify-end gap-2">
+                                                {appt.status !== 'Completed' && appt.status !== 'Cancelled' && (
+                                                    <button type="button" onClick={() => setStatus(appt, 'Completed')} className={inlineActionClass}>
+                                                        <i className="bi bi-check-lg" aria-hidden="true" /> Mark completed
+                                                    </button>
+                                                )}
+                                                <RowActions label={`Actions for ${appt.patient_name}'s appointment`} actions={[
+                                                    { label: "Edit appointment", icon: "bi-pencil", onSelect: () => { setApptId(appt); setShowEdit(true) } },
+                                                    { label: "Open patient", icon: "bi-person", onSelect: () => navigate(`/patientdetails/${appt.patient_id}`) },
+                                                    { label: "Cancel appointment", icon: "bi-x-circle", danger: true, hidden: appt.status === 'Cancelled' || appt.status === 'Completed', onSelect: () => setStatus(appt, 'Cancelled') },
+                                                ]} />
                                             </div>
                                         </td>
                                     </tr>

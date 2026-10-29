@@ -1,4 +1,5 @@
 import { apiFetch } from "../api";
+import RowActions from '~/components/rowactions';
 import AddBatch from '~/components/addbatch'
 import EditItem from '~/components/edititem';
 import React from 'react'
@@ -23,7 +24,6 @@ export default function ItemDetails(){
     const [showEditStock, setShowEditStock] = React.useState(false);
     const [showEditBatch, setShowEditBatch] = React.useState(false)
     const [chosenActive, setChosenActive] = React.useState(true)
-    const [openMenuId, setOpenMenuId] = React.useState<any>(null);
     const [disposing, setDisposing] = React.useState<any>(null)
     const canManage = canManageStock()
 
@@ -229,64 +229,15 @@ export default function ItemDetails(){
                                             {batch.last_updated ? `${visitDateParts(batch.last_updated).date} ${visitDateParts(batch.last_updated).time}`.trim() : 'Never'}
                                         </td>
                                         <td className="border-b border-sage-100 px-5 py-3 text-right last:border-none">
-                                            {canManage && <div className="relative inline-block text-left">
-                                                <button
-                                                    aria-label={`Actions for batch ${batch.batch_number}`}
-                                                    onClick={() => setOpenMenuId(openMenuId === batch.batch_id ? null : batch.batch_id)}
-                                                    className="flex h-8 w-8 items-center justify-center rounded-full text-sage-400 transition hover:bg-sage-100 hover:text-sage-700"
-                                                >
-                                                    <i className="bi bi-three-dots-vertical" />
-                                                </button>
-
-                                                {openMenuId === batch.batch_id && (
-                                                    <>
-                                                        <div
-                                                            className="fixed inset-0 z-10"
-                                                            onClick={() => setOpenMenuId(null)}
-                                                        />
-                                                        <div className="absolute right-0 z-20 mt-1 w-44 overflow-hidden rounded-xl border border-sage-200 bg-white shadow-lg">
-                                                            <button
-                                                                onClick={() => { editStockClick(batch); setOpenMenuId(null); }}
-                                                                className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-sage-700 transition hover:bg-sage-50"
-                                                            >
-                                                                <i className="bi bi-pen-fill" /> Edit Stock
-                                                            </button>
-
-                                                            <button
-                                                                onClick={() => { editBtnClick(batch); setOpenMenuId(null); }}
-                                                                className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-sage-700 transition hover:bg-sage-50"
-                                                            >
-                                                                <i className="bi bi-pencil-square" /> Edit Batch
-                                                            </button>
-
-                                                            {batch.stock_level > 0 && (
-                                                                <button
-                                                                    onClick={() => { setDisposing(batch); setOpenMenuId(null); }}
-                                                                    className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-red-600 transition hover:bg-red-50"
-                                                                >
-                                                                    <i className="bi bi-trash3" /> Dispose
-                                                                </button>
-                                                            )}
-
-                                                            {chosenActive ? (
-                                                                <button
-                                                                    onClick={() => { removeBatch(batch.batch_id); setOpenMenuId(null); }}
-                                                                    className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-red-600 transition hover:bg-red-50"
-                                                                >
-                                                                    <i className="bi bi-trash" /> Deactivate
-                                                                </button>
-                                                            ) : (
-                                                                <button
-                                                                    onClick={() => { reactivateBatch(batch.batch_id); setOpenMenuId(null); }}
-                                                                    className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-emerald-600 transition hover:bg-emerald-50"
-                                                                >
-                                                                    <i className="bi bi-arrow-clockwise" /> Reactivate
-                                                                </button>
-                                                            )}
-                                                        </div>
-                                                    </>
-                                                )}
-                                            </div>}
+                                            {canManage && (
+                                                <RowActions label={`Actions for batch ${batch.batch_number}`} actions={[
+                                                    { label: "Add or remove stock", icon: "bi-plus-slash-minus", hidden: !chosenActive, onSelect: () => editStockClick(batch) },
+                                                    { label: "Edit batch", icon: "bi-pencil", onSelect: () => editBtnClick(batch) },
+                                                    { label: "Switch batch back on", icon: "bi-arrow-counterclockwise", hidden: chosenActive, onSelect: () => reactivateBatch(batch.batch_id) },
+                                                    { label: "Dispose of what's left", icon: "bi-trash3", danger: true, hidden: !(batch.stock_level > 0), onSelect: () => setDisposing(batch) },
+                                                    { label: "Switch batch off", icon: "bi-slash-circle", danger: true, hidden: !chosenActive, onSelect: () => removeBatch(batch.batch_id) },
+                                                ]} />
+                                            )}
                                         </td>
                                     </tr>
                                 )) : (

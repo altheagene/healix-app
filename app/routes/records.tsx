@@ -1,8 +1,9 @@
 import { apiFetch } from "../api";
 import React from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import Pagination from "~/components/pagination";
 import ViewVisit from "~/components/viewVisit";
+import RowActions, { inlineActionClass, rowLinkClass } from "~/components/rowactions";
 import { VisitOutcomeDialog } from "~/components/visitoutcome";
 import { STAFF_ROLE_NAME } from "../roles";
 import { DEPARTMENTS, STAGES, describeLevel } from "../school";
@@ -92,6 +93,7 @@ export default function Records() {
 }
 
 function VisitList({ isClinician }: { isClinician: boolean }) {
+    const navigate = useNavigate()
     const [searchTerm, setSearchTerm] = React.useState("")
     const [query, setQuery] = React.useState("")
     // All time by default: a quiet clinic can go weeks without a visit, and an empty
@@ -286,11 +288,13 @@ function VisitList({ isClinician }: { isClinician: boolean }) {
                                 return (
                                     <tr key={visit.visit_id} className="align-top transition hover:bg-brand-50/30">
                                         <td className="whitespace-nowrap border-b border-sage-100 px-5 py-3 text-sm">
-                                            <span className="block font-medium">{when.date}</span>
+                                            <button type="button" onClick={() => setViewing(visit.visit_id)} className={rowLinkClass}>
+                                                {when.date}<span className="sr-only">, view visit #{visit.visit_id}</span>
+                                            </button>
                                             <span className="block text-xs text-sage-400">{when.time} · #{visit.visit_id}</span>
                                         </td>
                                         <td className="border-b border-sage-100 px-5 py-3 text-sm">
-                                            <Link to={`/patientdetails/${visit.patient_id}`} className="font-medium text-sage-900 no-underline hover:underline">
+                                            <Link to={`/patientdetails/${visit.patient_id}`} className={rowLinkClass}>
                                                 {visit.patient_name || "Unnamed patient"}
                                             </Link>
                                             <span className="block text-xs text-sage-400">
@@ -306,10 +310,11 @@ function VisitList({ isClinician }: { isClinician: boolean }) {
                                         </td>
                                         <td className="border-b border-sage-100 px-5 py-3 text-sm text-sage-600">{visit.staff_name}</td>
                                         <td className="border-b border-sage-100 px-5 py-3 text-right">
-                                            <button type="button" onClick={() => setViewing(visit.visit_id)}
-                                                className="rounded-lg bg-sage-900 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-sage-700">
-                                                View<span className="sr-only"> visit #{visit.visit_id}</span>
-                                            </button>
+                                            <RowActions label={`Actions for visit #${visit.visit_id}`} actions={[
+                                                { label: "View visit", icon: "bi-file-earmark-text", onSelect: () => setViewing(visit.visit_id) },
+                                                { label: "Open patient", icon: "bi-person", onSelect: () => navigate(`/patientdetails/${visit.patient_id}`) },
+                                                { label: "Close visit", icon: "bi-box-arrow-right", hidden: !isClinician || Boolean(visit.disposition) || !visit.time_in || Boolean(visit.time_out), onSelect: () => openClose(visit.visit_id) },
+                                            ]} />
                                         </td>
                                     </tr>
                                 )
@@ -426,7 +431,11 @@ function Outcome({ visit, canClose, onClose }: { visit: VisitRow; canClose: bool
                 <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-800">
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" aria-hidden="true" /> In clinic
                 </span>
-                {canClose && <button type="button" onClick={onClose} className="text-xs font-semibold text-brand-800 underline">Close visit</button>}
+                {canClose && (
+                    <button type="button" onClick={onClose} className={inlineActionClass}>
+                        <i className="bi bi-box-arrow-right" aria-hidden="true" /> Close visit
+                    </button>
+                )}
             </span>
         )
     }

@@ -1,4 +1,5 @@
 import { apiFetch } from "../api";
+import RowActions, { rowLinkClass } from "~/components/rowactions";
 import AddItem from "~/components/additem";
 import Modal from "~/components/modal";
 import DisposeBatch from "~/components/disposebatch";
@@ -40,7 +41,6 @@ export default function Inventory() {
   const [chosenActive, setChosenActive] = React.useState(true);
   const [selectedCategory, setSelectedCategory] = React.useState("All Items");
   const [onlyReorder, setOnlyReorder] = React.useState(false);
-  const [openMenuId, setOpenMenuId] = React.useState<any>(null);
 
   const refetchSupplies = React.useCallback(() => {
     apiFetch(`/getallsupplies`)
@@ -232,7 +232,7 @@ export default function Inventory() {
                   return (
                     <tr key={supply.supply_id} className="transition hover:bg-brand-50/40">
                       <td className="border-b border-sage-100 px-5 py-3 text-sm font-medium text-sage-900">
-                        <button type="button" onClick={() => navigate(`/itemdetails/${supply.supply_id}`)} className="text-left hover:underline">
+                        <button type="button" onClick={() => navigate(`/itemdetails/${supply.supply_id}`)} className={rowLinkClass}>
                           {supply.supply_name}
                         </button>
                       </td>
@@ -260,49 +260,11 @@ export default function Inventory() {
                         {supply.last_updated ? `${updated.date}${updated.time ? ` ${updated.time}` : ""}` : "Never"}
                       </td>
                       <td className="border-b border-sage-100 px-5 py-3 text-right">
-                        <div className="relative inline-block text-left">
-                          <button
-                            type="button"
-                            aria-label={`Actions for ${supply.supply_name}`}
-                            aria-expanded={openMenuId === supply.supply_id}
-                            onClick={() => setOpenMenuId(openMenuId === supply.supply_id ? null : supply.supply_id)}
-                            className="flex h-8 w-8 items-center justify-center rounded-full text-sage-400 transition hover:bg-sage-100 hover:text-sage-700"
-                          >
-                            <i className="bi bi-three-dots-vertical" aria-hidden="true" />
-                          </button>
-
-                          {openMenuId === supply.supply_id && (
-                            <>
-                              <div className="fixed inset-0 z-10" onClick={() => setOpenMenuId(null)} />
-                              <div className="absolute right-0 z-20 mt-1 w-40 overflow-hidden rounded-xl border border-sage-200 bg-white shadow-lg">
-                                <button
-                                  type="button"
-                                  onClick={() => { navigate(`/itemdetails/${supply.supply_id}`); setOpenMenuId(null); }}
-                                  className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-sage-700 transition hover:bg-sage-50"
-                                >
-                                  <i className="bi bi-eye" aria-hidden="true" /> View
-                                </button>
-                                {canManage && (supply.is_active ? (
-                                  <button
-                                    type="button"
-                                    onClick={() => { setOpenMenuId(null); setItemActive(supply, false); }}
-                                    className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-red-600 transition hover:bg-red-50"
-                                  >
-                                    <i className="bi bi-trash" aria-hidden="true" /> Delete
-                                  </button>
-                                ) : (
-                                  <button
-                                    type="button"
-                                    onClick={() => { setOpenMenuId(null); setItemActive(supply, true); }}
-                                    className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-emerald-600 transition hover:bg-emerald-50"
-                                  >
-                                    <i className="bi bi-arrow-clockwise" aria-hidden="true" /> Reactivate
-                                  </button>
-                                ))}
-                              </div>
-                            </>
-                          )}
-                        </div>
+                        <RowActions label={`Actions for ${supply.supply_name}`} actions={[
+                          { label: "Open item", icon: "bi-box-arrow-up-right", onSelect: () => navigate(`/itemdetails/${supply.supply_id}`) },
+                          { label: "Reactivate item", icon: "bi-arrow-counterclockwise", hidden: !canManage || Boolean(supply.is_active), onSelect: () => setItemActive(supply, true) },
+                          { label: "Delete item", icon: "bi-trash", danger: true, hidden: !canManage || !supply.is_active, onSelect: () => setItemActive(supply, false) },
+                        ]} />
                       </td>
                     </tr>
                   )
