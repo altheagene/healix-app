@@ -14,6 +14,8 @@ export default function AddBatch(props: any) {
         expiration_date: "",
         stock_level: 1,
         is_active: true,
+        reason: "restock",
+        note: "",
     })
 
     const inputClasses = "w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-teal-300 focus:ring-2 focus:ring-teal-100"
@@ -48,12 +50,14 @@ export default function AddBatch(props: any) {
                     expiration_date: noExpirationDate ? null : batchDetails.expiration_date,
                     stock_level: batchDetails.stock_level,
                     is_active: true,
+                    reason: batchDetails.reason,
+                    note: batchDetails.note,
                 }),
             })
             const result = await response.json()
             if (!response.ok || !result.success) {
                 setFlashOk(false)
-                setFlashMessage("This batch number already exists.")
+                setFlashMessage(result.error || "This batch number already exists.")
                 return
             }
 
@@ -154,6 +158,22 @@ export default function AddBatch(props: any) {
                             }}
                             className={inputClasses}
                         />
+                    </div>
+
+                    <div>
+                        <label className={labelClasses} htmlFor="batch-source">Where it came from</label>
+                        <select id="batch-source" value={batchDetails.reason}
+                            onChange={(e) => setBatchDetails({ ...batchDetails, reason: e.target.value })} className={inputClasses}>
+                            <option value="restock">Bought or delivered (restock)</option>
+                            <option value="donation">Donated</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label className={labelClasses} htmlFor="batch-note">Note (optional)</label>
+                        <input type="text" id="batch-note" maxLength={300} value={batchDetails.note}
+                            placeholder={batchDetails.reason === "donation" ? "e.g. From the PTA medical drive" : "e.g. Purchase order 2026-14"}
+                            onChange={(e) => setBatchDetails({ ...batchDetails, note: e.target.value })} className={inputClasses} />
                     </div>
                 </div>
 

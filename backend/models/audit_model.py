@@ -45,6 +45,7 @@ ACTION_BY_PATH = {
     "/editbatch": "inventory_batch_update",
     "/updatebatchactive": "inventory_batch_update",
     "/editstockbatch": "inventory_stock_adjust",
+    "/disposebatch": "inventory_dispose",
     "/addappointment": "appointment_create",
     "/updateappointment": "appointment_update",
     "/updateappointmentdetails": "appointment_update",

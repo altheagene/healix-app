@@ -26,6 +26,16 @@ COLUMNS = [
     ("visit_logs", "notified_by", "TEXT"),
     # Senior High School track/strand (STEM, ABM, ...). See school.py.
     ("patients", "strand", "TEXT"),
+    # Why stock moved, who moved it, and when. Rows saved before these have none.
+    ("inventory", "reason", "TEXT"),
+    ("inventory", "note", "TEXT"),
+    ("inventory", "staff_id", "INTEGER"),
+    ("inventory", "visit_id", "INTEGER"),
+    ("inventory", "created_at", "TEXT"),
+    # What one unit of stock is (tablets, sachets, pieces), and the count at which
+    # the item needs reordering. See models/inventory_model.py.
+    ("supplies", "unit", "TEXT"),
+    ("supplies", "reorder_level", "INTEGER"),
 ]
 
 

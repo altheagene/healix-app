@@ -33,7 +33,7 @@ def non_negative_int(value, name):
 def iso_date(value, name):
     try:
         return date.fromisoformat(str(value)).isoformat()
-    except ValueError:
+    except (TypeError, ValueError):
         raise ValidationError(f"{name} must be a date like 2026-01-31") from None
 
 

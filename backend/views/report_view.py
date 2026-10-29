@@ -5,6 +5,8 @@ import io
 
 from flask import Response
 
+from models.inventory_model import REASONS
+
 
 def _safe(value):
     """Quote-safe text, with a leading ' on anything a spreadsheet would run as a formula."""
@@ -103,27 +105,23 @@ def appointment_logs_csv(logs):
 
 def inventory_logs_csv(logs):
     headers = [
-        "Inventory ID",
-        "Inventory Date",
-        "Batch ID",
-        "Batch Number",
-        "Expiration Date",
-        "Supply ID",
-        "Supply Name",
-        "Item In",
-        "Item Out",
+        "Inventory ID", "Date and time", "Supply", "Unit", "Batch Number", "Expiration Date",
+        "Item In", "Item Out", "Reason", "Note", "Visit ID", "Recorded by",
     ]
     rows = [
         [
             str(log["inv_id"]),
-            str(log["inv_date"]),
-            str(log["batch_id"]),
-            log["batch_number"] or "",
-            str(log["expiration_date"]),
-            str(log["supply_id"]),
+            log["moved_at"] or "",
             log["supply_name"] or "",
+            log["unit"] or "",
+            log["batch_number"] or "",
+            log["expiration_date"] or "",
             str(log["item_in"]),
             str(log["item_out"]),
+            REASONS.get(log["reason"], log["reason"] or "Not recorded"),
+            log["note"] or "",
+            str(log["visit_id"] or ""),
+            log["staff_name"] or "",
         ]
         for log in logs
     ]

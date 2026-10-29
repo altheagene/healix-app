@@ -26,15 +26,20 @@ _EVERYONE_GET = (
     "/getpatientcliniclogs", "/getpatientconditions",
     "/getstaffandcateg", "/getstaffcategories", "/getstudent", "/getsupplydetails",
     "/getvisitlogs", "/me", "/searchpatients", "/checkin", "/patienttimeline", "/clinicnow",
-    "/searchvisits", "/getvisit",
+    "/searchvisits", "/getvisit", "/getinventoryalerts",
 )
 _EVERYONE_POST = (
-    "/addallergies", "/addappointment", "/addbatch", "/addconditions", "/additem",
+    "/addallergies", "/addappointment", "/addconditions",
     "/addnewallergy", "/addnewcondition", "/addpatient", "/addpatientallergies",
-    "/addpatientconditions", "/addservice", "/deleteitem", "/deletepatientallergies",
-    "/deletepatientconditions", "/editbatch", "/editstockbatch", "/logout", "/resetpassword",
-    "/updateappointment", "/updateappointmentdetails", "/updatebatchactive",
-    "/updatepatient", "/updatestaff", "/updatesupply",
+    "/addpatientconditions", "/addservice", "/deletepatientallergies",
+    "/deletepatientconditions", "/logout", "/resetpassword",
+    "/updateappointment", "/updateappointmentdetails",
+    "/updatepatient", "/updatestaff",
+)
+# Stock is counted and given out by the nurse or doctor; Staff can see it but not change it.
+_INVENTORY_POST = (
+    "/addbatch", "/additem", "/deleteitem", "/disposebatch", "/editbatch", "/editstockbatch",
+    "/updatebatchactive", "/updatesupply",
 )
 
 # Every API route must be listed here. A route that is missing is refused for
@@ -42,6 +47,7 @@ _EVERYONE_POST = (
 ROUTE_ROLES = {
     **{("GET", path): EVERYONE for path in _EVERYONE_GET},
     **{("POST", path): EVERYONE for path in _EVERYONE_POST},
+    **{("POST", path): CLINICIANS for path in _INVENTORY_POST},
     # Clinical writes. The Staff role can read visits, but not save them.
     ("POST", "/addvisitlog"): CLINICIANS,
     ("POST", "/addmedicationdetails"): CLINICIANS,

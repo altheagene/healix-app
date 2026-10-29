@@ -1,5 +1,6 @@
 import { apiFetch } from "../api";
 import React from "react"
+import { DEFAULT_REORDER_LEVEL, UNITS } from "../inventory"
 
 export default function EditItem(props: any) {
     const details = props.itemDetails || {}
@@ -12,6 +13,8 @@ export default function EditItem(props: any) {
         description: details.description || "",
         brand: details.brand || "",
         auto_deduct: Boolean(details.auto_deduct),
+        unit: details.unit || "",
+        reorder_level: details.reorder_level == null ? "" : String(details.reorder_level),
     })
 
     const inputClasses = "w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-teal-300 focus:ring-2 focus:ring-teal-100"
@@ -35,12 +38,13 @@ export default function EditItem(props: any) {
                     supply_name: itemDetails.supply_name.trim(),
                     brand: itemDetails.brand.trim(),
                     description: itemDetails.description.trim(),
+                    reorder_level: itemDetails.reorder_level === "" ? null : Number(itemDetails.reorder_level),
                 }),
             })
             const result = await response.json()
             if (!response.ok || !result.success) {
                 setFlashOk(false)
-                setFlashMessage("Could not update this item.")
+                setFlashMessage(result.error || "Could not update this item.")
                 return
             }
 
@@ -116,6 +120,36 @@ export default function EditItem(props: any) {
                             className={inputClasses}
                         />
                     </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className={labelClasses} htmlFor="edit-item-unit">Unit</label>
+                      <input
+                        type="text"
+                        id="edit-item-unit"
+                        list="edit-item-units"
+                        placeholder="e.g. tablets"
+                        value={itemDetails.unit}
+                        onChange={(e) => setItemDetails({ ...itemDetails, unit: e.target.value })}
+                        className={inputClasses}
+                      />
+                      <datalist id="edit-item-units">
+                        {UNITS.map(unit => <option key={unit} value={unit} />)}
+                      </datalist>
+                    </div>
+                    <div>
+                      <label className={labelClasses} htmlFor="edit-item-reorder">Reorder at or below</label>
+                      <input
+                        type="number"
+                        min={0}
+                        id="edit-item-reorder"
+                        placeholder={String(DEFAULT_REORDER_LEVEL)}
+                        value={itemDetails.reorder_level}
+                        onChange={(e) => setItemDetails({ ...itemDetails, reorder_level: e.target.value })}
+                        className={inputClasses}
+                      />
+                    </div>
+                  </div>
 
                     <label className="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
                         <input

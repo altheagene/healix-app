@@ -28,7 +28,7 @@ def test_daily_tasks_run_once_per_day(client, headers, db):
 
 
 def test_editing_a_batch_to_a_past_date_expires_it_at_once(client, headers, db):
-    h = headers("staff")
+    h = headers("nurse")
     client.get("/getallservices", headers=h)
     body = {"batch_id": 1, "expiration_date": PAST}
     assert client.post("/editbatch", headers=h, json=body).json == {"success": True}

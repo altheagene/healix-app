@@ -1,4 +1,5 @@
 import { apiFetch } from "../api";
+import { withUnit } from "../inventory";
 import Modal from "./modal"
 import React from "react"
 import CancelSaveBtn from "./cancelsavebtn"
@@ -224,7 +225,7 @@ export default function EditRecord(props: any) {
               >
                 {medicines.map(m => (
                   <option key={m.supply_id} value={String(m.supply_id)}>
-                    {m.supply_name}
+                    {m.supply_name} ({withUnit(m.available_stock, m.unit)} on the shelf)
                   </option>
                 ))}
               </select>

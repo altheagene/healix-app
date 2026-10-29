@@ -68,7 +68,7 @@ def add_visit_log_route():
     else:
         for key in ("disposition", "referred_to", "picked_up_by", "picked_up_at", "time_out"):
             data.pop(key, None)
-    visit_id = add_visit_log(medications=medications, **data)
+    visit_id = add_visit_log(medications=medications, moved_by=request.staff["staff_id"], **data)
     if not visit_id:
         return json_error("Could not save the visit", 400)
     return jsonify({"success": True, "visit_id": visit_id})
@@ -158,7 +158,7 @@ def add_medication_details():
     data = request.get_json() or {}
     validation.require(data, "visit_id")
     medications = validation.medications(data.get("medications"))
-    return json_success(add_medications_for_visit(data["visit_id"], medications))
+    return json_success(add_medications_for_visit(data["visit_id"], medications, request.staff["staff_id"]))
 
 
 @visit_bp.route("/updatevisitlog", methods=["POST"])
@@ -176,7 +176,7 @@ def update_visit_log_route():
                 fields[key] = data[sent]
     # When the form sends medicines too, they are replaced in the same transaction.
     medications = validation.medications(data["medications"]) if "medications" in data else None
-    return json_success(update_visit(data["visit_id"], fields, medications))
+    return json_success(update_visit(data["visit_id"], fields, medications, request.staff["staff_id"]))
 
 
 @visit_bp.route("/updatemedicationdetails", methods=["POST"])
@@ -184,7 +184,7 @@ def update_medication_details():
     data = request.get_json() or {}
     validation.require(data, "visit_id")
     medications = validation.medications(data.get("medications"))
-    return json_success(replace_visit_medications(data["visit_id"], medications))
+    return json_success(replace_visit_medications(data["visit_id"], medications, request.staff["staff_id"]))
 
 
 @visit_bp.route("/generateclinicreport", methods=["GET"])

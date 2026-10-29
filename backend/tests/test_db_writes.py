@@ -69,7 +69,7 @@ def test_stock_adjustment_for_unknown_batch_changes_nothing(db):
 
 def test_new_batch_logs_stock_against_itself(client, headers, db):
     body = {"supply_id": 1, "batch_number": "B-2", "expiration_date": "2099-01-01", "stock_level": 7, "is_active": 1}
-    assert client.post("/addbatch", headers=headers("staff"), json=body).json == {"success": True}
+    assert client.post("/addbatch", headers=headers("nurse"), json=body).json == {"success": True}
     batch_id = db.execute("SELECT batch_id FROM batches WHERE batch_number = 'B-2'").fetchone()[0]
     assert [tuple(r) for r in db.execute("SELECT item_in FROM inventory WHERE batch_id = ?", (batch_id,)).fetchall()] == [(7,)]
 

@@ -1,10 +1,11 @@
 """Visit and medication queries. This file talks to SQLite and does not know about HTTP."""
 
-from datetime import date
 from sqlite3 import connect
 
 from db.connection import REJECTED_WRITE, database, getprocess
 from db.dbhelper import checked_columns, deleterecord
+from models.inventory_model import FIRST_TO_EXPIRE, log_movement
+from validation import ValidationError
 
 
 def get_clinic_visits(**kwargs):
@@ -108,7 +109,7 @@ def get_visit_logs():
     return getprocess(sql, [])
 
 
-def add_visit_log(medications=(), **fields):
+def add_visit_log(medications=(), moved_by=None, **fields):
     """Saves the visit and its medicines, deducting stock, all or nothing.
     Returns the new visit_id, or None if the database refused it."""
     keys = list(fields.keys())
@@ -128,7 +129,7 @@ def add_visit_log(medications=(), **fields):
             cursor = conn.cursor()
             cursor.execute(sql, values)
             visit_id = cursor.lastrowid
-            _insert_medications(cursor, visit_id, medications or [])
+            _insert_medications(cursor, visit_id, medications or [], moved_by)
         return visit_id
     except REJECTED_WRITE as error:
         print("Write refused:", error)
@@ -137,11 +138,11 @@ def add_visit_log(medications=(), **fields):
         conn.close()
 
 
-def add_medications_for_visit(visit_id, medications):
+def add_medications_for_visit(visit_id, medications, moved_by=None):
     conn = _connect()
     try:
         with conn:
-            _insert_medications(conn.cursor(), visit_id, medications or [])
+            _insert_medications(conn.cursor(), visit_id, medications or [], moved_by)
         return True
     except REJECTED_WRITE as error:
         print("Write refused:", error)
@@ -150,7 +151,7 @@ def add_medications_for_visit(visit_id, medications):
         conn.close()
 
 
-def update_visit(visit_id, fields, medications=None):
+def update_visit(visit_id, fields, medications=None, moved_by=None):
     """Updates the visit and, when medications is given, replaces its medicines
     (returning the old ones to stock first), all or nothing."""
     fields = {key: value for key, value in fields.items() if key != "visit_id"}
@@ -173,7 +174,7 @@ def update_visit(visit_id, fields, medications=None):
                 if cursor.rowcount != 1:
                     return False
             if medications is not None:
-                _replace_medications(cursor, visit_id, medications)
+                _replace_medications(cursor, visit_id, medications, moved_by)
         return True
     except REJECTED_WRITE as error:
         print("Write refused:", error)
@@ -182,11 +183,11 @@ def update_visit(visit_id, fields, medications=None):
         conn.close()
 
 
-def replace_visit_medications(visit_id, medications):
-    return update_visit(visit_id, {}, medications)
+def replace_visit_medications(visit_id, medications, moved_by=None):
+    return update_visit(visit_id, {}, medications, moved_by)
 
 
-def _replace_medications(cursor, visit_id, medications):
+def _replace_medications(cursor, visit_id, medications, staff_id=None):
     cursor.execute(
         """
         SELECT m.supply_id, m.quantity, s.auto_deduct
@@ -198,9 +199,9 @@ def _replace_medications(cursor, visit_id, medications):
     )
     for supply_id, quantity, auto_deduct in cursor.fetchall():
         if auto_deduct and quantity:
-            _change_stock(cursor, supply_id, quantity, "in")
+            _return_stock(cursor, supply_id, quantity, visit_id, staff_id)
     cursor.execute("DELETE FROM medication_details WHERE visit_id = ?", (visit_id,))
-    _insert_medications(cursor, visit_id, medications or [])
+    _insert_medications(cursor, visit_id, medications or [], staff_id)
 
 
 def _connect():
@@ -209,7 +210,7 @@ def _connect():
     return conn
 
 
-def _insert_medications(cursor, visit_id, medications):
+def _insert_medications(cursor, visit_id, medications, staff_id=None):
     for med in medications:
         supply_id = med.get("supply_id")
         if supply_id in (None, ""):
@@ -224,7 +225,7 @@ def _insert_medications(cursor, visit_id, medications):
             (visit_id, supply_id, quantity),
         )
         if _supply_auto_deducts(cursor, supply_id) and quantity > 0:
-            _change_stock(cursor, supply_id, quantity, "out")
+            _dispense(cursor, supply_id, quantity, visit_id, staff_id)
 
 
 def _supply_auto_deducts(cursor, supply_id):
@@ -236,79 +237,46 @@ def _supply_auto_deducts(cursor, supply_id):
     return bool(row and row[0])
 
 
-def _change_stock(cursor, supply_id, quantity, direction):
-    quantity = int(quantity or 0)
-    if quantity <= 0:
-        return
-
-    if direction == "out":
-        cursor.execute(
-            """
-            SELECT batch_id, stock_level
-            FROM batches
-            WHERE supply_id = ? AND stock_level > 0 AND is_active = true
-            ORDER BY expiration_date ASC
-            """,
-            (supply_id,),
-        )
-        remaining = quantity
-        for batch_id, stock in cursor.fetchall():
-            if remaining <= 0:
-                break
-            take = min(stock, remaining)
-            cursor.execute(
-                """
-                UPDATE batches
-                SET stock_level = stock_level - ?
-                WHERE batch_id = ?
-                """,
-                (take, batch_id),
-            )
-            cursor.execute(
-                """
-                INSERT INTO inventory (inv_date, batch_id, item_in, item_out)
-                VALUES (?, ?, ?, ?)
-                """,
-                (date.today().isoformat(), batch_id, 0, take),
-            )
-            remaining -= take
-        if remaining > 0:
-            print(
-                f"Warning: Not enough stock for supply_id {supply_id}, {remaining} remaining!"
-            )
-        return
-
+def _dispense(cursor, supply_id, quantity, visit_id, staff_id):
+    """Takes the medicine from the batches that expire first. Refuses, and so rolls
+    back the whole visit, when there is not enough in stock."""
     cursor.execute(
-        """
-        SELECT batch_id
-        FROM batches
-        WHERE supply_id = ? AND is_active = true
-        ORDER BY expiration_date ASC
-        LIMIT 1
+        f"""
+        SELECT batch_id, stock_level FROM batches
+        WHERE supply_id = ? AND stock_level > 0 AND is_active = 1
+        ORDER BY {FIRST_TO_EXPIRE}
         """,
+        (supply_id,),
+    )
+    batches = cursor.fetchall()
+    available = sum(stock for _, stock in batches)
+    if available < quantity:
+        name = cursor.execute("SELECT supply_name, unit FROM supplies WHERE supply_id = ?", (supply_id,)).fetchone()
+        unit = f" {name[1]}" if name and name[1] else ""
+        raise ValidationError(f"Only {available}{unit} of {name[0] if name else 'this medicine'} left in stock")
+    remaining = quantity
+    for batch_id, stock in batches:
+        if remaining <= 0:
+            break
+        take = min(stock, remaining)
+        cursor.execute("UPDATE batches SET stock_level = stock_level - ? WHERE batch_id = ?", (take, batch_id))
+        log_movement(cursor, batch_id, 0, take, "dispensed", staff_id, visit_id)
+        remaining -= take
+
+
+def _return_stock(cursor, supply_id, quantity, visit_id, staff_id):
+    """Puts medicine back when a visit's medicines are changed, on the batch it would
+    be given from next."""
+    cursor.execute(
+        f"SELECT batch_id FROM batches WHERE supply_id = ? AND is_active = 1 ORDER BY {FIRST_TO_EXPIRE} LIMIT 1",
         (supply_id,),
     )
     row = cursor.fetchone()
     if not row:
         print(f"Warning: No active batch to restore supply_id {supply_id}")
         return
-
-    batch_id = row[0]
-    cursor.execute(
-        """
-        UPDATE batches
-        SET stock_level = stock_level + ?
-        WHERE batch_id = ?
-        """,
-        (quantity, batch_id),
-    )
-    cursor.execute(
-        """
-        INSERT INTO inventory (inv_date, batch_id, item_in, item_out)
-        VALUES (?, ?, ?, ?)
-        """,
-        (date.today().isoformat(), batch_id, quantity, 0),
-    )
+    cursor.execute("UPDATE batches SET stock_level = stock_level + ? WHERE batch_id = ?", (int(quantity), row[0]))
+    log_movement(cursor, row[0], int(quantity), 0, "returned", staff_id, visit_id)
 
 
 def delete_visit_medications(visit_id):

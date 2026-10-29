@@ -15,20 +15,20 @@ def test_bad_birthday_is_refused(client, headers):
 
 
 def test_negative_stock_movement_is_refused(client, headers, db):
-    response = client.post("/editstockbatch", headers=headers("staff"), json={"batch_id": 1, "item_in": -5, "item_out": 0})
+    response = client.post("/editstockbatch", headers=headers("nurse"), json={"batch_id": 1, "item_in": -5, "item_out": 0, "reason": "restock"})
     assert response.status_code == 400
     assert db.execute("SELECT stock_level FROM batches WHERE batch_id = 1").fetchone()[0] == 10
 
 
 def test_cannot_remove_more_stock_than_the_batch_holds(client, headers, db):
-    response = client.post("/editstockbatch", headers=headers("staff"), json={"batch_id": 1, "item_in": 0, "item_out": 11})
+    response = client.post("/editstockbatch", headers=headers("nurse"), json={"batch_id": 1, "item_in": 0, "item_out": 11, "reason": "damaged"})
     assert response.json == {"success": False}
     assert db.execute("SELECT stock_level FROM batches WHERE batch_id = 1").fetchone()[0] == 10
 
 
 def test_batch_needs_a_whole_number_of_stock(client, headers):
     body = {"supply_id": 1, "batch_number": "B-9", "stock_level": "lots"}
-    assert client.post("/addbatch", headers=headers("staff"), json=body).status_code == 400
+    assert client.post("/addbatch", headers=headers("nurse"), json=body).status_code == 400
 
 
 def test_missing_field_gives_400_not_500(client, headers):

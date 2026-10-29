@@ -1,4 +1,5 @@
 import { apiFetch } from "../api";
+import { withUnit } from "../inventory";
 import { useParams } from "react-router"
 import React from "react"
 import { DISPOSITIONS, LEAVES_SCHOOL, localDateTime } from "../visitOutcomes"
@@ -289,7 +290,7 @@ export default function AddRecord(props:any){
                                                     className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-sm outline-none focus:border-teal-300 focus:ring-2 focus:ring-teal-100"
                                                 >
                                                     {medicines?.map(m => (
-                                                        <option key={m.supply_id} value={m.supply_id}>{m.supply_name}</option>
+                                                        <option key={m.supply_id} value={m.supply_id}>{m.supply_name} ({withUnit(m.available_stock, m.unit)} left)</option>
                                                     ))}
                                                 </select>
                                             </div>

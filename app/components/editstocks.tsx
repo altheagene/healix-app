@@ -1,25 +1,31 @@
 import { apiFetch } from "../api";
 import React from "react"
+import { STOCK_IN_REASONS, STOCK_OUT_REASONS, withUnit } from "../inventory"
 
 export default function EditStock(props: any) {
     const batch = props.batch || {}
     const [saving, setSaving] = React.useState(false)
     const [flashMessage, setFlashMessage] = React.useState<string | null>(null)
     const [flashOk, setFlashOk] = React.useState(false)
-    const [batchDetails, setBatchDetails] = React.useState({
-        batch_id: batch.batch_id,
-        batch_number: batch.batch_number || "",
-        item_in: 0,
-        item_out: 0,
-    })
+    const [direction, setDirection] = React.useState<"in" | "out">("in")
+    const [quantity, setQuantity] = React.useState(0)
+    const [reason, setReason] = React.useState("restock")
+    const [note, setNote] = React.useState("")
+    const reasons = direction === "in" ? STOCK_IN_REASONS : STOCK_OUT_REASONS
+    const stock = batch.stock_level ?? 0
 
     const inputClasses = "w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-teal-300 focus:ring-2 focus:ring-teal-100"
     const labelClasses = "mb-1.5 block text-xs font-medium text-slate-500"
 
     async function submitForm() {
-        if (batchDetails.item_in === 0 && batchDetails.item_out === 0) {
+        if (quantity <= 0) {
             setFlashOk(false)
-            setFlashMessage("Enter stock to add or remove.")
+            setFlashMessage(`Enter how many to ${direction === "in" ? "add" : "remove"}.`)
+            return
+        }
+        if (direction === "out" && quantity > stock) {
+            setFlashOk(false)
+            setFlashMessage(`This batch only has ${withUnit(stock, props.unit)}.`)
             return
         }
 
@@ -29,12 +35,18 @@ export default function EditStock(props: any) {
             const response = await apiFetch("/editstockbatch", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(batchDetails),
+                body: JSON.stringify({
+                    batch_id: batch.batch_id,
+                    item_in: direction === "in" ? quantity : 0,
+                    item_out: direction === "out" ? quantity : 0,
+                    reason,
+                    note,
+                }),
             })
             const result = await response.json()
             if (!response.ok || !result.success) {
                 setFlashOk(false)
-                setFlashMessage("Could not update stock.")
+                setFlashMessage(result.error || "Could not update stock.")
                 return
             }
 
@@ -74,45 +86,49 @@ export default function EditStock(props: any) {
                     )}
 
                     <p className="rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
-                        Current stock: <span className="font-semibold text-slate-900">{batch.stock_level ?? 0}</span>
+                        Batch <span className="font-semibold text-slate-900">{batch.batch_number}</span> has{" "}
+                        <span className="font-semibold text-slate-900">{withUnit(stock, props.unit)}</span>.
+                        Medicines given at a visit are taken off automatically; use this for everything else.
                     </p>
 
-                    <div>
-                        <label className={labelClasses}>Batch number</label>
-                        <input type="text" value={batchDetails.batch_number} readOnly className={`${inputClasses} bg-slate-50 text-slate-500`} />
+                    <div role="group" aria-label="Add or remove" className="flex rounded-full bg-slate-100 p-1">
+                        {([["in", "Add stock"], ["out", "Remove stock"]] as const).map(([value, label]) => (
+                            <button key={value} type="button" aria-pressed={direction === value}
+                                onClick={() => { setDirection(value); setReason(value === "in" ? "restock" : "used") }}
+                                className={`flex-1 rounded-full px-3.5 py-1.5 text-sm font-medium transition ${direction === value ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"}`}>
+                                {label}
+                            </button>
+                        ))}
                     </div>
 
                     <div>
-                        <label className={labelClasses} htmlFor="addstock">Add stock</label>
+                        <label className={labelClasses} htmlFor="stock-quantity">How many{props.unit ? ` (${props.unit})` : ""}</label>
                         <input
                             type="number"
                             min={0}
-                            id="addstock"
-                            value={batchDetails.item_in}
+                            max={direction === "out" ? stock : undefined}
+                            id="stock-quantity"
+                            value={quantity}
                             onChange={(e) => {
                                 const next = parseInt(e.target.value, 10)
-                                setBatchDetails({ ...batchDetails, item_in: Number.isNaN(next) || next < 0 ? 0 : next })
+                                setQuantity(Number.isNaN(next) || next < 0 ? 0 : next)
                             }}
                             className={inputClasses}
                         />
                     </div>
 
                     <div>
-                        <label className={labelClasses} htmlFor="removestock">Remove stock</label>
-                        <input
-                            type="number"
-                            min={0}
-                            max={batch.stock_level ?? 0}
-                            id="removestock"
-                            value={batchDetails.item_out}
-                            onChange={(e) => {
-                                const next = parseInt(e.target.value, 10)
-                                const stock = batch.stock_level ?? 0
-                                const safe = Number.isNaN(next) || next < 0 ? 0 : next
-                                setBatchDetails({ ...batchDetails, item_out: safe > stock ? stock : safe })
-                            }}
-                            className={inputClasses}
-                        />
+                        <label className={labelClasses} htmlFor="stock-reason">Reason</label>
+                        <select id="stock-reason" value={reason} onChange={(e) => setReason(e.target.value)} className={inputClasses}>
+                            {Object.entries(reasons).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label className={labelClasses} htmlFor="stock-note">Note (optional)</label>
+                        <input type="text" id="stock-note" value={note} maxLength={300} onChange={(e) => setNote(e.target.value)}
+                            placeholder={direction === "in" ? "e.g. Delivered by the school office" : "e.g. Used for the sports fest first aid kit"}
+                            className={inputClasses} />
                     </div>
                 </div>
 

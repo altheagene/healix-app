@@ -1,151 +1,140 @@
 import { apiFetch } from "../api";
 import React from "react";
+import { REASONS, withUnit } from "../inventory";
+import { localDateTime, visitDateParts } from "../visitOutcomes";
 
+interface Movement {
+    inv_id: number
+    moved_at: string
+    supply_name: string
+    unit?: string | null
+    batch_number: string
+    item_in: number
+    item_out: number
+    reason?: string | null
+    note?: string | null
+    visit_id?: number | null
+    staff_name?: string | null
+}
 
-export default function InventoryReport(){
+const today = () => localDateTime().slice(0, 10)
 
-     const boxStyle: React.CSSProperties = {
-    border: "1px solid #ccc",
-    borderRadius: "8px",
-    padding: "20px",
-    textAlign: "center",
-    flex: 1,
-    margin: "10px",
-    backgroundColor: "#f9f9f9",
-  };
-
-  const containerStyle: React.CSSProperties = {
-    display: "flex",
-    justifyContent: "space-around",
-    margin: "20px 0",
-  };
-
-  const numberStyle: React.CSSProperties = {
-    fontSize: "2rem",
-    fontWeight: "bold",
-    margin: "10px 0",
-  };
-
-  const downloadReport = async () => {
-        const response = await apiFetch(`/download/inventorylogs?fromdate=${encodeURIComponent(dateRange.from_date)}&todate=${encodeURIComponent(dateRange.to_date)}`);
-        const blob = await response.blob();
-        const link = document.createElement('a');
-        link.href = window.URL.createObjectURL(blob);
-        link.download = "clinic_visit_report.csv";
-        link.click();
-    }
-
-    const [dateRange, setDateRange] = React.useState({
-            from_date: new Date().toISOString().split("T")[0], 
-            to_date: new Date().toISOString().split("T")[0]
-        });
-
-    const [invLogs, setInvLogs] = React.useState<any[]>()
-    const [itemInOut, setItemInOut] = React.useState({
-        item_in: 0,
-        item_out: 0
-    })
-
-    
+export default function InventoryReport() {
+    const [dateRange, setDateRange] = React.useState({ from_date: `${today().slice(0, 7)}-01`, to_date: today() })
+    const [logs, setLogs] = React.useState<Movement[]>([])
+    const [reasonFilter, setReasonFilter] = React.useState("")
 
     React.useEffect(() => {
-        let totalItemIn = 0;
-        let totalItemOut = 0;
-
-        if(invLogs && invLogs.length > 0){
-            for(const item of invLogs){
-                console.log(item.item_in)
-                totalItemIn += item.item_in;
-                totalItemOut += item.item_out
-                console.log(totalItemIn)
-            }
-        }
-        setItemInOut({...itemInOut, item_in: totalItemIn, item_out: totalItemOut})
-
-    }, [invLogs, dateRange])
-
-    
-    
-    console.log(invLogs)
-    console.log(itemInOut)
-    
-        React.useEffect(() => {
-            apiFetch(`/getinvlogs?fromdate=${dateRange.from_date}&todate=${dateRange.to_date}`)
+        if (!dateRange.from_date || !dateRange.to_date) return
+        let stale = false
+        apiFetch(`/getinvlogs?fromdate=${dateRange.from_date}&todate=${dateRange.to_date}`)
             .then(res => res.json())
-            .then(data => setInvLogs(data))
-        }, [])
+            .then(data => { if (!stale) setLogs(Array.isArray(data) ? data : []) })
+        return () => { stale = true }
+    }, [dateRange])
 
-        React.useEffect(() => {
-                apiFetch(`/getinvlogs?fromdate=${dateRange.from_date}&todate=${dateRange.to_date}`)
-            .then(res => res.json())
-            .then(data => setInvLogs(data))
-        }, [dateRange])
+    async function downloadReport() {
+        const response = await apiFetch(`/download/inventorylogs?fromdate=${dateRange.from_date}&todate=${dateRange.to_date}`)
+        if (!response.ok) return
+        const url = URL.createObjectURL(await response.blob())
+        const link = document.createElement("a")
+        link.href = url
+        link.download = `inventory-${dateRange.from_date}-to-${dateRange.to_date}.csv`
+        link.click()
+        URL.revokeObjectURL(url)
+    }
 
-    return(
-        <div className="route-page">
-            <h1 className="route-header">Inventory Report</h1>
-            <div className="date-range-picker">
-                <label>
-                From
-                <input
-                    type="date"
-                    value={dateRange?.from_date}
-                    onChange={(e) =>
-                    setDateRange({ ...dateRange, from_date: e.target.value })
-                    }
-                />
-                </label>
+    const shown = reasonFilter ? logs.filter(log => (log.reason || "") === reasonFilter) : logs
+    const totalIn = shown.reduce((sum, log) => sum + log.item_in, 0)
+    const totalOut = shown.reduce((sum, log) => sum + log.item_out, 0)
+    const dispensed = logs.filter(log => log.reason === "dispensed").reduce((sum, log) => sum + log.item_out, 0)
+    const reasonsSeen = Array.from(new Set(logs.map(log => log.reason || "")))
 
-                <label>
-                To
-                <input
-                    type="date"
-                    value={dateRange?.to_date}
-                    onChange={(e) =>
-                    setDateRange({ ...dateRange, to_date: e.target.value })
-                    }
-                />
-                </label>
-            </div>
-            <button onClick={downloadReport} className="download-btn" ><i className="bi bi-box-arrow-down"></i>Download</button>
-            <div style={containerStyle}>
-                <div style={boxStyle}>
-                    <div>Total Item In</div>
-                    <div style={numberStyle}><p style={{color: '#6EC207'}}>+{itemInOut.item_in}</p></div>
+    return (
+        <div className="min-h-full font-sans text-slate-900">
+            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                    <h1 className="m-0 text-[2rem] font-semibold tracking-tight">Inventory Report</h1>
+                    <p className="m-0 mt-1 text-sm text-slate-500">Every stock movement: what, how many, why, and who recorded it.</p>
                 </div>
-                <div style={boxStyle}>
-                    <div>Total Item Out</div>
-                    <div style={numberStyle}><p style={{color: 'red'}}>-{itemInOut.item_out}</p></div>
-                </div>
+                <button type="button" onClick={downloadReport}
+                    className="inline-flex items-center gap-2 self-start rounded-lg bg-teal-800 px-4 py-2.5 text-sm font-medium text-white hover:bg-teal-900">
+                    <i className="bi bi-download" aria-hidden="true" /> Download CSV
+                </button>
             </div>
 
-            
-            <div className="table-container">
-                <table>
-                    <tr>
-                        <th style={{width: '70px'}}>ID</th>
-                        <th>Supply</th>
-                        <th>Batch</th>
-                        <th>Date</th>
-                        <th>Item In</th>
-                        <th>Item Out</th>
-                    </tr>
-                    {invLogs?.map(inv => {
-                        return(
-                            <tr>
-                                <td>{inv.inv_id}</td>
-                                <td>{inv.supply_name}</td>
-                                <td>{inv.batch_number}</td>
-                                <td>{inv.inv_date}</td>
-                                <td>{inv.item_in}</td>
-                                <td>{inv.item_out}</td>
+            <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <Stat label="Units in" value={`+${totalIn}`} tone="text-emerald-700" />
+                <Stat label="Units out" value={`-${totalOut}`} tone="text-red-700" />
+                <Stat label="Given at visits" value={String(dispensed)} tone="text-slate-900" />
+            </div>
+
+            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                <div className="flex flex-wrap items-center gap-3 border-b border-slate-100 px-5 py-4 text-sm text-slate-600">
+                    <label className="inline-flex items-center gap-1.5">
+                        From
+                        <input type="date" value={dateRange.from_date} max={dateRange.to_date}
+                            onChange={(e) => setDateRange({ ...dateRange, from_date: e.target.value })}
+                            className="rounded-lg border border-slate-200 px-2 py-1" />
+                    </label>
+                    <label className="inline-flex items-center gap-1.5">
+                        to
+                        <input type="date" value={dateRange.to_date} min={dateRange.from_date}
+                            onChange={(e) => setDateRange({ ...dateRange, to_date: e.target.value })}
+                            className="rounded-lg border border-slate-200 px-2 py-1" />
+                    </label>
+                    <select aria-label="Reason" value={reasonFilter} onChange={(e) => setReasonFilter(e.target.value)}
+                        className="rounded-full border border-slate-200 px-3 py-1.5 text-xs">
+                        <option value="">Every reason</option>
+                        {reasonsSeen.map(reason => <option key={reason} value={reason}>{reason ? REASONS[reason] || reason : "Not recorded"}</option>)}
+                    </select>
+                    <span className="text-xs text-slate-400">{shown.length} movement{shown.length === 1 ? "" : "s"}</span>
+                </div>
+                <div className="overflow-x-auto">
+                    <table className="w-full border-collapse text-sm">
+                        <thead>
+                            <tr className="bg-slate-50/60 text-left text-xs text-slate-400">
+                                {["When", "Item", "Batch", "In", "Out", "Reason", "Recorded by"].map(label => (
+                                    <th key={label} className="border-b border-slate-100 px-5 py-3 font-medium">{label}</th>
+                                ))}
                             </tr>
-                        )
-                        })
-                    }
-                </table>
+                        </thead>
+                        <tbody>
+                            {shown.length === 0 ? (
+                                <tr><td colSpan={7} className="px-5 py-12 text-center text-sm text-slate-400">No stock movements in these dates.</td></tr>
+                            ) : shown.map(log => {
+                                const when = visitDateParts(log.moved_at)
+                                return (
+                                    <tr key={log.inv_id} className="align-top">
+                                        <td className="whitespace-nowrap border-b border-slate-100 px-5 py-3">
+                                            {when.date}<span className="block text-xs text-slate-400">{when.time}</span>
+                                        </td>
+                                        <td className="border-b border-slate-100 px-5 py-3 font-medium">{log.supply_name}</td>
+                                        <td className="border-b border-slate-100 px-5 py-3 text-slate-500">{log.batch_number}</td>
+                                        <td className="border-b border-slate-100 px-5 py-3 text-emerald-700">{log.item_in ? `+${withUnit(log.item_in, log.unit)}` : ""}</td>
+                                        <td className="border-b border-slate-100 px-5 py-3 text-red-700">{log.item_out ? `-${withUnit(log.item_out, log.unit)}` : ""}</td>
+                                        <td className="border-b border-slate-100 px-5 py-3">
+                                            {log.reason ? REASONS[log.reason] || log.reason : <span className="text-slate-400">Not recorded</span>}
+                                            {log.visit_id ? <span className="block text-xs text-slate-400">Visit #{log.visit_id}</span> : null}
+                                            {log.note ? <span className="block text-xs text-slate-500">{log.note}</span> : null}
+                                        </td>
+                                        <td className="border-b border-slate-100 px-5 py-3 text-slate-600">{log.staff_name || <span className="text-slate-400">-</span>}</td>
+                                    </tr>
+                                )
+                            })}
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            
+        </div>
+    )
+}
+
+function Stat({ label, value, tone }: { label: string; value: string; tone: string }) {
+    return (
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div className={`text-xl font-bold leading-none ${tone}`}>{value}</div>
+            <div className="mt-1 text-xs text-slate-400">{label}</div>
         </div>
     )
 }

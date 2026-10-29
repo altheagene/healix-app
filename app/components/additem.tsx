@@ -1,5 +1,6 @@
 import { apiFetch } from "../api";
 import React from 'react'
+import { DEFAULT_REORDER_LEVEL, UNITS } from '../inventory'
 
 export default function AddItem(props: any) {
   const [suppliesCategories, setSuppliesCategories] = React.useState<any[]>()
@@ -10,6 +11,8 @@ export default function AddItem(props: any) {
     category_id: 1,
     auto_deduct: false,
     is_active: true,
+    unit: '',
+    reorder_level: '',
   })
   const [flashMessage, setFlashMessage] = React.useState<string | null>(null)
   const [flashOk, setFlashOk] = React.useState(false)
@@ -18,9 +21,8 @@ export default function AddItem(props: any) {
   const labelClasses = "mb-1.5 block text-xs font-medium text-slate-500"
 
   async function submitForm() {
-    for (const key of Object.keys(itemDetails)) {
-      const objKey = key as keyof typeof itemDetails
-      const value = itemDetails[objKey]
+    for (const key of ['supply_name', 'brand', 'description', 'category_id'] as const) {
+      const value = itemDetails[key]
 
       if (value === '' || value === null) {
         setFlashOk(false)
@@ -35,7 +37,7 @@ export default function AddItem(props: any) {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(itemDetails)
+        body: JSON.stringify({ ...itemDetails, reorder_level: itemDetails.reorder_level === '' ? null : Number(itemDetails.reorder_level) })
       })
 
       if (!response.ok) {
@@ -140,6 +142,36 @@ export default function AddItem(props: any) {
                 </option>
               ))}
             </select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelClasses} htmlFor="add-item-unit">Unit</label>
+              <input
+                type="text"
+                id="add-item-unit"
+                list="add-item-units"
+                placeholder="e.g. tablets"
+                value={itemDetails.unit}
+                onChange={(e) => setItemDetails({ ...itemDetails, unit: e.target.value })}
+                className={inputClasses}
+              />
+              <datalist id="add-item-units">
+                {UNITS.map(unit => <option key={unit} value={unit} />)}
+              </datalist>
+            </div>
+            <div>
+              <label className={labelClasses} htmlFor="add-item-reorder">Reorder at or below</label>
+              <input
+                type="number"
+                min={0}
+                id="add-item-reorder"
+                placeholder={String(DEFAULT_REORDER_LEVEL)}
+                value={itemDetails.reorder_level}
+                onChange={(e) => setItemDetails({ ...itemDetails, reorder_level: e.target.value })}
+                className={inputClasses}
+              />
+            </div>
           </div>
 
           <label className="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">

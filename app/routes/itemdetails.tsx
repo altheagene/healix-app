@@ -8,6 +8,9 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import EditStock from '~/components/editstocks';
 import EditBatch from '~/components/editbatch';
 import { useNavigate } from 'react-router';
+import DisposeBatch from '~/components/disposebatch';
+import { DEFAULT_REORDER_LEVEL, canManageStock, daysUntil, expiryLabel, stockStatus, withUnit } from '../inventory';
+import { visitDateParts } from '../visitOutcomes';
 
 export default function ItemDetails(){
 
@@ -23,8 +26,8 @@ export default function ItemDetails(){
     const [showEditBatch, setShowEditBatch] = React.useState(false)
     const [chosenActive, setChosenActive] = React.useState(true)
     const [openMenuId, setOpenMenuId] = React.useState<any>(null);
-
-    console.log(batches)
+    const [disposing, setDisposing] = React.useState<any>(null)
+    const canManage = canManageStock()
 
     React.useEffect(() => {
         apiFetch(`/getsupplydetails?idnum=${id}`).
@@ -74,8 +77,7 @@ export default function ItemDetails(){
           body: JSON.stringify({batch_id: id , is_active: false})
         })
     
-        const result = await responses.json()
-        console.log(result);
+        await responses.json()
         refetchBatches();
       }
     
@@ -88,8 +90,7 @@ export default function ItemDetails(){
           body: JSON.stringify({batch_id: id , is_active: true})
         })
     
-        const result = await responses.json()
-        console.log(result);
+        await responses.json()
         refetchBatches();
       }
 
@@ -97,25 +98,28 @@ export default function ItemDetails(){
         batch.is_active == chosenActive
     )
 
-    function batchStatusClasses(batch: any) {
-        if (new Date(batch.expiration_date) < new Date() && batch.expiration_date) return 'bg-red-50 text-red-700 ring-1 ring-red-200/60'
-        if (batch.stock_level > 20) return 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200/60'
-        return 'bg-teal-50 text-teal-800 ring-1 ring-teal-200/60'
+    // A batch's status is about its expiry; whether the item needs reordering depends on
+    // all its batches together, shown in the card above.
+    function batchStatus(batch: any) {
+        const days = daysUntil(batch.expiration_date)
+        if (!(batch.stock_level > 0)) return { label: 'Empty', tone: 'bg-slate-100 text-slate-600 ring-1 ring-slate-200' }
+        if (days !== null && days < 0) return { label: 'Expired', tone: 'bg-red-50 text-red-700 ring-1 ring-red-200/60' }
+        if (days !== null && days <= 60) return { label: 'Expires soon', tone: 'bg-amber-50 text-amber-800 ring-1 ring-amber-200/60' }
+        return { label: 'OK', tone: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200/60' }
     }
 
-    function batchStatusLabel(batch: any) {
-        if (new Date(batch.expiration_date) < new Date() && batch.expiration_date) return 'Expired'
-        if (batch.stock_level > 20) return 'In Stock'
-        return 'Low Stock'
-    }
-
-    console.log(filteredBatches)
+    const totalStock = batches.filter(b => b.is_active).reduce((sum, b) => sum + (b.stock_level || 0), 0)
+    const itemStatus = stockStatus(totalStock, itemDetails?.reorder_level)
     return(
         <div className="min-h-full font-sans text-slate-900">
             <div className="mx-auto max-w-full">
 
                 {showEditBatch ? <EditBatch hideForm={() => setShowEditBatch(false)} batch={currentBatch} refetch={refetchBatches}  refetchDetails={refetchDetails}/> : null}
-                {showEditStock ? <EditStock hideForm={hideform} batch={currentBatch} refetch={refetchBatches} refetchDetails={refetchDetails}/> : null}
+                {showEditStock ? <EditStock hideForm={hideform} batch={currentBatch} unit={itemDetails?.unit} refetch={refetchBatches} refetchDetails={refetchDetails}/> : null}
+                {disposing && (
+                    <DisposeBatch batch={{ ...disposing, supply_name: itemDetails?.supply_name, unit: itemDetails?.unit }}
+                        onClose={() => setDisposing(null)} onDone={() => { setDisposing(null); refetchBatches() }} />
+                )}
                 {showEditDetails ? <EditItem  hideForm={() => setShowEditDetails(false)} itemDetails={itemDetails} refetch={refetchDetails}/> : null}
                 {showUpdateStock ? <UpdateStocks hideForm={() => setShowUpdateStock(false)}/> : null}
                 {showAddBatch ? <AddBatch hideForm={() => setShowAddBatch(false)} name={itemDetails?.supply_name} refetch={refetchBatches}/> : null}
@@ -140,13 +144,22 @@ export default function ItemDetails(){
                         </span>
                         <p className="mt-3 text-sm text-slate-500"><span className="font-medium text-slate-700">Brand:</span> {itemDetails?.brand || '-'}</p>
                         <p className="mt-1 text-sm text-slate-500"><span className="font-medium text-slate-700">Description:</span> {itemDetails?.description || '-'}</p>
+                        <p className="mt-1 text-sm text-slate-500"><span className="font-medium text-slate-700">Unit:</span> {itemDetails?.unit || 'Not set'}</p>
+                        <p className="mt-1 text-sm text-slate-500">
+                            <span className="font-medium text-slate-700">Reorder at or below:</span>{' '}
+                            {itemDetails?.reorder_level ?? `${DEFAULT_REORDER_LEVEL} (default)`}
+                        </p>
+                        <p className="mt-3 flex items-center gap-2 text-sm text-slate-700">
+                            <span className="font-semibold">{withUnit(totalStock, itemDetails?.unit)}</span> in usable stock
+                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${itemStatus.tone}`}>{itemStatus.label}</span>
+                        </p>
                     </div>
-                    <button
+                    {canManage && <button
                         onClick={() => setShowEditDetails(true)}
                         className="inline-flex flex-shrink-0 items-center gap-2 self-start rounded-lg bg-teal-800 px-4 py-2.5 text-sm font-medium text-white shadow-md transition hover:bg-teal-900"
                     >
                         <i className="bi bi-pencil" /> Edit Details
-                    </button>
+                    </button>}
                 </div>
 
                 {/* BATCHES */}
@@ -161,7 +174,7 @@ export default function ItemDetails(){
                                     chosenActive ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'
                                 }`}
                             >
-                                Active Supplies
+                                Active batches
                             </button>
                             <button
                                 onClick={() => setChosenActive(false)}
@@ -169,16 +182,16 @@ export default function ItemDetails(){
                                     !chosenActive ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'
                                 }`}
                             >
-                                Inactive Supplies
+                                Expired or switched off
                             </button>
                         </div>
 
-                        <button
+                        {canManage && <button
                             onClick={() => setShowAddBatch(true)}
                             className="inline-flex items-center gap-2 rounded-lg bg-teal-800 px-4 py-2.5 text-sm font-medium text-white shadow-md transition hover:bg-teal-900"
                         >
                             <i className="bi bi-plus-lg" /> Add New Batch
-                        </button>
+                        </button>}
                     </div>
 
                     <div className="overflow-x-auto">
@@ -200,22 +213,28 @@ export default function ItemDetails(){
                                             {batch.batch_number}
                                         </td>
                                         <td className="border-b border-slate-100 px-5 py-3 text-sm text-slate-500 last:border-none">
-                                            {batch.stock_level}
+                                            {withUnit(batch.stock_level, itemDetails?.unit)}
                                         </td>
                                         <td className="border-b border-slate-100 px-5 py-3 text-sm text-slate-500 last:border-none">
-                                            {batch.expiration_date === '' ? 'None' : batch.expiration_date}
+                                            {batch.expiration_date ? (
+                                                <>
+                                                    <span className="block">{visitDateParts(batch.expiration_date).date}</span>
+                                                    <span className="block text-xs text-slate-400">{expiryLabel(batch.expiration_date)}</span>
+                                                </>
+                                            ) : 'None'}
                                         </td>
                                         <td className="border-b border-slate-100 px-5 py-3 last:border-none">
-                                            <span className={`inline-flex w-[104px] items-center justify-center rounded-full px-2.5 py-1 text-xs font-medium ${batchStatusClasses(batch)}`}>
-                                                {batchStatusLabel(batch)}
+                                            <span className={`inline-flex w-[104px] items-center justify-center rounded-full px-2.5 py-1 text-xs font-medium ${batchStatus(batch).tone}`}>
+                                                {batchStatus(batch).label}
                                             </span>
                                         </td>
                                         <td className="border-b border-slate-100 px-5 py-3 text-sm text-slate-500 last:border-none">
-                                            {batch.last_updated || 'None'}
+                                            {batch.last_updated ? `${visitDateParts(batch.last_updated).date} ${visitDateParts(batch.last_updated).time}`.trim() : 'Never'}
                                         </td>
                                         <td className="border-b border-slate-100 px-5 py-3 text-right last:border-none">
-                                            <div className="relative inline-block text-left">
+                                            {canManage && <div className="relative inline-block text-left">
                                                 <button
+                                                    aria-label={`Actions for batch ${batch.batch_number}`}
                                                     onClick={() => setOpenMenuId(openMenuId === batch.batch_id ? null : batch.batch_id)}
                                                     className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
                                                 >
@@ -243,6 +262,15 @@ export default function ItemDetails(){
                                                                 <i className="bi bi-pencil-square" /> Edit Batch
                                                             </button>
 
+                                                            {batch.stock_level > 0 && (
+                                                                <button
+                                                                    onClick={() => { setDisposing(batch); setOpenMenuId(null); }}
+                                                                    className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-red-600 transition hover:bg-red-50"
+                                                                >
+                                                                    <i className="bi bi-trash3" /> Dispose
+                                                                </button>
+                                                            )}
+
                                                             {chosenActive ? (
                                                                 <button
                                                                     onClick={() => { removeBatch(batch.batch_id); setOpenMenuId(null); }}
@@ -261,7 +289,7 @@ export default function ItemDetails(){
                                                         </div>
                                                     </>
                                                 )}
-                                            </div>
+                                            </div>}
                                         </td>
                                     </tr>
                                 )) : (
