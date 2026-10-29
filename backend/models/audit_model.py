@@ -21,6 +21,7 @@ SKIP_PATHS = set()
 ACTION_BY_PATH = {
     "/validateuser": "login",
     "/setstaffactive": "staff_active_change",
+    "/getclinicreport": "clinic_report_view",
     "/logout": "logout",
     "/resetpassword": "password_reset",
     "/addstaff": "staff_create",

@@ -1,4 +1,6 @@
+import React from "react";
 import { NavLink, useLocation } from "react-router";
+import { STAFF_ROLE_NAME } from "../roles";
 
 const NAV_ITEMS = [
     { route: "/", text: "Dashboard", icon: "bi-clock", match: ["/"] },
@@ -6,6 +8,7 @@ const NAV_ITEMS = [
     { route: "/patients", text: "Student Records", icon: "bi-folder", match: ["/patients", "/patientdetails", "/addnewpatient"] },
     { route: "/records", text: "Clinic Visits", icon: "bi-file-earmark-text", match: ["/records", "/patientreport", "/others"] },
     { route: "/inventory", text: "Medicine Inventory", icon: "bi-box", match: ["/inventory", "/itemdetails", "/inventoryreport"] },
+    { route: "/reports", text: "Reports", icon: "bi-bar-chart-line", match: ["/reports"], cliniciansOnly: true },
     { route: "/staff", text: "Staff", icon: "bi-people", match: ["/staff"] },
 ]
 
@@ -24,6 +27,10 @@ export default function Navbar(props: {
 }) {
     const expanded = props.expanded
     const { pathname } = useLocation()
+    // Read after the first render: the server cannot see localStorage, and the role can
+    // change when the app re-checks it, so it is read again on each page change.
+    const [isStaffRole, setIsStaffRole] = React.useState(true)
+    React.useEffect(() => { setIsStaffRole(localStorage.getItem("role") === STAFF_ROLE_NAME) }, [pathname])
 
     return (
         <nav className={`flex h-full flex-shrink-0 flex-col border-r border-[#e4ebe6] bg-white transition-all duration-200 ${expanded ? "w-56" : "w-[72px]"}`}>
@@ -37,7 +44,7 @@ export default function Navbar(props: {
             </button>
 
             <ul className="mt-2 flex w-full flex-col gap-1 px-2">
-                {NAV_ITEMS.map((item) => {
+                {NAV_ITEMS.filter(item => !(item.cliniciansOnly && isStaffRole)).map((item) => {
                     const active = sectionActive(pathname, item.match)
                     return (
                     <li key={item.route} title={expanded ? undefined : item.text}>

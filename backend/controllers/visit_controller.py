@@ -2,6 +2,7 @@
 
 from flask import Blueprint, jsonify, request
 
+from models.report_model import clinic_report
 from models.visit_model import (
     add_medications_for_visit,
     add_visit_log,
@@ -185,6 +186,15 @@ def update_medication_details():
     validation.require(data, "visit_id")
     medications = validation.medications(data.get("medications"))
     return json_success(replace_visit_medications(data["visit_id"], medications, request.staff["staff_id"]))
+
+
+@visit_bp.route("/getclinicreport", methods=["GET"])
+def clinic_report_route():
+    date_from = validation.iso_date(request.args.get("date_from"), "date_from")
+    date_to = validation.iso_date(request.args.get("date_to"), "date_to")
+    if date_from > date_to:
+        raise validation.ValidationError("date_from must be on or before date_to")
+    return json_data(clinic_report(date_from, date_to))
 
 
 @visit_bp.route("/generateclinicreport", methods=["GET"])

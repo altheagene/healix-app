@@ -59,6 +59,8 @@ ROUTE_ROLES = {
     # Printable summaries leave the system, and archiving hides a record: clinicians only.
     ("GET", "/patientsummary"): CLINICIANS,
     ("GET", "/download/visits"): CLINICIANS,
+    # Names the students who visit most, so it is for the clinic's own staff.
+    ("GET", "/getclinicreport"): CLINICIANS,
     ("POST", "/archivepatient"): CLINICIANS,
     ("POST", "/addstaff"): ADMINS,
     ("POST", "/adminresetpassword"): ADMINS,
