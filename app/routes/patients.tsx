@@ -147,16 +147,16 @@ export default function Patients() {
     }
 
     return (
-        <div className="min-h-full font-sans text-neutral-900">
+        <div className="min-h-full font-sans text-sage-900">
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6 ">
                 <div>
                     <h1 className="text-[2rem] font-semibold tracking-tight m-0">Patients</h1>
-                    <p className="text-neutral-400 text-sm mt-1">Manage your patients and their medical records.</p>
+                    <p className="text-sage-400 text-sm mt-1">Manage your patients and their medical records.</p>
                 </div>
                 <button
                     id="add-patient-btn"
                     onClick={() => openAddPatient()}
-                    className="inline-flex items-center gap-2 self-start rounded-lg bg-teal-800 px-4 py-2.5 text-sm font-medium text-white shadow-md transition hover:bg-teal-900"
+                    className="inline-flex items-center gap-2 self-start rounded-lg bg-brand-800 px-4 py-2.5 text-sm font-medium text-white shadow-md transition hover:bg-brand-900"
                 >
                     <i className="bi bi-plus-lg" /> Add new patient
                 </button>
@@ -194,22 +194,22 @@ export default function Patients() {
                 />
             )}
 
-            <div className="rounded-2xl border border-neutral-200 bg-white shadow-sm overflow-hidden">
-                <div className="flex flex-col gap-3 border-b border-neutral-200 px-5 py-3">
+            <div className="rounded-2xl border border-sage-200 bg-white shadow-card overflow-hidden">
+                <div className="flex flex-col gap-3 border-b border-sage-200 px-5 py-3">
                     <div className="flex flex-wrap items-center justify-between gap-3">
-                        <p className="m-0 text-sm text-neutral-500">
+                        <p className="m-0 text-sm text-sage-500">
                             {filters.archived ? "Archived patients" : "Patients"} · {result.total} shown
                             {activeFilterCount > 0 && (
                                 <button
                                     type="button"
                                     onClick={() => { setFilters(NO_FILTERS); setCurrentPage(1) }}
-                                    className="ml-3 text-xs font-medium text-teal-800 hover:underline"
+                                    className="ml-3 text-xs font-medium text-brand-800 hover:underline"
                                 >
                                     Clear {activeFilterCount} filter{activeFilterCount > 1 ? "s" : ""}
                                 </button>
                             )}
                         </p>
-                        <div className="flex w-full sm:w-64 items-center gap-2 rounded-full border border-neutral-200 bg-neutral-50 px-3 py-1.5 text-neutral-400">
+                        <div className="flex w-full sm:w-64 items-center gap-2 rounded-full border border-sage-200 bg-sage-50 px-3 py-1.5 text-sage-400">
                             <i className="bi bi-search text-sm" />
                             <input
                                 type="text"
@@ -217,7 +217,7 @@ export default function Patients() {
                                 aria-label="Search patients by name or ID"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full border-none bg-transparent text-sm text-neutral-900 outline-none placeholder:text-neutral-400"
+                                className="w-full border-none bg-transparent text-sm text-sage-900 outline-none placeholder:text-sage-400"
                             />
                         </div>
                     </div>
@@ -249,7 +249,7 @@ export default function Patients() {
                     <table id="patients-table" className="w-full border-collapse">
                         <thead>
                             <tr>
-                                <th className="w-14 border-b border-neutral-200 px-5 py-3"><span className="sr-only">Initials</span></th>
+                                <th className="w-14 border-b border-sage-200 px-5 py-3"><span className="sr-only">Initials</span></th>
                                 <SortHeader label="ID No" sortKey="student_id" sort={sort} onSort={toggleSort} className="w-32" />
                                 <SortHeader label="Name" sortKey="name" sort={sort} onSort={toggleSort} />
                                 <SortHeader label="Department" sortKey="department" sort={sort} onSort={toggleSort} />
@@ -263,23 +263,23 @@ export default function Patients() {
                                 <tr
                                     key={patient.patient_id}
                                     onClick={() => navigate(`/patientdetails/${patient.patient_id}`)}
-                                    className="cursor-pointer transition hover:bg-neutral-50"
+                                    className="cursor-pointer transition hover:bg-sage-50"
                                 >
-                                    <td className="border-b border-neutral-200 px-5 py-3 last:border-none">
-                                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-teal-50 text-xs font-semibold text-teal-800">
+                                    <td className="border-b border-sage-200 px-5 py-3 last:border-none">
+                                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-50 text-xs font-semibold text-brand-800">
                                             {initials(patient)}
                                         </div>
                                     </td>
-                                    <td className="border-b border-neutral-200 px-5 py-3 text-sm text-neutral-400 last:border-none">
+                                    <td className="border-b border-sage-200 px-5 py-3 text-sm text-sage-400 last:border-none">
                                         {patient.student_id || <span className="text-xs">{patient.is_student ? "-" : "Non-student"}</span>}
                                     </td>
-                                    <td className="border-b border-neutral-200 px-5 py-3 text-sm font-medium last:border-none">
+                                    <td className="border-b border-sage-200 px-5 py-3 text-sm font-medium last:border-none">
                                         <div className="flex flex-wrap items-center gap-1.5">
                                             {/* A real link, so keyboard and screen reader users can open the patient too. */}
                                             <Link
                                                 to={`/patientdetails/${patient.patient_id}`}
                                                 onClick={(e) => e.stopPropagation()}
-                                                className="rounded text-inherit no-underline hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                                                className="rounded text-inherit no-underline hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
                                             >
                                                 {patient.first_name} {patient.last_name}
                                             </Link>
@@ -300,28 +300,28 @@ export default function Patients() {
                                             ) : null}
                                         </div>
                                     </td>
-                                    <td className="border-b border-neutral-200 px-5 py-3 text-sm text-neutral-400 last:border-none">{patient.department}</td>
-                                    <td className="border-b border-neutral-200 px-5 py-3 last:border-none">
+                                    <td className="border-b border-sage-200 px-5 py-3 text-sm text-sage-400 last:border-none">{patient.department}</td>
+                                    <td className="border-b border-sage-200 px-5 py-3 last:border-none">
                                         {patient.level !== null && patient.level !== undefined && patient.level !== "" && (
                                             <span
                                                 title={describeLevel(patient.department, patient.level, patient.strand)}
-                                                className="inline-block whitespace-nowrap rounded-full border border-neutral-200 bg-neutral-50 px-2.5 py-1 text-xs"
+                                                className="inline-block whitespace-nowrap rounded-full border border-sage-200 bg-sage-50 px-2.5 py-1 text-xs"
                                             >
                                                 {describeLevel(patient.department, patient.level, patient.strand, true)}
                                             </span>
                                         )}
                                     </td>
-                                    <td className="border-b border-neutral-200 px-5 py-3 text-sm text-neutral-500 last:border-none">
+                                    <td className="border-b border-sage-200 px-5 py-3 text-sm text-sage-500 last:border-none">
                                         {patient.last_visit
                                             ? <time dateTime={patient.last_visit} title={patient.last_visit}>{relativeDate(patient.last_visit)}</time>
-                                            : <span className="text-neutral-300">Never</span>}
+                                            : <span className="text-sage-300">Never</span>}
                                     </td>
-                                    <td className="border-b border-neutral-200 px-5 py-3 text-sm text-neutral-400 last:border-none">{patient.sex}</td>
+                                    <td className="border-b border-sage-200 px-5 py-3 text-sm text-sage-400 last:border-none">{patient.sex}</td>
                                 </tr>
                             ))}
                             {result.patients.length === 0 && (
                                 <tr>
-                                    <td colSpan={7} className="px-5 py-8 text-center text-sm text-neutral-400">
+                                    <td colSpan={7} className="px-5 py-8 text-center text-sm text-sage-400">
                                         No patients match that search.
                                     </td>
                                 </tr>
@@ -373,17 +373,18 @@ function CheckIn({ onExistingPatient, onNewPatient }: {
     }
 
     return (
-        <form onSubmit={checkIn} className="mb-6 flex flex-col gap-3 rounded-2xl border border-teal-100 bg-teal-50/60 p-4 sm:flex-row sm:items-center">
-            <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-teal-800 text-white">
+        // Wraps, so the "not found" notice gets its own line instead of squeezing the ID box.
+        <form onSubmit={checkIn} className="mb-6 flex flex-col gap-3 rounded-2xl border border-brand-100 bg-brand-50/60 p-4 sm:flex-row sm:flex-wrap sm:items-center">
+            <div className="flex flex-shrink-0 items-center gap-3">
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-brand-800 text-white">
                     <i className="bi bi-upc-scan" aria-hidden="true" />
                 </div>
                 <div>
-                    <p className="m-0 text-sm font-semibold text-teal-950">Check in a student</p>
-                    <p className="m-0 text-xs text-teal-900/70">Scan or type their ID, then press Enter.</p>
+                    <p className="m-0 text-sm font-semibold text-brand-950">Check in a student</p>
+                    <p className="m-0 text-xs text-brand-900/70">Scan or type their ID, then press Enter.</p>
                 </div>
             </div>
-            <div className="flex flex-1 items-center gap-2">
+            <div className="flex min-w-0 flex-1 items-center gap-2 sm:min-w-[18rem] sm:max-w-md">
                 <label htmlFor="checkin-id" className="sr-only">Student ID</label>
                 <input
                     id="checkin-id"
@@ -392,22 +393,23 @@ function CheckIn({ onExistingPatient, onNewPatient }: {
                     autoComplete="off"
                     placeholder="Student ID"
                     value={studentId}
-                    onChange={(e) => setStudentId(e.target.value)}
-                    className="w-full rounded-xl border border-teal-200 bg-white px-3.5 py-2.5 text-sm outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
+                    onChange={(e) => { setStudentId(e.target.value); setMessage(null) }}
+                    className="min-w-0 flex-1 rounded-xl border border-brand-200 bg-white px-3.5 py-2.5 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
                 />
                 <button
                     type="submit"
                     disabled={busy || !studentId.trim()}
-                    className="flex-shrink-0 rounded-xl bg-teal-800 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-teal-900 disabled:opacity-50"
+                    className="flex-shrink-0 rounded-xl bg-brand-800 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-900 disabled:opacity-50"
                 >
                     {busy ? "Checking..." : "Check in"}
                 </button>
             </div>
             {message && (
-                <p role="status" className="m-0 text-sm text-teal-950 sm:basis-full">
-                    {message.text}{" "}
+                <p role="status" className="m-0 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-2.5 text-sm text-amber-900 sm:basis-full">
+                    <i className="bi bi-exclamation-circle text-amber-700" aria-hidden="true" />
+                    <span>{message.text}</span>
                     <button type="button" onClick={() => { setMessage(null); onNewPatient(message.studentId || "") }}
-                        className="font-semibold text-teal-800 underline">
+                        className="font-semibold text-brand-800 underline hover:text-brand-900">
                         Add them as a new patient
                     </button>
                 </p>
@@ -427,9 +429,9 @@ function SortHeader({ label, sortKey, sort, onSort, className = "" }: {
     return (
         <th
             aria-sort={active ? (sort.direction === "asc" ? "ascending" : "descending") : "none"}
-            className={`border-b border-neutral-200 px-5 py-3 text-left text-xs font-medium text-neutral-400 ${className}`}
+            className={`border-b border-sage-200 px-5 py-3 text-left text-xs font-medium text-sage-400 ${className}`}
         >
-            <button type="button" onClick={() => onSort(sortKey)} className="inline-flex items-center gap-1 hover:text-neutral-700">
+            <button type="button" onClick={() => onSort(sortKey)} className="inline-flex items-center gap-1 hover:text-sage-700">
                 {label}
                 <i aria-hidden="true" className={`bi ${active ? (sort.direction === "asc" ? "bi-caret-up-fill" : "bi-caret-down-fill") : "bi-chevron-expand"} text-[10px]`} />
             </button>
@@ -448,7 +450,7 @@ function FilterSelect({ label, value, onChange, options }: {
             aria-label={label}
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            className={`rounded-full border px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-teal-100 ${value ? "border-teal-300 bg-teal-50 text-teal-900" : "border-neutral-200 bg-white text-neutral-600"}`}
+            className={`rounded-full border px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-brand-100 ${value ? "border-brand-300 bg-brand-50 text-brand-900" : "border-sage-200 bg-white text-sage-600"}`}
         >
             {options.map(([optionValue, text]) => <option key={optionValue} value={optionValue}>{text}</option>)}
         </select>
@@ -457,8 +459,8 @@ function FilterSelect({ label, value, onChange, options }: {
 
 function FilterCheck({ label, checked, onChange }: { label: string; checked: boolean; onChange: (value: boolean) => void }) {
     return (
-        <label className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs ${checked ? "border-teal-300 bg-teal-50 text-teal-900" : "border-neutral-200 bg-white text-neutral-600"}`}>
-            <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="accent-teal-800" />
+        <label className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs ${checked ? "border-brand-300 bg-brand-50 text-brand-900" : "border-sage-200 bg-white text-sage-600"}`}>
+            <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="accent-brand-800" />
             {label}
         </label>
     )
@@ -498,7 +500,7 @@ function StatCard({ icon, value, label, tone, active, onClick }: {
     active?: boolean
     onClick?: () => void
 }) {
-    const iconTone = tone === "rose" ? "bg-rose-50 text-rose-700" : tone === "amber" ? "bg-amber-50 text-amber-800" : "bg-teal-50 text-teal-800"
+    const iconTone = tone === "rose" ? "bg-rose-50 text-rose-700" : tone === "amber" ? "bg-amber-50 text-amber-800" : "bg-brand-50 text-brand-800"
     const body = (
         <>
             <div className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl text-lg ${iconTone}`}>
@@ -506,18 +508,18 @@ function StatCard({ icon, value, label, tone, active, onClick }: {
             </div>
             <div className="text-left">
                 <div className="text-xl font-bold leading-none">{value}</div>
-                <div className="mt-1 text-xs text-neutral-400">{label}</div>
+                <div className="mt-1 text-xs text-sage-400">{label}</div>
             </div>
         </>
     )
-    const base = "flex items-center gap-3.5 rounded-2xl border bg-white p-4 shadow-sm"
-    if (!onClick) return <div className={`${base} border-neutral-200`}>{body}</div>
+    const base = "flex items-center gap-3.5 rounded-2xl border bg-white p-4 shadow-card"
+    if (!onClick) return <div className={`${base} border-sage-200`}>{body}</div>
     return (
         <button
             type="button"
             onClick={onClick}
             aria-pressed={active}
-            className={`${base} transition hover:border-teal-300 ${active ? "border-teal-500 ring-2 ring-teal-100" : "border-neutral-200"}`}
+            className={`${base} transition hover:border-brand-300 ${active ? "border-brand-500 ring-2 ring-brand-100" : "border-sage-200"}`}
         >
             {body}
         </button>

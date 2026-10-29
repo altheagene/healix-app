@@ -106,7 +106,7 @@ export default function PatientDetails(){
     const userRole = ROLES.find(r => r.staff_category_id === Number(currentUser?.staff_category_id))?.category_name
 
     return(
-        <div className="-mx-8 -my-7 min-h-full bg-[#f6f7f6] px-8 py-7 font-sans text-[#0b3d3a]">
+        <div className="-mx-8 -my-7 min-h-full bg-sage-50 px-8 py-7 font-sans text-brand-800">
             {showEditRecord && <EditRecord record={recordToEdit} hideForm={() => setShowEditRecord(false)} refetch={refetch}/>}
             {showVisit && visitChosen? <ViewVisit visit={visitChosen} hideForm={() => setShowVisit(false)}/> : null}
             {showEdit ? <EditPatient studentData={studentData} allergies={allergies} conditions={conditions} refetch={refetch} hideForm={() => setShowEdit(false)}/> : null}
@@ -125,7 +125,7 @@ export default function PatientDetails(){
                 <div>
                     <button
                         onClick={() => navigate('/patients')}
-                        className="inline-flex items-center gap-1.5 whitespace-nowrap border-none bg-transparent p-0 text-sm text-[#7b8c87] transition hover:text-[#0b3d3a]"
+                        className="inline-flex items-center gap-1.5 whitespace-nowrap border-none bg-transparent p-0 text-sm text-sage-500 transition hover:text-brand-800"
                     >
                         <i className="bi bi-arrow-left" /> Back to patients
                     </button>
@@ -137,14 +137,14 @@ export default function PatientDetails(){
                             <button
                                 type="button"
                                 onClick={() => navigate(`/patientsummary/${id}`)}
-                                className="inline-flex items-center gap-1.5 rounded-full border border-[#dfe7e2] bg-white px-3.5 py-1.5 text-xs font-semibold text-[#0b3d3a] transition hover:bg-[#f3f8f4]"
+                                className="inline-flex items-center gap-1.5 rounded-full border border-sage-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-brand-800 transition hover:bg-brand-50"
                             >
                                 <i className="bi bi-printer" aria-hidden="true" /> Print summary
                             </button>
                             <button
                                 type="button"
                                 onClick={() => setArchived(!studentData?.archived)}
-                                className="inline-flex items-center gap-1.5 rounded-full border border-[#dfe7e2] bg-white px-3.5 py-1.5 text-xs font-semibold text-[#5b716d] transition hover:bg-[#f3f8f4]"
+                                className="inline-flex items-center gap-1.5 rounded-full border border-sage-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-sage-600 transition hover:bg-brand-50"
                             >
                                 <i className={`bi ${studentData?.archived ? 'bi-box-arrow-up' : 'bi-archive'}`} aria-hidden="true" />
                                 {studentData?.archived ? 'Restore' : 'Archive'}
@@ -153,7 +153,7 @@ export default function PatientDetails(){
                     )}
                     <button
                         type="button"
-                        className="hidden h-9 w-9 items-center justify-center rounded-full border-none bg-transparent text-[#7b8c87] sm:flex"
+                        className="hidden h-9 w-9 items-center justify-center rounded-full border-none bg-transparent text-sage-500 sm:flex"
                         title="Notifications"
                     >
                         <i className="bi bi-bell" />
@@ -161,7 +161,7 @@ export default function PatientDetails(){
                     <img src={user} alt="" className="hidden h-8 w-8 rounded-full object-cover sm:block" />
                     <div className="hidden sm:block">
                         <p className="text-sm font-medium leading-none">{userName || "Staff"}</p>
-                        {userRole && <p className="mt-1 text-xs text-[#7b8c87]">{userRole}</p>}
+                        {userRole && <p className="mt-1 text-xs text-sage-500">{userRole}</p>}
                     </div>
                 </div>
             </div>
@@ -178,7 +178,7 @@ export default function PatientDetails(){
                 </div>
             )}
             {studentData?.archived ? (
-                <div className="mb-4 rounded-2xl border border-slate-200 bg-slate-50 px-5 py-3 text-sm text-slate-600">
+                <div className="mb-4 rounded-2xl border border-sage-200 bg-sage-50 px-5 py-3 text-sm text-sage-600">
                     <i className="bi bi-archive mr-2" aria-hidden="true" />
                     This patient is archived. Their record is kept but hidden from the patient list.
                 </div>
@@ -192,32 +192,34 @@ export default function PatientDetails(){
             )}
 
             <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
-                {/* LEFT PANEL: who the patient is, what to watch for, who to call */}
-                <aside className="flex flex-col gap-4 lg:sticky lg:top-4">
-                    <section className="rounded-3xl bg-white p-5">
+                {/* LEFT PANEL: one card, so the page reads as two columns rather than a stack of
+                    boxes. It scrolls with the page: no scrollbar of its own, and not pinned, so
+                    nothing at its bottom is ever cut off. */}
+                <aside className="divide-y divide-sage-100 overflow-hidden rounded-3xl bg-white shadow-card">
+                    <section className="p-5">
                         <div className="flex items-center gap-4">
                             <img src={user} alt="" className="h-16 w-16 flex-shrink-0 rounded-2xl object-cover" />
                             <div className="min-w-0">
                                 <p className="m-0 break-words text-base font-semibold">
-                                    {studentData?.first_name} {studentData?.middle_name} {studentData?.last_name}
+                                    {[studentData?.first_name, studentData?.middle_name, studentData?.last_name].filter(Boolean).join(" ")}
                                 </p>
-                                <p className="m-0 mt-0.5 truncate text-sm text-[#7b8c87]">
+                                <p className="m-0 mt-0.5 truncate text-sm text-sage-500">
                                     {studentData?.department || (studentData?.is_student ? 'Student' : 'Staff or visitor')}
                                 </p>
-                                <p className="m-0 mt-0.5 text-sm font-medium text-[#0b3d3a]">
+                                <p className="m-0 mt-0.5 text-sm font-medium text-brand-800">
                                     {describeLevel(studentData?.department, studentData?.level, studentData?.strand)}
                                 </p>
                             </div>
                         </div>
                         <button
                             onClick={() => setShowEdit(true)}
-                            className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full border border-[#dfe7e2] bg-white px-4 py-2 text-sm font-semibold text-[#0b3d3a] transition hover:bg-[#f3f8f4]"
+                            className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full border border-sage-200 bg-white px-4 py-2 text-sm font-semibold text-brand-800 transition hover:bg-brand-50"
                         >
                             <i className="bi bi-pencil" aria-hidden="true" /> Edit details
                         </button>
                     </section>
 
-                    <section className="rounded-3xl bg-white p-5" aria-labelledby="info-heading">
+                    <section className="p-5" aria-labelledby="info-heading">
                         <h2 id="info-heading" className="m-0 mb-3 text-sm font-semibold">Information</h2>
                         <dl className="m-0 space-y-2.5 text-sm">
                             <InfoRow label="ID number" value={studentData?.student_id} />
@@ -228,46 +230,46 @@ export default function PatientDetails(){
                         </dl>
                     </section>
 
-                    <section className="rounded-3xl bg-white p-5" aria-labelledby="medical-heading">
+                    <section className="p-5" aria-labelledby="medical-heading">
                         <h2 id="medical-heading" className="m-0 mb-3 text-sm font-semibold">Medical</h2>
-                        <p className="m-0 mb-1.5 text-xs text-[#7b8c87]">Allergies</p>
+                        <p className="m-0 mb-1.5 text-xs text-sage-500">Allergies</p>
                         <div className="mb-4 flex flex-wrap gap-1.5">
                             {allergies && allergies.length > 0 ? allergies.map((allergy, idx) => (
                                 <span key={idx} className="rounded-full bg-red-50 px-2.5 py-1 text-xs font-medium text-red-600">
                                     {allergy.allergy_name}
                                 </span>
                             )) : (
-                                <span className="text-sm text-[#9aaea8]">None recorded</span>
+                                <span className="text-sm text-sage-400">None recorded</span>
                             )}
                         </div>
-                        <p className="m-0 mb-1.5 text-xs text-[#7b8c87]">Conditions</p>
+                        <p className="m-0 mb-1.5 text-xs text-sage-500">Conditions</p>
                         <div className="mb-4 flex flex-wrap gap-1.5">
                             {conditions && conditions.length > 0 ? conditions.map((condition, idx) => (
-                                <span key={idx} className="rounded-full bg-sky-50 px-2.5 py-1 text-xs font-medium text-sky-600">
+                                <span key={idx} className="rounded-full bg-leaf-50 px-2.5 py-1 text-xs font-medium text-leaf-700">
                                     {condition.condition_name}
                                 </span>
                             )) : (
-                                <span className="text-sm text-[#9aaea8]">None recorded</span>
+                                <span className="text-sm text-sage-400">None recorded</span>
                             )}
                         </div>
-                        <p className="m-0 mb-1.5 text-xs text-[#7b8c87]">Notes</p>
-                        <p className="m-0 whitespace-pre-line text-sm text-[#5b716d]">{studentData?.notes || 'None'}</p>
+                        <p className="m-0 mb-1.5 text-xs text-sage-500">Notes</p>
+                        <p className="m-0 whitespace-pre-line text-sm text-sage-600">{studentData?.notes || 'None'}</p>
                     </section>
 
-                    <section className="rounded-3xl bg-white p-5" aria-labelledby="contact-heading">
+                    <section className="p-5" aria-labelledby="contact-heading">
                         <h2 id="contact-heading" className="m-0 mb-3 text-sm font-semibold">Emergency contact</h2>
                         {studentData?.emergency_contact_name || studentData?.emergency_contact_phone ? (
                             <>
                                 <p className="m-0 text-sm font-medium">{studentData?.emergency_contact_name || 'Name not recorded'}</p>
-                                <p className="m-0 mt-0.5 text-sm text-[#5b716d]">{studentData?.emergency_contact_phone || 'No phone number'}</p>
+                                <p className="m-0 mt-0.5 text-sm text-sage-600">{studentData?.emergency_contact_phone || 'No phone number'}</p>
                             </>
                         ) : (
-                            <p className="m-0 text-sm text-[#9aaea8]">None recorded</p>
+                            <p className="m-0 text-sm text-sage-400">None recorded</p>
                         )}
                         {studentData?.emergency_contact_phone && (
                             <a
                                 href={`tel:${String(studentData.emergency_contact_phone).replace(/[^\d+]/g, '')}`}
-                                className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#0b3d3a] px-4 py-2 text-sm font-semibold text-white no-underline transition hover:bg-[#082e2c]"
+                                className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full bg-brand-800 px-4 py-2 text-sm font-semibold text-white no-underline transition hover:bg-brand-900"
                             >
                                 <i className="bi bi-telephone-fill" aria-hidden="true" />
                                 Call {studentData?.emergency_contact_name || 'emergency contact'}
@@ -280,17 +282,17 @@ export default function PatientDetails(){
                 <div className="flex min-w-0 flex-col gap-4">
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                         <StatCard icon="bi-calendar-check" iconClass="text-amber-500" label="Total visits" value={clinicLogs?.length ?? 0} />
-                        <StatCard icon="bi-clock-history" iconClass="text-teal-600" label="Last visit" value={lastVisitLabel(clinicLogs)} />
-                        <StatCard icon="bi-arrow-repeat" iconClass="text-sky-500" label="Visits in the last 30 days" value={visitsWithinDays(clinicLogs, 30)} />
+                        <StatCard icon="bi-clock-history" iconClass="text-brand-600" label="Last visit" value={lastVisitLabel(clinicLogs)} />
+                        <StatCard icon="bi-arrow-repeat" iconClass="text-leaf-600" label="Visits in the last 30 days" value={visitsWithinDays(clinicLogs, 30)} />
                     </div>
 
-                    <section className="rounded-3xl bg-white" aria-labelledby="visits-heading">
+                    <section className="rounded-3xl bg-white shadow-card" aria-labelledby="visits-heading">
                         <div className="flex items-center justify-between px-6 py-5">
                             <h2 id="visits-heading" className="m-0 text-sm font-semibold">Clinic visits</h2>
                             {isClinician && (
                                 <button
                                     onClick={() => setShowAddRecord(true)}
-                                    className="inline-flex items-center gap-2 rounded-full bg-[#7dcf8a] px-4 py-2 text-sm font-semibold text-[#0b3d3a] transition hover:bg-[#6bc37a]"
+                                    className="inline-flex items-center gap-2 rounded-full bg-leaf-400 px-4 py-2 text-sm font-semibold text-brand-800 transition hover:bg-leaf-500"
                                 >
                                     <i className="bi bi-plus-lg" /> Add record
                                 </button>
@@ -301,41 +303,41 @@ export default function PatientDetails(){
                             <table className="w-full border-collapse">
                                 <thead>
                                     <tr>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-[#9aaea8]">Date</th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-[#9aaea8]">Reason</th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-[#9aaea8]">Attending</th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-[#9aaea8]">Outcome</th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-[#9aaea8]">Notes</th>
-                                        <th className="px-4 py-3 text-right text-xs font-medium text-[#9aaea8]"><span className="sr-only">Actions</span></th>
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-sage-400">Date</th>
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-sage-400">Reason</th>
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-sage-400">Attending</th>
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-sage-400">Outcome</th>
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-sage-400">Notes</th>
+                                        <th className="px-4 py-3 text-right text-xs font-medium text-sage-400"><span className="sr-only">Actions</span></th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {clinicLogs && clinicLogs.length > 0 ? [...clinicLogs].reverse().map((log, idx) => (
                                         <tr key={idx} className="align-top">
-                                            <td className="whitespace-nowrap border-t border-[#eef2ef] px-4 py-3.5 text-sm">
+                                            <td className="whitespace-nowrap border-t border-sage-100 px-4 py-3.5 text-sm">
                                                 <span className="block font-medium">{String(log.visit_datetime).slice(0, 10)}</span>
-                                                <span className="block text-xs text-[#7b8c87]">{String(log.visit_datetime).slice(11, 16)}</span>
+                                                <span className="block text-xs text-sage-500">{String(log.visit_datetime).slice(11, 16)}</span>
                                             </td>
-                                            <td className="border-t border-[#eef2ef] px-4 py-3.5">
-                                                <span className="inline-flex items-center rounded-full bg-[#eaf6a8] px-2.5 py-1 text-xs font-medium text-[#0b3d3a]">
+                                            <td className="border-t border-sage-100 px-4 py-3.5">
+                                                <span className="inline-flex items-center rounded-full bg-citron-200 px-2.5 py-1 text-xs font-medium text-brand-800">
                                                     {log.service_name}
                                                 </span>
-                                                {log.complaint && <p className="m-0 mt-1 text-xs text-[#5b716d]">{log.complaint}</p>}
+                                                {log.complaint && <p className="m-0 mt-1 text-xs text-sage-600">{log.complaint}</p>}
                                             </td>
-                                            <td className="border-t border-[#eef2ef] px-4 py-3.5 text-sm font-medium">
+                                            <td className="border-t border-sage-100 px-4 py-3.5 text-sm font-medium">
                                                 {log.staff_name}
                                             </td>
-                                            <td className="border-t border-[#eef2ef] px-4 py-3.5 text-sm">
+                                            <td className="border-t border-sage-100 px-4 py-3.5 text-sm">
                                                 <OutcomeCell log={log} canClose={isClinician} onClose={() => setClosingVisit(log)} />
                                             </td>
-                                            <td className="max-w-[16rem] border-t border-[#eef2ef] px-4 py-3.5 text-sm text-[#5b716d]">
+                                            <td className="max-w-[16rem] border-t border-sage-100 px-4 py-3.5 text-sm text-sage-600">
                                                 <span className="line-clamp-2" title={log.notes || undefined}>{log.notes}</span>
                                             </td>
-                                            <td className="border-t border-[#eef2ef] px-4 py-3.5 text-right">
+                                            <td className="border-t border-sage-100 px-4 py-3.5 text-right">
                                                 <button
                                                     onClick={() => { setShowVisit(true); setVisitChosen(log); }}
                                                     aria-label={`View visit on ${String(log.visit_datetime).slice(0, 10)}`}
-                                                    className="inline-flex h-8 w-8 items-center justify-center rounded-full border-none bg-transparent text-[#7b8c87] transition hover:bg-[#f3f8f4] hover:text-[#0b3d3a]"
+                                                    className="inline-flex h-8 w-8 items-center justify-center rounded-full border-none bg-transparent text-sage-500 transition hover:bg-brand-50 hover:text-brand-800"
                                                 >
                                                     <i className="bi bi-eye" aria-hidden="true" />
                                                 </button>
@@ -343,8 +345,8 @@ export default function PatientDetails(){
                                         </tr>
                                     )) : (
                                         <tr>
-                                            <td colSpan={6} className="border-t border-[#eef2ef] px-5 py-12 text-center">
-                                                <p className="text-sm text-[#9aaea8]">No clinic visits yet</p>
+                                            <td colSpan={6} className="border-t border-sage-100 px-5 py-12 text-center">
+                                                <p className="text-sm text-sage-400">No clinic visits yet</p>
                                             </td>
                                         </tr>
                                     )}
@@ -383,14 +385,14 @@ interface TimelineEvent {
 /** How a visit ended, or "In clinic" with a Close button while it is still open. */
 function OutcomeCell({ log, canClose, onClose }: { log: any; canClose: boolean; onClose: () => void }) {
     if (!log.disposition) {
-        if (!log.time_in) return <span className="text-xs text-[#9aaea8]">Not recorded</span>
+        if (!log.time_in) return <span className="text-xs text-sage-400">Not recorded</span>
         return (
             <span className="inline-flex flex-wrap items-center gap-2">
                 <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-800">
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" aria-hidden="true" /> In clinic
                 </span>
                 {canClose && (
-                    <button type="button" onClick={onClose} className="text-xs font-semibold text-[#0b3d3a] underline">Close visit</button>
+                    <button type="button" onClick={onClose} className="text-xs font-semibold text-brand-800 underline">Close visit</button>
                 )}
             </span>
         )
@@ -403,8 +405,8 @@ function OutcomeCell({ log, canClose, onClose }: { log: any; canClose: boolean; 
             >
                 {DISPOSITION_SHORT[log.disposition] || log.disposition}
             </span>
-            {log.referred_to && <span className="text-xs text-[#5b716d]">{log.referred_to}</span>}
-            {log.picked_up_by && <span className="text-xs text-[#5b716d]">Picked up by {log.picked_up_by}</span>}
+            {log.referred_to && <span className="text-xs text-sage-600">{log.referred_to}</span>}
+            {log.picked_up_by && <span className="text-xs text-sage-600">Picked up by {log.picked_up_by}</span>}
             {log.parent_notified ? <span className="text-xs text-emerald-700">Parent notified</span> : null}
         </span>
     )
@@ -433,7 +435,7 @@ function PatientTimeline({ timeline }: { timeline: Timeline }) {
 
     return (
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-5">
-            <div className="rounded-3xl bg-white p-6 xl:col-span-2">
+            <div className="rounded-3xl bg-white p-6 xl:col-span-2 shadow-card">
                 <h2 className="m-0 mb-4 text-sm font-semibold">Vitals over time</h2>
                 {timeline.vitals.length >= 2 ? (
                     <div className="h-56" role="img" aria-label={`Weight and temperature across ${timeline.vitals.length} visits`}>
@@ -451,37 +453,37 @@ function PatientTimeline({ timeline }: { timeline: Timeline }) {
                         </ResponsiveContainer>
                     </div>
                 ) : (
-                    <p className="text-sm text-[#9aaea8]">
+                    <p className="text-sm text-sage-400">
                         {timeline.vitals.length === 1 ? 'One visit with vitals so far. The chart appears after the second.' : 'No weight or temperature recorded yet.'}
                     </p>
                 )}
             </div>
 
-            <div className="rounded-3xl bg-white p-6 xl:col-span-3">
+            <div className="rounded-3xl bg-white p-6 xl:col-span-3 shadow-card">
                 <h2 className="m-0 mb-4 text-sm font-semibold">Timeline</h2>
                 {events.length === 0 ? (
-                    <p className="text-sm text-[#9aaea8]">Nothing recorded yet.</p>
+                    <p className="text-sm text-sage-400">Nothing recorded yet.</p>
                 ) : (
-                    <ol className="m-0 list-none space-y-4 border-l-2 border-[#eef2ef] p-0 pl-5">
+                    <ol className="m-0 list-none space-y-4 border-l-2 border-sage-100 p-0 pl-5">
                         {events.map((event, idx) => (
                             <li key={idx} className="relative">
                                 <span
                                     aria-hidden="true"
-                                    className={`absolute -left-[27px] top-1 h-3 w-3 rounded-full border-2 border-white ${event.type === 'visit' ? 'bg-[#0b3d3a]' : event.type === 'appointment' ? 'bg-amber-400' : 'bg-slate-300'}`}
+                                    className={`absolute -left-[27px] top-1 h-3 w-3 rounded-full border-2 border-white ${event.type === 'visit' ? 'bg-brand-800' : event.type === 'appointment' ? 'bg-amber-400' : 'bg-sage-300'}`}
                                 />
-                                <p className="m-0 text-xs text-[#7b8c87]">{event.at}</p>
+                                <p className="m-0 text-xs text-sage-500">{event.at}</p>
                                 {event.type === 'visit' && (
                                     <div className="text-sm">
                                         <p className="m-0 font-medium">
                                             Visit: {event.complaint || event.service_name}
-                                            {event.staff_name && <span className="font-normal text-[#7b8c87]"> · {event.staff_name}</span>}
+                                            {event.staff_name && <span className="font-normal text-sage-500"> · {event.staff_name}</span>}
                                         </p>
-                                        {event.assessment && <p className="m-0 text-[#5b716d]">Assessment: {event.assessment}</p>}
-                                        {event.treatment && <p className="m-0 text-[#5b716d]">Treatment: {event.treatment}</p>}
-                                        {event.medicines && <p className="m-0 text-[#5b716d]">Medicines: {event.medicines}</p>}
-                                        {event.notes && <p className="m-0 text-[#5b716d]">{event.notes}</p>}
+                                        {event.assessment && <p className="m-0 text-sage-600">Assessment: {event.assessment}</p>}
+                                        {event.treatment && <p className="m-0 text-sage-600">Treatment: {event.treatment}</p>}
+                                        {event.medicines && <p className="m-0 text-sage-600">Medicines: {event.medicines}</p>}
+                                        {event.notes && <p className="m-0 text-sage-600">{event.notes}</p>}
                                         {event.disposition && (
-                                            <p className="m-0 text-[#5b716d]">
+                                            <p className="m-0 text-sage-600">
                                                 Outcome: {DISPOSITIONS[event.disposition] || event.disposition}
                                                 {event.referred_to && ` (${event.referred_to})`}
                                                 {event.picked_up_by && `, picked up by ${event.picked_up_by}`}
@@ -491,12 +493,12 @@ function PatientTimeline({ timeline }: { timeline: Timeline }) {
                                     </div>
                                 )}
                                 {event.type === 'appointment' && (
-                                    <p className="m-0 text-sm">Appointment: {event.service_name || 'Clinic'} <span className="text-[#7b8c87]">({event.status})</span></p>
+                                    <p className="m-0 text-sm">Appointment: {event.service_name || 'Clinic'} <span className="text-sage-500">({event.status})</span></p>
                                 )}
                                 {event.type === 'change' && (
-                                    <p className="m-0 text-sm text-[#5b716d]">
+                                    <p className="m-0 text-sm text-sage-600">
                                         {CHANGE_LABELS[event.action || ''] || event.action}
-                                        {event.username && <span className="text-[#7b8c87]"> by {event.username}</span>}
+                                        {event.username && <span className="text-sage-500"> by {event.username}</span>}
                                     </p>
                                 )}
                             </li>
@@ -504,7 +506,7 @@ function PatientTimeline({ timeline }: { timeline: Timeline }) {
                     </ol>
                 )}
                 {timeline.events.length > 15 && (
-                    <button type="button" onClick={() => setShowAll(v => !v)} className="mt-4 text-sm font-medium text-[#0b3d3a] underline">
+                    <button type="button" onClick={() => setShowAll(v => !v)} className="mt-4 text-sm font-medium text-brand-800 underline">
                         {showAll ? 'Show less' : `Show all ${timeline.events.length} entries`}
                     </button>
                 )}
@@ -540,7 +542,7 @@ function visitsWithinDays(logs: any[] | undefined, days: number) {
 function InfoRow({ label, value, stacked }: { label: string; value?: string | number; stacked?: boolean }) {
     return (
         <div className={stacked ? "space-y-1" : "flex items-center justify-between gap-3"}>
-            <dt className="text-[#7b8c87]">{label}</dt>
+            <dt className="text-sage-500">{label}</dt>
             <dd className="font-medium">{value || '-'}</dd>
         </div>
     )
@@ -548,9 +550,9 @@ function InfoRow({ label, value, stacked }: { label: string; value?: string | nu
 
 function StatCard({ icon, iconClass, label, value }: { icon: string; iconClass: string; label: string; value: number | string }) {
     return (
-        <div className="rounded-3xl bg-white px-5 py-6 text-center">
+        <div className="rounded-3xl bg-white px-5 py-6 text-center shadow-card">
             <i className={`bi ${icon} text-xl ${iconClass}`} />
-            <p className="mt-3 text-xs text-[#7b8c87]">{label}</p>
+            <p className="mt-3 text-xs text-sage-500">{label}</p>
             <p className="mt-1 text-2xl font-semibold leading-none">{value}</p>
         </div>
     )
