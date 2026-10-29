@@ -258,9 +258,9 @@ export default function EditRecord(props: any) {
                 })
               }
             >
-              {staff.map(p => (
+              {staff.filter(p => p.is_active !== 0 || p.staff_id === recordDetails.staff_id).map(p => (
                 <option key={p.staff_id} value={p.staff_id}>
-                  {p.first_name} {p.last_name}
+                  {p.first_name} {p.last_name}{p.is_active === 0 ? " (left)" : ""}
                 </option>
               ))}
             </select>

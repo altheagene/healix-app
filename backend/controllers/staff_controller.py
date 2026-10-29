@@ -17,6 +17,9 @@ from models.staff_model import (
     update_staff_password,
     end_sessions,
     get_session_staff,
+    other_active_admins,
+    set_staff_active,
+    username_taken,
 )
 from views.api_view import json_data, json_error, json_success
 import validation
@@ -25,7 +28,7 @@ staff_bp = Blueprint("staff", __name__)
 
 
 # Only admins, and each person for themselves, may see these.
-PRIVATE_STAFF_FIELDS = ("email", "phone", "birthday")
+PRIVATE_STAFF_FIELDS = ("email", "phone", "birthday", "username", "last_login")
 
 
 def _hide_private_fields(rows):
@@ -36,6 +39,8 @@ def _hide_private_fields(rows):
         if str(row.get("staff_id")) != str(caller["staff_id"]):
             for field in PRIVATE_STAFF_FIELDS:
                 row.pop(field, None)
+            # So the page can say "hidden" rather than treat the contact as missing.
+            row["contact_hidden"] = True
     return rows
 
 
@@ -72,6 +77,8 @@ def validate_user_route():
         return response, status
 
     rows = find_user_by_username(username)
+    if rows and not rows[0].get("is_active", 1) and password_matches(rows[0].get("password"), data.get("password")):
+        return json_error("This account has been switched off. Ask an admin to turn it back on.", 403)
     if not rows or not password_matches(rows[0].get("password"), data.get("password")):
         record_failure(username, request.remote_addr)
         return json_error("Invalid username or password", 401)
@@ -110,6 +117,13 @@ def add_staff_route():
     problem = password_problem(data.get("password"), data.get("username"))
     if problem:
         return json_error(problem)
+    data = {key: value for key, value in data.items() if key not in ("staff_id", "is_active", "token_version")}
+    data["username"] = data["username"].strip()
+    if username_taken(data["username"]):
+        return json_error("That username is already taken")
+    data["middle_name"] = (data.get("middle_name") or "").strip()
+    if data.get("birthday"):
+        data["birthday"] = validation.iso_date(data["birthday"], "birthday")
     return json_success(add_staff(**data))
 
 
@@ -127,18 +141,46 @@ def update_staff_route():
         return json_error("You do not have permission for this", 403)
     if not is_admin and str(data.get("staff_category_id")) != str(caller.get("staff_category_id")):
         return json_error("You do not have permission to change a role", 403)
+    validation.require(data, "first_name", "last_name", "username")
+    username = data["username"].strip()
+    if username_taken(username, target_id):
+        return json_error("That username is already taken")
+    target = get_session_staff(target_id)
+    if (target and int(target["staff_category_id"]) == ADMIN and int(data["staff_category_id"]) != ADMIN
+            and not other_active_admins(target_id, ADMIN)):
+        return json_error("This is the only admin. Make someone else an admin first.")
 
-    success = update_staff(
-        staff_id=data["staff_id"],
-        first_name=data["first_name"],
-        last_name=data["last_name"],
-        staff_category_id=data["staff_category_id"],
-        sex=data["sex"],
-        phone=data["phone"],
-        email=data["email"],
-        username=data["username"],
-    )
-    return json_success(success)
+    fields = {
+        "staff_id": data["staff_id"],
+        "first_name": data["first_name"].strip(),
+        "middle_name": (data.get("middle_name") or "").strip(),
+        "last_name": data["last_name"].strip(),
+        "staff_category_id": data["staff_category_id"],
+        "sex": data.get("sex"),
+        "phone": data.get("phone"),
+        "email": data.get("email"),
+        "username": username,
+    }
+    if data.get("birthday"):
+        fields["birthday"] = validation.iso_date(data["birthday"], "birthday")
+    return json_success(update_staff(**fields))
+
+
+@staff_bp.route("/setstaffactive", methods=["POST"])
+def set_staff_active_route():
+    """Switches a staff account off when someone leaves, or back on. Past records keep their name."""
+    data = request.get_json() or {}
+    validation.require(data, "staff_id", "is_active")
+    active = bool(data["is_active"])
+    target = find_staff(data["staff_id"])
+    if not target:
+        return json_error("No such staff member", 404)
+    if not active:
+        if str(data["staff_id"]) == str(request.staff["staff_id"]):
+            return json_error("You cannot switch off your own account")
+        if int(target[0]["staff_category_id"]) == ADMIN and not other_active_admins(data["staff_id"], ADMIN):
+            return json_error("This is the only admin. Make someone else an admin first.")
+    return json_success(set_staff_active(data["staff_id"], active))
 
 
 @staff_bp.route("/resetpassword", methods=["POST"])

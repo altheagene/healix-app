@@ -41,7 +41,8 @@ export default function AddRecord(props:any){
 
         apiFetch(`/getstaffandcateg`)
         .then(res => res.json())
-        .then(data => setStaff(data))
+        // Staff who have left cannot attend new visits.
+        .then(data => setStaff(Array.isArray(data) ? data.filter(person => person.is_active !== 0) : []))
 
         apiFetch(`/getallmedicine`)
         .then(res => res.json())

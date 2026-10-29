@@ -36,8 +36,13 @@ def list_staff_with_categories():
             s.sex,
             s.phone,
             s.email,
-            s.username
+            s.username,
+            s.is_active,
+            -- The audit log is kept in UTC; the page shows the clinic's own time.
+            (SELECT datetime(MAX(a.created_at), 'localtime') FROM audit_logs a
+             WHERE a.staff_id = s.staff_id AND a.action = 'login') AS last_login
             FROM staff s
+            ORDER BY s.is_active DESC, lower(s.last_name), lower(s.first_name)
             """
     return _attach_role(getprocess(sql, []))
 
@@ -77,11 +82,40 @@ def ensure_session_column():
 
 
 def get_session_staff(staff_id):
+    """The signed-in staff member, or None. A switched-off account has no session."""
     rows = getprocess(
-        "SELECT staff_id, username, staff_category_id, token_version FROM staff WHERE staff_id = ?",
+        "SELECT staff_id, username, staff_category_id, token_version FROM staff"
+        " WHERE staff_id = ? AND coalesce(is_active, 1) = 1",
         [staff_id],
     )
     return rows[0] if rows else None
+
+
+def username_taken(username, except_staff_id=None):
+    rows = getprocess(
+        "SELECT staff_id FROM staff WHERE lower(username) = lower(?) AND staff_id IS NOT ?",
+        [username, except_staff_id],
+    )
+    return bool(rows)
+
+
+def other_active_admins(staff_id, admin_role):
+    rows = getprocess(
+        "SELECT COUNT(*) AS n FROM staff WHERE staff_category_id = ? AND coalesce(is_active, 1) = 1"
+        " AND staff_id != ?",
+        [admin_role, staff_id],
+    )
+    return rows[0]["n"]
+
+
+def set_staff_active(staff_id, active):
+    """Switches an account on or off. Switching off also ends its open sessions."""
+    if active:
+        return postprocess("UPDATE staff SET is_active = 1 WHERE staff_id = ?", [staff_id])
+    return postprocess(
+        "UPDATE staff SET is_active = 0, token_version = token_version + 1 WHERE staff_id = ?",
+        [staff_id],
+    )
 
 
 def end_sessions(staff_id):

@@ -36,6 +36,8 @@ COLUMNS = [
     # the item needs reordering. See models/inventory_model.py.
     ("supplies", "unit", "TEXT"),
     ("supplies", "reorder_level", "INTEGER"),
+    # Staff who leave are switched off, not deleted, so their name stays on past records.
+    ("staff", "is_active", "INTEGER NOT NULL DEFAULT 1"),
 ]
 
 

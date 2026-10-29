@@ -62,6 +62,7 @@ ROUTE_ROLES = {
     ("POST", "/archivepatient"): CLINICIANS,
     ("POST", "/addstaff"): ADMINS,
     ("POST", "/adminresetpassword"): ADMINS,
+    ("POST", "/setstaffactive"): ADMINS,
     ("GET", "/getauditlogs"): ADMINS,
 }
 

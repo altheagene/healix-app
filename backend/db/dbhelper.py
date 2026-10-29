@@ -4,7 +4,7 @@ from db.connection import getprocess, insertprocess, postprocess
 # straight through as columns. Only the columns listed here may be written.
 WRITABLE_COLUMNS = {
     "staff": {"staff_id", "first_name", "middle_name", "last_name", "staff_category_id",
-              "birthday", "sex", "phone", "email", "username", "password"},
+              "birthday", "sex", "phone", "email", "username", "password", "is_active"},
     "patients": {"patient_id", "is_student", "student_id", "department", "level", "first_name",
                  "middle_name", "last_name", "birthday", "sex", "email", "phone", "notes",
                  "emergency_contact_name", "emergency_contact_phone", "archived", "strand"},

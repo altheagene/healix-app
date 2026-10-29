@@ -1,35 +1,65 @@
 import React from "react";
-import '../staff.css'
+import Modal from "./modal";
+import { telHref, visitDateParts } from "../visitOutcomes";
 
-export default function ViewStaff(props: any) {
-  const [staffInfo, setStaffInfo] = React.useState<any>(null);
+export function fullName(person: any) {
+  return [person?.first_name, person?.middle_name, person?.last_name].filter(part => part && String(part).trim()).join(" ")
+}
 
-  React.useEffect(() => {
-    setStaffInfo(props.staff);
-  }, [props.staff]);
+export function lastSignIn(value?: string | null) {
+  if (!value) return "Never"
+  const when = visitDateParts(value)
+  return `${when.date}${when.time ? `, ${when.time}` : ""}`
+}
 
-  if (!staffInfo) return null;
-
+export default function ViewStaff({ staff, onClose, onEdit }: { staff: any; onClose: () => void; onEdit?: () => void }) {
+  const hidden = Boolean(staff.contact_hidden)
+  const birthday = staff.birthday ? visitDateParts(staff.birthday).date : ""
   return (
-    <div className="staff-overlay">
-      <div className="staff-card">
-        <div className="staff-header">
-          <h2>Staff Details</h2>
-          <button className="close-btn" style={{color: 'red'}} onClick={props.hideForm}>×</button>
+    <Modal title={fullName(staff) || "Staff member"} onClose={onClose} width={460}>
+      <div className="space-y-4 px-6 py-5 text-sm">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700">{staff.category_name}</span>
+          {staff.is_active === 0 && (
+            <span className="rounded-full bg-red-50 px-2.5 py-1 text-xs font-medium text-red-700 ring-1 ring-red-200/60">Switched off</span>
+          )}
         </div>
-
-        <div className="staff-body">
-          <div className="staff-info" style={{display: 'flex', flexDirection: 'column', gap: '1rem'}}>
-            <div><strong>Name:</strong> {staffInfo.first_name} {staffInfo.middle_name} {staffInfo.last_name}</div>
-            <div><strong>Category:</strong> {staffInfo.category_name}</div>
-            <div><strong>Birthday:</strong> {staffInfo.birthday}</div>
-            <div><strong>Sex:</strong> {staffInfo.sex}</div>
-            <div><strong>Phone:</strong> {staffInfo.phone}</div>
-            <div><strong>Email:</strong> {staffInfo.email}</div>
-            <div><strong>Username:</strong> {staffInfo.username}</div>
-          </div>
-        </div>
+        <dl className="m-0 grid grid-cols-[7rem_1fr] gap-x-4 gap-y-2 text-slate-700">
+          <dt className="font-medium text-slate-500">Phone</dt>
+          <dd className="m-0">{hidden ? <Hidden /> : staff.phone ? <a href={telHref(staff.phone)} className="text-teal-800 hover:underline">{staff.phone}</a> : "-"}</dd>
+          <dt className="font-medium text-slate-500">Email</dt>
+          <dd className="m-0 break-all">{hidden ? <Hidden /> : staff.email ? <a href={`mailto:${staff.email}`} className="text-teal-800 hover:underline">{staff.email}</a> : "-"}</dd>
+          {!hidden && (
+            <>
+              <dt className="font-medium text-slate-500">Birthday</dt>
+              <dd className="m-0">{birthday || "-"}</dd>
+              <dt className="font-medium text-slate-500">Sex</dt>
+              <dd className="m-0 capitalize">{staff.sex || "-"}</dd>
+              <dt className="font-medium text-slate-500">Username</dt>
+              <dd className="m-0">{staff.username || "-"}</dd>
+            </>
+          )}
+          {"last_login" in staff && (
+            <>
+              <dt className="font-medium text-slate-500">Last signed in</dt>
+              <dd className="m-0">{lastSignIn(staff.last_login)}</dd>
+            </>
+          )}
+        </dl>
+        {hidden && <p className="m-0 text-xs text-slate-400">Only admins can see other staff members' contact details.</p>}
       </div>
-    </div>
-  );
+      {onEdit && (
+        <div className="flex justify-end border-t border-slate-100 px-6 py-4">
+          <button type="button" onClick={onEdit}
+            className="inline-flex items-center gap-2 rounded-xl bg-teal-800 px-4 py-2.5 text-sm font-semibold text-white hover:bg-teal-900">
+            <i className="bi bi-pencil" aria-hidden="true" /> Edit
+          </button>
+        </div>
+      )}
+    </Modal>
+  )
+}
+
+function Hidden() {
+  return <span className="text-slate-400">Hidden</span>
 }

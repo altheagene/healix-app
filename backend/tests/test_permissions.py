@@ -38,10 +38,11 @@ def test_cors_allows_only_configured_origins(client, headers):
 
 def test_staff_contacts_are_hidden_from_non_admins(client, headers):
     rows = client.get("/getstaffandcateg", headers=headers("nurse")).json
-    others = [r for r in rows if r["username"] != "nurse"]
-    me = next(r for r in rows if r["username"] == "nurse")
-    assert others and all("email" not in r and "phone" not in r and "birthday" not in r for r in others)
-    assert me["email"] == "nurse@example.com"
+    others = [r for r in rows if r["staff_id"] != 2]
+    me = next(r for r in rows if r["staff_id"] == 2)  # the nurse
+    private = ("email", "phone", "birthday", "username", "last_login")
+    assert others and all(not set(private) & set(r) and r["contact_hidden"] for r in others)
+    assert me["email"] == "nurse@example.com" and me["username"] == "nurse"
 
 
 def test_admin_sees_staff_contacts(client, headers):
