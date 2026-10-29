@@ -187,26 +187,26 @@ export default function AddPatient(props: any) {
   const selectedAllergyItems = allergies.filter(a => selectedAllergy.includes(a.allergy_id));
   const selectedConditionItems = conditions.filter(c => selectedCondition.includes(c.condition_id));
 
-  const inputClasses = "w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-teal-300 focus:ring-2 focus:ring-teal-100";
-  const labelClasses = "mb-1.5 block text-xs font-medium text-slate-500";
+  const inputClasses = "w-full rounded-xl border border-sage-200 bg-white px-3.5 py-2.5 text-sm text-sage-900 outline-none placeholder:text-sage-400 focus:border-brand-300 focus:ring-2 focus:ring-brand-100";
+  const labelClasses = "mb-1.5 block text-xs font-medium text-sage-500";
 
   // ---------- JSX ----------
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-xl">
 
         {/* HEADER */}
-        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+        <div className="flex items-center justify-between border-b border-sage-100 px-6 py-4">
           <button
             onClick={props.hideForm}
-            className="flex items-center gap-1.5 text-sm font-medium text-slate-500 transition hover:text-slate-800"
+            className="flex items-center gap-1.5 text-sm font-medium text-sage-500 transition hover:text-sage-800"
           >
             <i className="bi bi-x-lg" /> Hide
           </button>
-          <p className="text-base font-semibold text-slate-900">Add Patient</p>
+          <p className="text-base font-semibold text-sage-900">Add Patient</p>
           <button
             onClick={() => { setStudentData({}); setIdnumSearch(''); setSelectedAllergy([]); setSelectedCondition([]); }}
-            className="flex items-center gap-1.5 text-sm font-medium text-slate-500 transition hover:text-slate-800"
+            className="flex items-center gap-1.5 text-sm font-medium text-sage-500 transition hover:text-sage-800"
           >
             <i className="bi bi-eraser" /> Clear
           </button>
@@ -222,7 +222,7 @@ export default function AddPatient(props: any) {
           )}
 
           {/* PATIENT TYPE */}
-          <div className="mb-5 inline-flex rounded-xl border border-slate-200 bg-slate-50 p-1" role="radiogroup" aria-label="Patient type">
+          <div className="mb-5 inline-flex rounded-xl border border-sage-200 bg-sage-50 p-1" role="radiogroup" aria-label="Patient type">
             {[[true, 'Student'], [false, 'Staff or visitor']].map(([value, label]) => (
               <button
                 key={String(value)}
@@ -230,7 +230,7 @@ export default function AddPatient(props: any) {
                 role="radio"
                 aria-checked={isStudent === value}
                 onClick={() => setIsStudent(value as boolean)}
-                className={`rounded-lg px-3.5 py-1.5 text-sm font-medium transition ${isStudent === value ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+                className={`rounded-lg px-3.5 py-1.5 text-sm font-medium transition ${isStudent === value ? 'bg-white text-sage-900 shadow-sm' : 'text-sage-500 hover:text-sage-800'}`}
               >
                 {label as string}
               </button>
@@ -240,18 +240,18 @@ export default function AddPatient(props: any) {
           {/* SEARCH BY ID */}
           {isStudent && <div className="mb-6">
             <label className={labelClasses}>Find student by ID number</label>
-            <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 focus-within:border-teal-300 focus-within:ring-2 focus-within:ring-teal-100">
-              <i className="bi bi-search text-sm text-slate-400" />
+            <div className="flex items-center gap-2 rounded-xl border border-sage-200 bg-white px-3.5 py-2.5 focus-within:border-brand-300 focus-within:ring-2 focus-within:ring-brand-100">
+              <i className="bi bi-search text-sm text-sage-400" />
               <input
                 type="text"
                 placeholder="Search by ID Number"
                 value={idnumSearch}
                 onChange={(e) => setIdnumSearch(e.target.value)}
-                className="w-full border-none bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
+                className="w-full border-none bg-transparent text-sm text-sage-900 outline-none placeholder:text-sage-400"
               />
               <button
                 onClick={() => findStudent()}
-                className="flex-shrink-0 rounded-lg bg-slate-900 px-3.5 py-1.5 text-xs font-medium text-white transition hover:bg-slate-700"
+                className="flex-shrink-0 rounded-lg bg-sage-900 px-3.5 py-1.5 text-xs font-medium text-white transition hover:bg-sage-700"
               >
                 Search
               </button>
@@ -260,7 +260,7 @@ export default function AddPatient(props: any) {
 
           {/* STUDENT INFORMATION */}
           <div className="mb-6">
-            <p className="mb-3 text-sm font-semibold text-slate-900">
+            <p className="mb-3 text-sm font-semibold text-sage-900">
               {isStudent ? 'Student Information' : 'Personal Information'} <span className="text-red-500">*</span>
             </p>
 
@@ -276,7 +276,7 @@ export default function AddPatient(props: any) {
                 />
               </div>
               <div>
-                <label className={labelClasses}>Middle Name <span className="font-normal text-slate-400">(optional)</span></label>
+                <label className={labelClasses}>Middle Name <span className="font-normal text-sage-400">(optional)</span></label>
                 <input
                   type="text"
                   value={studentData?.middle_name || ''}
@@ -315,8 +315,8 @@ export default function AddPatient(props: any) {
                     onClick={() => setStudentData({ ...studentData, sex: 'Female' })}
                     className={`flex-1 rounded-xl border px-3.5 py-2.5 text-sm font-medium transition ${
                       studentData?.sex === 'Female'
-                        ? 'border-teal-300 bg-teal-50 text-teal-800'
-                        : 'border-slate-200 text-slate-500 hover:bg-slate-50'
+                        ? 'border-brand-300 bg-brand-50 text-brand-800'
+                        : 'border-sage-200 text-sage-500 hover:bg-sage-50'
                     }`}
                   >
                     Female
@@ -326,8 +326,8 @@ export default function AddPatient(props: any) {
                     onClick={() => setStudentData({ ...studentData, sex: 'Male' })}
                     className={`flex-1 rounded-xl border px-3.5 py-2.5 text-sm font-medium transition ${
                       studentData?.sex === 'Male'
-                        ? 'border-teal-300 bg-teal-50 text-teal-800'
-                        : 'border-slate-200 text-slate-500 hover:bg-slate-50'
+                        ? 'border-brand-300 bg-brand-50 text-brand-800'
+                        : 'border-sage-200 text-sage-500 hover:bg-sage-50'
                     }`}
                   >
                     Male
@@ -378,7 +378,7 @@ export default function AddPatient(props: any) {
 
           {/* MEDICAL INFORMATION */}
           <div className="mb-6">
-            <p className="mb-3 text-sm font-semibold text-slate-900">Medical Information</p>
+            <p className="mb-3 text-sm font-semibold text-sage-900">Medical Information</p>
 
             <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
               {/* ALLERGIES */}
@@ -386,51 +386,51 @@ export default function AddPatient(props: any) {
                 <label className={labelClasses}>Allergies</label>
                 <div
                   onClick={() => setShowAllergyDropdown(prev => !prev)}
-                  className="flex min-h-[44px] cursor-pointer flex-wrap items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 focus-within:border-teal-300 focus-within:ring-2 focus-within:ring-teal-100"
+                  className="flex min-h-[44px] cursor-pointer flex-wrap items-center gap-1.5 rounded-xl border border-sage-200 bg-white px-3 py-2 focus-within:border-brand-300 focus-within:ring-2 focus-within:ring-brand-100"
                 >
                   {selectedAllergyItems.length > 0 ? (
                     <>
-                      <span className="inline-flex items-center gap-1 rounded-full bg-teal-50 px-2.5 py-1 text-xs font-medium text-teal-800 ring-1 ring-teal-200/60">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2.5 py-1 text-xs font-medium text-brand-800 ring-1 ring-brand-200/60">
                         {selectedAllergyItems[0].allergy_name}
                       </span>
                       {selectedAllergyItems.length > 1 && (
-                        <span className="text-xs text-slate-400">(+{selectedAllergyItems.length - 1} others)</span>
+                        <span className="text-xs text-sage-400">(+{selectedAllergyItems.length - 1} others)</span>
                       )}
                     </>
                   ) : (
-                    <span className="text-sm text-slate-400">Search allergies</span>
+                    <span className="text-sm text-sage-400">Search allergies</span>
                   )}
                   <div className="ml-auto flex items-center gap-1.5">
                     {selectedAllergyItems.length > 0 && (
                       <i
-                        className="bi bi-x-lg text-xs text-slate-400 hover:text-slate-700"
+                        className="bi bi-x-lg text-xs text-sage-400 hover:text-sage-700"
                         onClick={(e) => { e.stopPropagation(); setSelectedAllergy([]); }}
                       />
                     )}
-                    <i className={`bi bi-chevron-down text-xs text-slate-400 transition ${showAllergyDropdown ? 'rotate-180' : ''}`} />
+                    <i className={`bi bi-chevron-down text-xs text-sage-400 transition ${showAllergyDropdown ? 'rotate-180' : ''}`} />
                   </div>
                 </div>
 
                 {showAllergyDropdown && (
-                  <div className="absolute z-20 mt-1.5 w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
-                    <div className="border-b border-slate-100 p-2">
+                  <div className="absolute z-20 mt-1.5 w-full overflow-hidden rounded-xl border border-sage-200 bg-white shadow-lg">
+                    <div className="border-b border-sage-100 p-2">
                       <input
                         type="text"
                         autoFocus
                         placeholder="Search allergies"
                         onChange={e => setAllergySearch(e.target.value)}
-                        className="w-full rounded-lg border-none bg-slate-50 px-3 py-2 text-sm outline-none placeholder:text-slate-400"
+                        className="w-full rounded-lg border-none bg-sage-50 px-3 py-2 text-sm outline-none placeholder:text-sage-400"
                       />
                     </div>
                     <ul className="max-h-40 overflow-y-auto py-1">
                       {filteredAllergies.map(item => (
                         <li key={item.allergy_id}>
-                          <label className="flex cursor-pointer items-center gap-2.5 px-3.5 py-2 text-sm text-slate-700 hover:bg-slate-50">
+                          <label className="flex cursor-pointer items-center gap-2.5 px-3.5 py-2 text-sm text-sage-700 hover:bg-sage-50">
                             <input
                               type="checkbox"
                               checked={selectedAllergy.includes(item.allergy_id)}
                               onChange={() => toggleOption(item.allergy_id, 'allergy')}
-                              className="h-4 w-4 rounded border-slate-300 text-teal-800 focus:ring-teal-200"
+                              className="h-4 w-4 rounded border-sage-300 text-brand-800 focus:ring-brand-200"
                             />
                             {item.allergy_name}
                           </label>
@@ -439,7 +439,7 @@ export default function AddPatient(props: any) {
                       {allergySearch && !filteredAllergies.some(a => a.allergy_name.toLowerCase() === allergySearch.toLowerCase()) && (
                         <li
                           onClick={() => addNewAllergy(allergySearch)}
-                          className="cursor-pointer px-3.5 py-2 text-sm font-medium text-teal-900 hover:bg-teal-50"
+                          className="cursor-pointer px-3.5 py-2 text-sm font-medium text-brand-900 hover:bg-brand-50"
                         >
                           + Add "{allergySearch}"
                         </li>
@@ -454,51 +454,51 @@ export default function AddPatient(props: any) {
                 <label className={labelClasses}>Conditions</label>
                 <div
                   onClick={() => setShowConditionDropdown(prev => !prev)}
-                  className="flex min-h-[44px] cursor-pointer flex-wrap items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 focus-within:border-teal-300 focus-within:ring-2 focus-within:ring-teal-100"
+                  className="flex min-h-[44px] cursor-pointer flex-wrap items-center gap-1.5 rounded-xl border border-sage-200 bg-white px-3 py-2 focus-within:border-brand-300 focus-within:ring-2 focus-within:ring-brand-100"
                 >
                   {selectedConditionItems.length > 0 ? (
                     <>
-                      <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 ring-1 ring-blue-200/60">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-citron-100 px-2.5 py-1 text-xs font-medium text-brand-800 ring-1 ring-citron-400/60">
                         {selectedConditionItems[0].condition_name}
                       </span>
                       {selectedConditionItems.length > 1 && (
-                        <span className="text-xs text-slate-400">(+{selectedConditionItems.length - 1} others)</span>
+                        <span className="text-xs text-sage-400">(+{selectedConditionItems.length - 1} others)</span>
                       )}
                     </>
                   ) : (
-                    <span className="text-sm text-slate-400">Search conditions</span>
+                    <span className="text-sm text-sage-400">Search conditions</span>
                   )}
                   <div className="ml-auto flex items-center gap-1.5">
                     {selectedConditionItems.length > 0 && (
                       <i
-                        className="bi bi-x-lg text-xs text-slate-400 hover:text-slate-700"
+                        className="bi bi-x-lg text-xs text-sage-400 hover:text-sage-700"
                         onClick={(e) => { e.stopPropagation(); setSelectedCondition([]); }}
                       />
                     )}
-                    <i className={`bi bi-chevron-down text-xs text-slate-400 transition ${showConditionDropdown ? 'rotate-180' : ''}`} />
+                    <i className={`bi bi-chevron-down text-xs text-sage-400 transition ${showConditionDropdown ? 'rotate-180' : ''}`} />
                   </div>
                 </div>
 
                 {showConditionDropdown && (
-                  <div className="absolute z-20 mt-1.5 w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
-                    <div className="border-b border-slate-100 p-2">
+                  <div className="absolute z-20 mt-1.5 w-full overflow-hidden rounded-xl border border-sage-200 bg-white shadow-lg">
+                    <div className="border-b border-sage-100 p-2">
                       <input
                         type="text"
                         autoFocus
                         placeholder="Search conditions"
                         onChange={e => setConditionSearch(e.target.value)}
-                        className="w-full rounded-lg border-none bg-slate-50 px-3 py-2 text-sm outline-none placeholder:text-slate-400"
+                        className="w-full rounded-lg border-none bg-sage-50 px-3 py-2 text-sm outline-none placeholder:text-sage-400"
                       />
                     </div>
                     <ul className="max-h-40 overflow-y-auto py-1">
                       {filteredConditions.map(item => (
                         <li key={item.condition_id}>
-                          <label className="flex cursor-pointer items-center gap-2.5 px-3.5 py-2 text-sm text-slate-700 hover:bg-slate-50">
+                          <label className="flex cursor-pointer items-center gap-2.5 px-3.5 py-2 text-sm text-sage-700 hover:bg-sage-50">
                             <input
                               type="checkbox"
                               checked={selectedCondition.includes(item.condition_id)}
                               onChange={() => toggleOption(item.condition_id, 'condition')}
-                              className="h-4 w-4 rounded border-slate-300 text-teal-800 focus:ring-teal-200"
+                              className="h-4 w-4 rounded border-sage-300 text-brand-800 focus:ring-brand-200"
                             />
                             {item.condition_name}
                           </label>
@@ -507,7 +507,7 @@ export default function AddPatient(props: any) {
                       {conditionSearch && !filteredConditions.some(c => c.condition_name.toLowerCase() === conditionSearch.toLowerCase()) && (
                         <li
                           onClick={() => addNewCondition(conditionSearch)}
-                          className="cursor-pointer px-3.5 py-2 text-sm font-medium text-teal-900 hover:bg-teal-50"
+                          className="cursor-pointer px-3.5 py-2 text-sm font-medium text-brand-900 hover:bg-brand-50"
                         >
                           + Add "{conditionSearch}"
                         </li>
@@ -530,7 +530,7 @@ export default function AddPatient(props: any) {
 
           {/* EMERGENCY CONTACT */}
           <div>
-            <p className="mb-3 text-sm font-semibold text-slate-900">
+            <p className="mb-3 text-sm font-semibold text-sage-900">
               Emergency Contact Information <span className="text-red-500">*</span>
             </p>
             <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
@@ -557,10 +557,10 @@ export default function AddPatient(props: any) {
         </div>
 
         {/* FOOTER */}
-        <div className="border-t border-slate-100 px-6 py-4">
+        <div className="border-t border-sage-100 px-6 py-4">
           <button
             onClick={handleSubmit}
-            className="w-full rounded-xl bg-teal-800 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-teal-900"
+            className="w-full rounded-xl bg-brand-800 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-brand-900"
           >
             Save Patient
           </button>

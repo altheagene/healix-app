@@ -18,8 +18,8 @@ export default function AddBatch(props: any) {
         note: "",
     })
 
-    const inputClasses = "w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-teal-300 focus:ring-2 focus:ring-teal-100"
-    const labelClasses = "mb-1.5 block text-xs font-medium text-slate-500"
+    const inputClasses = "w-full rounded-xl border border-sage-200 bg-white px-3.5 py-2.5 text-sm text-sage-900 outline-none placeholder:text-sage-400 focus:border-brand-300 focus:ring-2 focus:ring-brand-100"
+    const labelClasses = "mb-1.5 block text-xs font-medium text-sage-500"
 
     async function handleSubmit() {
         if (!batchDetails.batch_number.trim()) {
@@ -76,14 +76,14 @@ export default function AddBatch(props: any) {
     }
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
             <div className="flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl bg-white shadow-xl">
-                <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-                    <p className="text-base font-semibold text-slate-900">Add Batch</p>
+                <div className="flex items-center justify-between border-b border-sage-100 px-6 py-4">
+                    <p className="text-base font-semibold text-sage-900">Add Batch</p>
                     <button
                         type="button"
                         onClick={props.hideForm}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg border-none bg-transparent text-slate-400 transition hover:bg-slate-50 hover:text-slate-700"
+                        className="flex h-8 w-8 items-center justify-center rounded-lg border-none bg-transparent text-sage-400 transition hover:bg-sage-50 hover:text-sage-700"
                         aria-label="Close"
                     >
                         <i className="bi bi-x-lg" />
@@ -99,7 +99,7 @@ export default function AddBatch(props: any) {
 
                     <div>
                         <label className={labelClasses}>Supply name</label>
-                        <input type="text" value={props.name || ""} readOnly className={`${inputClasses} bg-slate-50 text-slate-500`} />
+                        <input type="text" value={props.name || ""} readOnly className={`${inputClasses} bg-sage-50 text-sage-500`} />
                     </div>
 
                     <div>
@@ -125,9 +125,9 @@ export default function AddBatch(props: any) {
                             disabled={noExpirationDate}
                             value={batchDetails.expiration_date}
                             onChange={(e) => setBatchDetails({ ...batchDetails, expiration_date: e.target.value })}
-                            className={`${inputClasses} disabled:bg-slate-50 disabled:text-slate-400`}
+                            className={`${inputClasses} disabled:bg-sage-50 disabled:text-sage-400`}
                         />
-                        <label className="mt-2 flex items-center gap-2 text-sm text-slate-600">
+                        <label className="mt-2 flex items-center gap-2 text-sm text-sage-600">
                             <input
                                 type="checkbox"
                                 checked={noExpirationDate}
@@ -137,7 +137,7 @@ export default function AddBatch(props: any) {
                                         setBatchDetails({ ...batchDetails, expiration_date: "" })
                                     }
                                 }}
-                                className="h-4 w-4 rounded border-slate-300 text-teal-800 focus:ring-teal-200"
+                                className="h-4 w-4 rounded border-sage-300 text-brand-800 focus:ring-brand-200"
                             />
                             This has no expiration date
                         </label>
@@ -177,11 +177,11 @@ export default function AddBatch(props: any) {
                     </div>
                 </div>
 
-                <div className="flex justify-end gap-2 border-t border-slate-100 px-6 py-4">
+                <div className="flex justify-end gap-2 border-t border-sage-100 px-6 py-4">
                     <button
                         type="button"
                         onClick={props.hideForm}
-                        className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                        className="rounded-xl border border-sage-200 bg-white px-4 py-2.5 text-sm font-medium text-sage-700 transition hover:bg-sage-50"
                     >
                         Cancel
                     </button>
@@ -189,7 +189,7 @@ export default function AddBatch(props: any) {
                         type="button"
                         onClick={handleSubmit}
                         disabled={saving}
-                        className="rounded-xl bg-teal-800 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-teal-900 disabled:opacity-60"
+                        className="rounded-xl bg-brand-800 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-brand-900 disabled:opacity-60"
                     >
                         {saving ? "Saving..." : "Save Batch"}
                     </button>

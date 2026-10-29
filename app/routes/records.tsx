@@ -69,17 +69,17 @@ export default function Records() {
     const [view, setView] = React.useState<"list" | "daily">("list")
 
     return (
-        <div className="min-h-full font-sans text-slate-900">
+        <div className="min-h-full font-sans text-sage-900">
             <style>{PRINT_CSS}</style>
             <div className="no-print mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                     <h1 className="m-0 text-[2rem] font-semibold tracking-tight">Visit Records</h1>
-                    <p className="m-0 mt-1 text-sm text-slate-500">Every clinic visit, how it ended, and who was seen.</p>
+                    <p className="m-0 mt-1 text-sm text-sage-500">Every clinic visit, how it ended, and who was seen.</p>
                 </div>
-                <div role="tablist" aria-label="View" className="inline-flex self-start rounded-xl border border-slate-200 bg-slate-50 p-1">
+                <div role="tablist" aria-label="View" className="inline-flex self-start rounded-xl border border-sage-200 bg-sage-50 p-1">
                     {([["list", "All visits"], ["daily", "Daily log"]] as const).map(([key, label]) => (
                         <button key={key} role="tab" type="button" aria-selected={view === key} onClick={() => setView(key)}
-                            className={`rounded-lg px-3.5 py-1.5 text-sm font-medium transition ${view === key ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-800"}`}>
+                            className={`rounded-lg px-3.5 py-1.5 text-sm font-medium transition ${view === key ? "bg-white text-sage-900 shadow-sm" : "text-sage-500 hover:text-sage-800"}`}>
                             {label}
                         </button>
                     ))}
@@ -194,42 +194,42 @@ function VisitList({ isClinician }: { isClinician: boolean }) {
                 <StatCard icon="bi-box-arrow-right" value={result.stats.left_school_today} label="Sent home or referred today" tone="amber" />
             </div>
 
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-                <div className="flex flex-col gap-3 border-b border-slate-100 px-5 py-4">
+            <div className="overflow-hidden rounded-2xl border border-sage-200 bg-white shadow-card">
+                <div className="flex flex-col gap-3 border-b border-sage-100 px-5 py-4">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                         <div role="group" aria-label="Date range" className="flex flex-wrap items-center gap-1.5">
                             {RANGES.map(r => (
                                 <button key={r.key} type="button" aria-pressed={range === r.key} onClick={() => chooseRange(r.key)}
-                                    className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${range === r.key ? "border-teal-300 bg-teal-50 text-teal-900" : "border-slate-200 text-slate-600 hover:bg-slate-50"}`}>
+                                    className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${range === r.key ? "border-brand-300 bg-brand-50 text-brand-900" : "border-sage-200 text-sage-600 hover:bg-sage-50"}`}>
                                     {r.label}
                                 </button>
                             ))}
-                            <label className="ml-1 inline-flex items-center gap-1.5 text-xs text-slate-500">
+                            <label className="ml-1 inline-flex items-center gap-1.5 text-xs text-sage-500">
                                 From
                                 <input type="date" value={dateFrom} onChange={(e) => { setDateFrom(e.target.value); setRange("custom"); setPage(1) }}
-                                    className="rounded-lg border border-slate-200 px-2 py-1 text-xs" />
+                                    className="rounded-lg border border-sage-200 px-2 py-1 text-xs" />
                             </label>
-                            <label className="inline-flex items-center gap-1.5 text-xs text-slate-500">
+                            <label className="inline-flex items-center gap-1.5 text-xs text-sage-500">
                                 to
                                 <input type="date" value={dateTo} onChange={(e) => { setDateTo(e.target.value); setRange("custom"); setPage(1) }}
-                                    className="rounded-lg border border-slate-200 px-2 py-1 text-xs" />
+                                    className="rounded-lg border border-sage-200 px-2 py-1 text-xs" />
                             </label>
                         </div>
                         {isClinician && (
                             <button type="button" onClick={exportCsv}
-                                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">
+                                className="inline-flex items-center gap-1.5 rounded-lg border border-sage-200 px-3 py-1.5 text-xs font-medium text-sage-700 hover:bg-sage-50">
                                 <i className="bi bi-download" aria-hidden="true" /> Export CSV
                             </button>
                         )}
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2">
-                        <label className="flex w-full items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3.5 py-1.5 text-slate-400 focus-within:border-teal-300 sm:w-72">
+                        <label className="flex w-full items-center gap-2 rounded-full border border-sage-200 bg-sage-50 px-3.5 py-1.5 text-sage-400 focus-within:border-brand-300 sm:w-72">
                             <i className="bi bi-search text-sm" aria-hidden="true" />
                             <span className="sr-only">Search visits</span>
                             <input type="text" placeholder="Patient, student ID, complaint or #visit" value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full border-none bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400" />
+                                className="w-full border-none bg-transparent text-sm text-sage-900 outline-none placeholder:text-sage-400" />
                         </label>
                         <Select label="Outcome" value={filters.outcome} onChange={v => updateFilter("outcome", v)}
                             options={[["", "Any outcome"], ["in_clinic", "Still in the clinic"], ...Object.entries(DISPOSITIONS), ["unrecorded", "Not recorded"]]} />
@@ -242,13 +242,13 @@ function VisitList({ isClinician }: { isClinician: boolean }) {
                         <Select label="Basic Education stage" value={filters.stage} onChange={v => updateFilter("stage", v)}
                             options={[["", "All stages"], ...Object.entries(STAGES).map(([key, s]) => [key, s.label] as [string, string])]} />
                         {activeFilters > 0 && (
-                            <button type="button" className="text-xs font-medium text-teal-800 hover:underline"
+                            <button type="button" className="text-xs font-medium text-brand-800 hover:underline"
                                 onClick={() => { setFilters({ outcome: "", service_id: "", staff_id: "", department: "", stage: "" }); setSearchTerm(""); setPage(1) }}>
                                 Clear filters
                             </button>
                         )}
                     </div>
-                    <p className="m-0 text-xs text-slate-400" aria-live="polite">
+                    <p className="m-0 text-xs text-sage-400" aria-live="polite">
                         {loading ? "Loading..." : `${result.total} visit${result.total === 1 ? "" : "s"}`}
                     </p>
                 </div>
@@ -256,26 +256,26 @@ function VisitList({ isClinician }: { isClinician: boolean }) {
                 <div className="overflow-x-auto">
                     <table className="w-full border-collapse">
                         <thead>
-                            <tr className="bg-slate-50/60">
+                            <tr className="bg-sage-50/60">
                                 <SortHeader label="Date" sortKey="date" sort={sort} onSort={toggleSort} />
                                 <SortHeader label="Patient" sortKey="patient" sort={sort} onSort={toggleSort} />
-                                <th className="border-b border-slate-100 px-5 py-3 text-left text-xs font-medium text-slate-400">Reason</th>
+                                <th className="border-b border-sage-100 px-5 py-3 text-left text-xs font-medium text-sage-400">Reason</th>
                                 <SortHeader label="Outcome" sortKey="outcome" sort={sort} onSort={toggleSort} />
-                                <th className="border-b border-slate-100 px-5 py-3 text-left text-xs font-medium text-slate-400">Attending</th>
-                                <th className="border-b border-slate-100 px-5 py-3"><span className="sr-only">Actions</span></th>
+                                <th className="border-b border-sage-100 px-5 py-3 text-left text-xs font-medium text-sage-400">Attending</th>
+                                <th className="border-b border-sage-100 px-5 py-3"><span className="sr-only">Actions</span></th>
                             </tr>
                         </thead>
                         <tbody>
                             {result.visits.length === 0 ? (
                                 <tr>
                                     <td colSpan={6} className="px-5 py-12 text-center">
-                                        <i className="bi bi-clipboard-x text-2xl text-slate-300" aria-hidden="true" />
-                                        <p className="m-0 mt-2 text-sm text-slate-400">
+                                        <i className="bi bi-clipboard-x text-2xl text-sage-300" aria-hidden="true" />
+                                        <p className="m-0 mt-2 text-sm text-sage-400">
                                             {loading ? "Loading..." : (dateFrom || dateTo) ? "No visits in these dates." : "No visits match these filters."}
                                         </p>
                                         {!loading && (dateFrom || dateTo) && (
                                             <button type="button" onClick={() => chooseRange("all")}
-                                                className="mt-2 text-sm font-medium text-teal-800 hover:underline">
+                                                className="mt-2 text-sm font-medium text-brand-800 hover:underline">
                                                 Show all dates
                                             </button>
                                         )}
@@ -284,30 +284,30 @@ function VisitList({ isClinician }: { isClinician: boolean }) {
                             ) : result.visits.map(visit => {
                                 const when = visitDateParts(visit.visit_datetime)
                                 return (
-                                    <tr key={visit.visit_id} className="align-top transition hover:bg-teal-50/30">
-                                        <td className="whitespace-nowrap border-b border-slate-100 px-5 py-3 text-sm">
+                                    <tr key={visit.visit_id} className="align-top transition hover:bg-brand-50/30">
+                                        <td className="whitespace-nowrap border-b border-sage-100 px-5 py-3 text-sm">
                                             <span className="block font-medium">{when.date}</span>
-                                            <span className="block text-xs text-slate-400">{when.time} · #{visit.visit_id}</span>
+                                            <span className="block text-xs text-sage-400">{when.time} · #{visit.visit_id}</span>
                                         </td>
-                                        <td className="border-b border-slate-100 px-5 py-3 text-sm">
-                                            <Link to={`/patientdetails/${visit.patient_id}`} className="font-medium text-slate-900 no-underline hover:underline">
+                                        <td className="border-b border-sage-100 px-5 py-3 text-sm">
+                                            <Link to={`/patientdetails/${visit.patient_id}`} className="font-medium text-sage-900 no-underline hover:underline">
                                                 {visit.patient_name || "Unnamed patient"}
                                             </Link>
-                                            <span className="block text-xs text-slate-400">
+                                            <span className="block text-xs text-sage-400">
                                                 {[visit.student_id, describeLevel(visit.department, visit.level, visit.strand, true)].filter(Boolean).join(" · ")}
                                             </span>
                                         </td>
-                                        <td className="border-b border-slate-100 px-5 py-3 text-sm">
-                                            <span className="block">{visit.complaint || <span className="text-slate-400">No complaint recorded</span>}</span>
-                                            <span className="block text-xs text-slate-400">{visit.service_name}</span>
+                                        <td className="border-b border-sage-100 px-5 py-3 text-sm">
+                                            <span className="block">{visit.complaint || <span className="text-sage-400">No complaint recorded</span>}</span>
+                                            <span className="block text-xs text-sage-400">{visit.service_name}</span>
                                         </td>
-                                        <td className="border-b border-slate-100 px-5 py-3 text-sm">
+                                        <td className="border-b border-sage-100 px-5 py-3 text-sm">
                                             <Outcome visit={visit} canClose={isClinician} onClose={() => openClose(visit.visit_id)} />
                                         </td>
-                                        <td className="border-b border-slate-100 px-5 py-3 text-sm text-slate-600">{visit.staff_name}</td>
-                                        <td className="border-b border-slate-100 px-5 py-3 text-right">
+                                        <td className="border-b border-sage-100 px-5 py-3 text-sm text-sage-600">{visit.staff_name}</td>
+                                        <td className="border-b border-sage-100 px-5 py-3 text-right">
                                             <button type="button" onClick={() => setViewing(visit.visit_id)}
-                                                className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-slate-700">
+                                                className="rounded-lg bg-sage-900 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-sage-700">
                                                 View<span className="sr-only"> visit #{visit.visit_id}</span>
                                             </button>
                                         </td>
@@ -351,37 +351,37 @@ function DailyLog() {
     const open = visits.filter(v => !v.disposition && v.time_in && !v.time_out).length
 
     return (
-        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm print:border-0 print:p-0 print:shadow-none" aria-labelledby="daily-heading">
+        <section className="rounded-2xl border border-sage-200 bg-white p-6 shadow-card print:border-0 print:p-0 print:shadow-none" aria-labelledby="daily-heading">
             {viewing !== null && <ViewVisit visitId={viewing} hideForm={() => setViewing(null)} />}
             <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
                 <div>
-                    <p className="m-0 text-xs font-semibold uppercase tracking-wide text-teal-800">Clinic daily log</p>
+                    <p className="m-0 text-xs font-semibold uppercase tracking-wide text-brand-800">Clinic daily log</p>
                     <h2 id="daily-heading" className="m-0 mt-1 text-xl font-semibold">{visitDateParts(day).date}</h2>
-                    <p className="m-0 mt-1 text-sm text-slate-500">
+                    <p className="m-0 mt-1 text-sm text-sage-500">
                         {total} visit{total === 1 ? "" : "s"}
                         {counts.filter(([, n]) => n).map(([key, n]) => ` · ${n} ${DISPOSITION_SHORT[key].toLowerCase()}`).join("")}
                         {open ? ` · ${open} still in the clinic` : ""}
                     </p>
                 </div>
                 <div className="no-print flex items-center gap-2">
-                    <label className="text-sm text-slate-600">
+                    <label className="text-sm text-sage-600">
                         <span className="sr-only">Day</span>
                         <input type="date" value={day} max={today()} onChange={(e) => e.target.value && setDay(e.target.value)}
-                            className="rounded-lg border border-slate-200 px-2.5 py-1.5 text-sm" />
+                            className="rounded-lg border border-sage-200 px-2.5 py-1.5 text-sm" />
                     </label>
                     <button type="button" onClick={() => window.print()}
-                        className="inline-flex items-center gap-1.5 rounded-lg bg-teal-800 px-3.5 py-2 text-sm font-semibold text-white hover:bg-teal-900">
+                        className="inline-flex items-center gap-1.5 rounded-lg bg-brand-800 px-3.5 py-2 text-sm font-semibold text-white hover:bg-brand-900">
                         <i className="bi bi-printer" aria-hidden="true" /> Print
                     </button>
                 </div>
             </div>
 
             {visits.length === 0 ? (
-                <p className="m-0 text-sm text-slate-400">No visits on this day.</p>
+                <p className="m-0 text-sm text-sage-400">No visits on this day.</p>
             ) : (
                 <table className="w-full border-collapse text-sm">
                     <thead>
-                        <tr className="border-b border-slate-200 text-left text-xs text-slate-500">
+                        <tr className="border-b border-sage-200 text-left text-xs text-sage-500">
                             <th className="py-2 pr-3 font-medium">Time</th>
                             <th className="py-2 pr-3 font-medium">Patient</th>
                             <th className="py-2 pr-3 font-medium">Complaint</th>
@@ -392,15 +392,15 @@ function DailyLog() {
                     </thead>
                     {[...byHour.entries()].map(([hour, rows]) => (
                         <tbody key={hour}>
-                            <tr><th colSpan={6} className="bg-slate-50 px-2 py-1 text-left text-xs font-semibold text-slate-500">{hour}:00</th></tr>
+                            <tr><th colSpan={6} className="bg-sage-50 px-2 py-1 text-left text-xs font-semibold text-sage-500">{hour}:00</th></tr>
                             {rows.map(visit => (
-                                <tr key={visit.visit_id} className="border-b border-slate-100 align-top">
+                                <tr key={visit.visit_id} className="border-b border-sage-100 align-top">
                                     <td className="py-2 pr-3 tabular-nums">{visitDateParts(visit.visit_datetime).time}</td>
                                     <td className="py-2 pr-3">
-                                        <button type="button" onClick={() => setViewing(visit.visit_id)} className="text-left font-medium text-slate-900 hover:underline print:no-underline">
+                                        <button type="button" onClick={() => setViewing(visit.visit_id)} className="text-left font-medium text-sage-900 hover:underline print:no-underline">
                                             {visit.patient_name}
                                         </button>
-                                        <span className="block text-xs text-slate-400">{describeLevel(visit.department, visit.level, visit.strand, true)}</span>
+                                        <span className="block text-xs text-sage-400">{describeLevel(visit.department, visit.level, visit.strand, true)}</span>
                                     </td>
                                     <td className="py-2 pr-3">{visit.complaint || visit.service_name}</td>
                                     <td className="py-2 pr-3">
@@ -420,13 +420,13 @@ function DailyLog() {
 
 function Outcome({ visit, canClose, onClose }: { visit: VisitRow; canClose: boolean; onClose: () => void }) {
     if (!visit.disposition) {
-        if (!visit.time_in) return <span className="text-xs text-slate-400">Not recorded</span>
+        if (!visit.time_in) return <span className="text-xs text-sage-400">Not recorded</span>
         return (
             <span className="inline-flex flex-wrap items-center gap-2">
                 <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-800">
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" aria-hidden="true" /> In clinic
                 </span>
-                {canClose && <button type="button" onClick={onClose} className="text-xs font-semibold text-teal-800 underline">Close visit</button>}
+                {canClose && <button type="button" onClick={onClose} className="text-xs font-semibold text-brand-800 underline">Close visit</button>}
             </span>
         )
     }
@@ -436,7 +436,7 @@ function Outcome({ visit, canClose, onClose }: { visit: VisitRow; canClose: bool
                 className={`inline-flex w-fit whitespace-nowrap rounded-full border px-2.5 py-1 text-xs font-medium ${DISPOSITION_TONES[visit.disposition] || ""}`}>
                 {DISPOSITION_SHORT[visit.disposition] || visit.disposition}
             </span>
-            {visit.referred_to && <span className="text-xs text-slate-500">{visit.referred_to}</span>}
+            {visit.referred_to && <span className="text-xs text-sage-500">{visit.referred_to}</span>}
         </span>
     )
 }
@@ -447,8 +447,8 @@ function SortHeader({ label, sortKey, sort, onSort }: {
     const active = sort.key === sortKey
     return (
         <th aria-sort={active ? (sort.direction === "asc" ? "ascending" : "descending") : "none"}
-            className="border-b border-slate-100 px-5 py-3 text-left text-xs font-medium text-slate-400">
-            <button type="button" onClick={() => onSort(sortKey)} className="inline-flex items-center gap-1 hover:text-slate-700">
+            className="border-b border-sage-100 px-5 py-3 text-left text-xs font-medium text-sage-400">
+            <button type="button" onClick={() => onSort(sortKey)} className="inline-flex items-center gap-1 hover:text-sage-700">
                 {label}
                 <i aria-hidden="true" className={`bi ${active ? (sort.direction === "asc" ? "bi-caret-up-fill" : "bi-caret-down-fill") : "bi-chevron-expand"} text-[10px]`} />
             </button>
@@ -461,7 +461,7 @@ function Select({ label, value, onChange, options }: {
 }) {
     return (
         <select aria-label={label} value={value} onChange={(e) => onChange(e.target.value)}
-            className={`rounded-full border px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-teal-100 ${value ? "border-teal-300 bg-teal-50 text-teal-900" : "border-slate-200 bg-white text-slate-600"}`}>
+            className={`rounded-full border px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-brand-100 ${value ? "border-brand-300 bg-brand-50 text-brand-900" : "border-sage-200 bg-white text-sage-600"}`}>
             {options.map(([optionValue, text]) => <option key={optionValue} value={optionValue}>{text}</option>)}
         </select>
     )
@@ -470,7 +470,7 @@ function Select({ label, value, onChange, options }: {
 function StatCard({ icon, value, label, tone, onClick }: {
     icon: string; value: number; label: string; tone?: "emerald" | "amber"; onClick?: () => void
 }) {
-    const iconTone = tone === "emerald" ? "bg-emerald-50 text-emerald-700" : tone === "amber" ? "bg-amber-50 text-amber-800" : "bg-teal-50 text-teal-800"
+    const iconTone = tone === "emerald" ? "bg-emerald-50 text-emerald-700" : tone === "amber" ? "bg-amber-50 text-amber-800" : "bg-brand-50 text-brand-800"
     const body = (
         <>
             <div className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl text-lg ${iconTone}`}>
@@ -478,13 +478,13 @@ function StatCard({ icon, value, label, tone, onClick }: {
             </div>
             <div className="text-left">
                 <div className="text-xl font-bold leading-none">{value}</div>
-                <div className="mt-1 text-xs text-slate-400">{label}</div>
+                <div className="mt-1 text-xs text-sage-400">{label}</div>
             </div>
         </>
     )
-    const base = "flex items-center gap-3.5 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+    const base = "flex items-center gap-3.5 rounded-2xl border border-sage-200 bg-white p-4 shadow-card"
     return onClick
-        ? <button type="button" onClick={onClick} className={`${base} transition hover:border-teal-300`}>{body}</button>
+        ? <button type="button" onClick={onClick} className={`${base} transition hover:border-brand-300`}>{body}</button>
         : <div className={base}>{body}</div>
 }
 

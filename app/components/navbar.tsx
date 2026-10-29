@@ -33,12 +33,12 @@ export default function Navbar(props: {
     React.useEffect(() => { setIsStaffRole(localStorage.getItem("role") === STAFF_ROLE_NAME) }, [pathname])
 
     return (
-        <nav className={`flex h-full flex-shrink-0 flex-col border-r border-[#e4ebe6] bg-white transition-all duration-200 ${expanded ? "w-56" : "w-[72px]"}`}>
+        <nav className={`flex h-full flex-shrink-0 flex-col border-r border-sage-200 bg-white transition-all duration-200 ${expanded ? "w-56" : "w-[72px]"}`}>
             <button
                 type="button"
                 title={expanded ? "Collapse menu" : "Expand menu"}
                 onClick={props.onToggle}
-                className={`mt-3 flex h-12 items-center border-none bg-transparent text-xl text-[#0b3d3a] ${expanded ? "justify-start px-5" : "w-full justify-center"}`}
+                className={`mt-3 flex h-12 items-center border-none bg-transparent text-xl text-brand-800 ${expanded ? "justify-start px-5" : "w-full justify-center"}`}
             >
                 <i className="bi bi-list" />
             </button>
@@ -54,14 +54,14 @@ export default function Navbar(props: {
                                 expanded ? "gap-3 px-3" : "justify-center px-0"
                             } ${
                                 active
-                                    ? "bg-[#f3f8f4] text-[#0b3d3a]"
-                                    : "text-[#8aa39c] hover:bg-[#f7faf7] hover:text-[#0b3d3a]"
+                                    ? "bg-brand-50 text-brand-800"
+                                    : "text-sage-400 hover:bg-sage-50 hover:text-brand-800"
                             }`}
                         >
                             <i className={`bi ${item.icon} text-xl`} />
                             {expanded && <span className="truncate">{item.text}</span>}
                             {active && (
-                                <span className="absolute right-0 h-6 w-[3px] rounded-l-full bg-[#0b3d3a]" />
+                                <span className="absolute right-0 h-6 w-[3px] rounded-l-full bg-brand-800" />
                             )}
                         </NavLink>
                     </li>
@@ -77,14 +77,14 @@ export default function Navbar(props: {
                         expanded ? "gap-3 px-3" : "justify-center px-0"
                     } ${
                         pathname === "/profile"
-                            ? "bg-[#f3f8f4] text-[#0b3d3a]"
-                            : "text-[#8aa39c] hover:bg-[#f7faf7] hover:text-[#0b3d3a]"
+                            ? "bg-brand-50 text-brand-800"
+                            : "text-sage-400 hover:bg-sage-50 hover:text-brand-800"
                     }`}
                 >
                     <i className="bi bi-person-circle text-xl" />
                     {expanded && <span className="truncate">Profile</span>}
                     {pathname === "/profile" && (
-                        <span className="absolute right-0 h-6 w-[3px] rounded-l-full bg-[#0b3d3a]" />
+                        <span className="absolute right-0 h-6 w-[3px] rounded-l-full bg-brand-800" />
                     )}
                 </NavLink>
                 {props.onLogout && (
@@ -92,7 +92,7 @@ export default function Navbar(props: {
                         type="button"
                         onClick={props.onLogout}
                         title="Logout"
-                        className={`flex h-11 items-center border-none bg-transparent text-[#8aa39c] hover:text-[#0b3d3a] ${
+                        className={`flex h-11 items-center border-none bg-transparent text-sage-400 hover:text-brand-800 ${
                             expanded ? "gap-3 rounded-lg px-3 text-[0.95rem] font-medium" : "w-full justify-center text-xl"
                         }`}
                     >

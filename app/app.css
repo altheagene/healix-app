@@ -23,15 +23,76 @@ body {
 @import "tailwindcss";
 @source "./src/**/*.{ts,tsx}";
 
+/*
+ * The Healix palette, taken from the dashboard. Every page uses these names
+ * (bg-brand-800, text-sage-500, ...) instead of Tailwind's stock teal and slate,
+ * so the whole app shares one look. The dashboard's own values sit on the steps
+ * pages use most: brand-800 #0b3d3a, sage-100/200/300/400/500/600, leaf-400/500,
+ * citron-200/300/400.
+ * Status colours (emerald, amber, red, and sky for "referred") stay Tailwind's,
+ * because they mean something; see visitOutcomes.ts.
+ */
+@theme {
+  /* Deep green: buttons, links, headings, the selected state. */
+  --color-brand-50: #f3f8f4;
+  --color-brand-100: #e3efe7;
+  --color-brand-200: #c8dfd0;
+  --color-brand-300: #9fc6b0;
+  --color-brand-400: #6ea590;
+  --color-brand-500: #43846f;
+  --color-brand-600: #286b5a;
+  --color-brand-700: #175548;
+  --color-brand-800: #0b3d3a;
+  --color-brand-900: #082e2c;
+  --color-brand-950: #051f1d;
+
+  /* Sage neutrals: text, borders, quiet surfaces. 900 is the dashboard's text colour. */
+  --color-sage-50: #f6f9f6;
+  --color-sage-100: #eef3ee;
+  --color-sage-200: #e4ebe6;
+  --color-sage-300: #d7e3de;
+  --color-sage-400: #9aaea8;
+  --color-sage-500: #7b8c87;
+  --color-sage-600: #5b716d;
+  --color-sage-700: #43534f;
+  --color-sage-800: #24403c;
+  --color-sage-900: #0b3d3a;
+  --color-sage-950: #062321;
+
+  /* Leaf green and citron: the dashboard's accent cards and progress bars. */
+  --color-leaf-50: #effaf1;
+  --color-leaf-100: #dcf3e0;
+  --color-leaf-200: #bce7c3;
+  --color-leaf-300: #9adba5;
+  --color-leaf-400: #7dcf8a;
+  --color-leaf-500: #5bb56a;
+  --color-leaf-600: #449454;
+  --color-leaf-700: #367443;
+  --color-leaf-800: #2a5a35;
+
+  --color-citron-50: #fafde9;
+  --color-citron-100: #f5fbd8;
+  --color-citron-200: #eaf6a8;
+  --color-citron-300: #d8ef7a;
+  --color-citron-400: #c6d87a;
+  --color-citron-500: #a9bd4f;
+  --color-citron-600: #84952f;
+  --color-citron-700: #5f6b1e;
+
+  /* One shadow for every card (shadow-card), tinted with the deep green rather than
+     black, so white cards lift off the pale sage background instead of blending in. */
+  --shadow-card: 0 1px 2px 0 rgb(11 61 58 / 0.06), 0 4px 14px -2px rgb(11 61 58 / 0.10);
+}
+
 :root{
-  --accent: #115e59;
-  --accent-hover: #0b3d3a;
-  --accent-soft: #ecfdf5;
-  --page-bg: #f3f6f2;
+  --accent: var(--color-brand-800);
+  --accent-hover: var(--color-brand-900);
+  --accent-soft: var(--color-brand-50);
+  --page-bg: var(--color-sage-50);
   --surface: #ffffff;
-  --border: #e2ebe8;
-  --text: #0b2f2c;
-  --text-muted: #5b716d;
+  --border: var(--color-sage-200);
+  --text: var(--color-sage-900);
+  --text-muted: var(--color-sage-600);
   --radius: 14px;
 }
 

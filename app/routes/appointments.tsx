@@ -106,11 +106,11 @@ export default function Appointments() {
     function statusBadgeClasses(status: string) {
         if (status === 'Completed') return 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200/60'
         if (status === 'Cancelled') return 'bg-red-50 text-red-700 ring-1 ring-red-200/60'
-        return 'bg-teal-50 text-teal-800 ring-1 ring-teal-200/60'
+        return 'bg-brand-50 text-brand-800 ring-1 ring-brand-200/60'
     }
 
     return (
-        <div className="min-h-full font-sans text-slate-900">
+        <div className="min-h-full font-sans text-sage-900">
             <div className="mx-auto max-w-full">
 
                 {/* FLASH MESSAGE */}
@@ -132,11 +132,11 @@ export default function Appointments() {
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
                     <div>
                         <h1 className="text-[2rem] font-semibold tracking-tight m-0">Appointments</h1>
-                        <p className="text-slate-500 text-sm mt-1">Manage your clinic's appointments and schedules.</p>
+                        <p className="text-sage-500 text-sm mt-1">Manage your clinic's appointments and schedules.</p>
                     </div>
                     <button
                         onClick={() => navigate('/addappointment')}
-                        className="inline-flex items-center gap-2 self-start rounded-lg bg-teal-800 px-4 py-2.5 text-sm font-medium text-white shadow-md transition hover:bg-teal-900"
+                        className="inline-flex items-center gap-2 self-start rounded-lg bg-brand-800 px-4 py-2.5 text-sm font-medium text-white shadow-md transition hover:bg-brand-900"
                     >
                         <i className="bi bi-plus-lg" /> Add Appointment
                     </button>
@@ -150,8 +150,8 @@ export default function Appointments() {
                 </div>
 
                 {/* CONTROLS */}
-                <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-                    <div className="flex flex-col gap-3 border-b border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="rounded-2xl border border-sage-200 bg-white shadow-card overflow-hidden">
+                    <div className="flex flex-col gap-3 border-b border-sage-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
                         <div className="flex flex-wrap gap-2">
                             {apptStatuses.map(status => (
                                 <button
@@ -159,8 +159,8 @@ export default function Appointments() {
                                     onClick={() => setApptStatus(status)}
                                     className={`rounded-full px-3.5 py-1.5 text-xs font-medium transition ${
                                         apptStatus === status
-                                            ? 'bg-slate-900 text-white'
-                                            : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                                            ? 'bg-sage-900 text-white'
+                                            : 'bg-sage-100 text-sage-500 hover:bg-sage-200'
                                     }`}
                                 >
                                     {status}
@@ -169,21 +169,21 @@ export default function Appointments() {
                         </div>
 
                         <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-                            <label className="flex w-full items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3.5 py-2 text-slate-400 focus-within:border-teal-300 focus-within:ring-2 focus-within:ring-teal-100 sm:w-64">
+                            <label className="flex w-full items-center gap-2 rounded-full border border-sage-200 bg-sage-50 px-3.5 py-2 text-sage-400 focus-within:border-brand-300 focus-within:ring-2 focus-within:ring-brand-100 sm:w-64">
                                 <i className="bi bi-search text-sm" />
                                 <input
                                     type="text"
                                     placeholder="Search by patient or service"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full border-none bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
+                                    className="w-full border-none bg-transparent text-sm text-sage-900 outline-none placeholder:text-sage-400"
                                 />
                             </label>
                             <input
                                 type="date"
                                 value={selectedDate}
                                 onChange={(e) => setSelectedDate(e.target.value as any)}
-                                className="rounded-full border border-slate-200 bg-slate-50 px-3.5 py-2 text-sm text-slate-700 outline-none focus:border-teal-300 focus:ring-2 focus:ring-teal-100"
+                                className="rounded-full border border-sage-200 bg-sage-50 px-3.5 py-2 text-sm text-sage-700 outline-none focus:border-brand-300 focus:ring-2 focus:ring-brand-100"
                             />
                         </div>
                     </div>
@@ -192,42 +192,42 @@ export default function Appointments() {
                     <div className="overflow-x-auto">
                         <table className="w-full border-collapse">
                             <thead>
-                                <tr className="bg-slate-50/60">
-                                    <th className="border-b border-slate-100 px-5 py-3 text-left text-xs font-medium text-slate-400">Patient</th>
-                                    <th className="border-b border-slate-100 px-5 py-3 text-left text-xs font-medium text-slate-400">Type</th>
-                                    <th className="border-b border-slate-100 px-5 py-3 text-left text-xs font-medium text-slate-400">Date</th>
-                                    <th className="border-b border-slate-100 px-5 py-3 text-left text-xs font-medium text-slate-400">Time</th>
-                                    <th className="border-b border-slate-100 px-5 py-3 text-left text-xs font-medium text-slate-400">Status</th>
-                                    <th className="border-b border-slate-100 px-5 py-3 text-right text-xs font-medium text-slate-400">Actions</th>
+                                <tr className="bg-sage-50/60">
+                                    <th className="border-b border-sage-100 px-5 py-3 text-left text-xs font-medium text-sage-400">Patient</th>
+                                    <th className="border-b border-sage-100 px-5 py-3 text-left text-xs font-medium text-sage-400">Type</th>
+                                    <th className="border-b border-sage-100 px-5 py-3 text-left text-xs font-medium text-sage-400">Date</th>
+                                    <th className="border-b border-sage-100 px-5 py-3 text-left text-xs font-medium text-sage-400">Time</th>
+                                    <th className="border-b border-sage-100 px-5 py-3 text-left text-xs font-medium text-sage-400">Status</th>
+                                    <th className="border-b border-sage-100 px-5 py-3 text-right text-xs font-medium text-sage-400">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {filteredAppointments.length > 0 ? filteredAppointments.map(appt => (
-                                    <tr key={appt.appointment_id} className="transition hover:bg-teal-50/40">
-                                        <td className="border-b border-slate-100 px-5 py-3 text-sm font-medium text-slate-900 last:border-none">
+                                    <tr key={appt.appointment_id} className="transition hover:bg-brand-50/40">
+                                        <td className="border-b border-sage-100 px-5 py-3 text-sm font-medium text-sage-900 last:border-none">
                                             {appt.patient_name}
                                         </td>
-                                        <td className="border-b border-slate-100 px-5 py-3 text-sm text-slate-500 last:border-none">
+                                        <td className="border-b border-sage-100 px-5 py-3 text-sm text-sage-500 last:border-none">
                                             {appt.service_name}
                                         </td>
-                                        <td className="border-b border-slate-100 px-5 py-3 text-sm text-slate-500 last:border-none">
+                                        <td className="border-b border-sage-100 px-5 py-3 text-sm text-sage-500 last:border-none">
                                             {appt.appointment_date}
                                         </td>
-                                        <td className="border-b border-slate-100 px-5 py-3 text-sm text-slate-500 last:border-none">
+                                        <td className="border-b border-sage-100 px-5 py-3 text-sm text-sage-500 last:border-none">
                                             {appt.start_time}
                                         </td>
-                                        <td className="border-b border-slate-100 px-5 py-3 last:border-none">
+                                        <td className="border-b border-sage-100 px-5 py-3 last:border-none">
                                             <span className={`inline-flex w-[90px] items-center justify-center rounded-full px-2.5 py-1 text-xs font-medium ${statusBadgeClasses(appt.status)}`}>
                                                 {appt.status}
                                             </span>
                                         </td>
-                                        <td className="border-b border-slate-100 px-5 py-3 last:border-none">
+                                        <td className="border-b border-sage-100 px-5 py-3 last:border-none">
                                             <div className="flex items-center justify-end gap-1.5">
                                                 <button
                                                     title="Mark as Completed"
                                                     disabled={appt.status === 'Completed'}
                                                     onClick={() => markCompleted(appt.appointment_id)}
-                                                    className="flex h-8 w-8 items-center justify-center rounded-full text-emerald-600 transition hover:bg-emerald-50 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent"
+                                                    className="flex h-8 w-8 items-center justify-center rounded-full text-emerald-600 transition hover:bg-emerald-50 disabled:cursor-not-allowed disabled:text-sage-300 disabled:hover:bg-transparent"
                                                 >
                                                     <i className="bi bi-check-lg text-base" />
                                                 </button>
@@ -236,7 +236,7 @@ export default function Appointments() {
                                                     title="Cancel Appointment"
                                                     disabled={appt.status === 'Cancelled'}
                                                     onClick={() => cancelAppt(appt.appointment_id)}
-                                                    className="flex h-8 w-8 items-center justify-center rounded-full text-red-500 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent"
+                                                    className="flex h-8 w-8 items-center justify-center rounded-full text-red-500 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:text-sage-300 disabled:hover:bg-transparent"
                                                 >
                                                     <i className="bi bi-x-lg text-base" />
                                                 </button>
@@ -244,7 +244,7 @@ export default function Appointments() {
                                                 <button
                                                     title="Edit Appointment"
                                                     onClick={() => { setApptId(appt); setShowEdit(true) }}
-                                                    className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                                                    className="flex h-8 w-8 items-center justify-center rounded-full text-sage-400 transition hover:bg-sage-100 hover:text-sage-700"
                                                 >
                                                     <i className="bi bi-pencil text-sm" />
                                                 </button>
@@ -254,8 +254,8 @@ export default function Appointments() {
                                 )) : (
                                     <tr>
                                         <td colSpan={6} className="px-5 py-12 text-center">
-                                            <i className="bi bi-calendar-x text-2xl text-slate-300" />
-                                            <p className="mt-2 text-sm text-slate-400">No appointments found</p>
+                                            <i className="bi bi-calendar-x text-2xl text-sage-300" />
+                                            <p className="mt-2 text-sm text-sage-400">No appointments found</p>
                                         </td>
                                     </tr>
                                 )}
@@ -270,13 +270,13 @@ export default function Appointments() {
 
 function StatCard({ icon, value, label }: { icon: string; value: number; label: string }) {
     return (
-        <div className="flex items-center gap-3.5 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-teal-50 text-lg text-teal-800">
+        <div className="flex items-center gap-3.5 rounded-2xl border border-sage-200 bg-white p-4 shadow-card">
+            <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-brand-50 text-lg text-brand-800">
                 <i className={`bi ${icon}`} />
             </div>
             <div>
                 <div className="text-xl font-bold leading-none">{value}</div>
-                <div className="mt-1 text-xs text-slate-400">{label}</div>
+                <div className="mt-1 text-xs text-sage-400">{label}</div>
             </div>
         </div>
     )

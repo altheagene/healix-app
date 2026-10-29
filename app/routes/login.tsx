@@ -39,7 +39,7 @@ export default function LoginPage(props: any) {
         <h2>Healix</h2>
 
         {flashMessage && (
-          <div className="flash-message" role="alert" style={{backgroundColor: 'red'}}>
+          <div className="flash-message" role="alert" style={{backgroundColor: 'var(--color-red-600)'}}>
             {flashMessage}
           </div>
         )}

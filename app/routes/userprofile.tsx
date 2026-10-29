@@ -132,16 +132,16 @@ export default function UserProfile() {
         || "Staff";
 
     return (
-        <div className="-mx-8 -my-7 min-h-full bg-[#f6f7f6] px-8 py-7 font-sans text-[#0b3d3a]">
+        <div className="-mx-8 -my-7 min-h-full bg-sage-50 px-8 py-7 font-sans text-brand-800">
             {showEdit && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
                     <div className="flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl bg-white shadow-xl">
-                        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-                            <p className="text-base font-semibold text-slate-900">Edit Profile</p>
+                        <div className="flex items-center justify-between border-b border-sage-100 px-6 py-4">
+                            <p className="text-base font-semibold text-sage-900">Edit Profile</p>
                             <button
                                 type="button"
                                 onClick={() => setShowEdit(false)}
-                                className="flex h-8 w-8 items-center justify-center rounded-lg border-none bg-transparent text-slate-400 transition hover:bg-slate-50 hover:text-slate-700"
+                                className="flex h-8 w-8 items-center justify-center rounded-lg border-none bg-transparent text-sage-400 transition hover:bg-sage-50 hover:text-sage-700"
                                 aria-label="Close"
                             >
                                 <i className="bi bi-x-lg" />
@@ -154,7 +154,7 @@ export default function UserProfile() {
                                 <Field label="Last name" value={form.last_name} onChange={value => updateField("last_name", value)} />
                             </div>
                             <div>
-                                <p className="mb-1.5 text-xs font-medium text-slate-500">Sex</p>
+                                <p className="mb-1.5 text-xs font-medium text-sage-500">Sex</p>
                                 <div className="flex gap-2">
                                     {["Female", "Male"].map(option => (
                                         <button
@@ -163,8 +163,8 @@ export default function UserProfile() {
                                             onClick={() => updateField("sex", option)}
                                             className={`flex-1 rounded-xl border px-3.5 py-2.5 text-sm font-medium transition ${
                                                 String(form.sex || "").toLowerCase() === option.toLowerCase()
-                                                    ? "border-teal-300 bg-teal-50 text-teal-800"
-                                                    : "border-slate-200 text-slate-500 hover:bg-slate-50"
+                                                    ? "border-brand-300 bg-brand-50 text-brand-800"
+                                                    : "border-sage-200 text-sage-500 hover:bg-sage-50"
                                             }`}
                                         >
                                             {option}
@@ -176,12 +176,12 @@ export default function UserProfile() {
                             <Field label="Phone" value={form.phone} onChange={value => updateField("phone", value)} />
                             <Field label="Username" value={form.username} onChange={value => updateField("username", value)} />
                             <div>
-                                <p className="mb-1.5 text-xs font-medium text-slate-500">Role</p>
+                                <p className="mb-1.5 text-xs font-medium text-sage-500">Role</p>
                                 <select
                                     value={String(form.staff_category_id ?? "")}
                                     disabled={!isAdmin}
                                     onChange={e => updateField("staff_category_id", e.target.value)}
-                                    className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none focus:border-teal-300 focus:ring-2 focus:ring-teal-100 disabled:bg-slate-50 disabled:text-slate-400"
+                                    className="w-full rounded-xl border border-sage-200 bg-white px-3.5 py-2.5 text-sm text-sage-900 outline-none focus:border-brand-300 focus:ring-2 focus:ring-brand-100 disabled:bg-sage-50 disabled:text-sage-400"
                                 >
                                     {ROLES.map(role => (
                                         <option key={role.staff_category_id} value={role.staff_category_id}>
@@ -193,11 +193,11 @@ export default function UserProfile() {
                             {error && <p className="text-sm text-red-500">{error}</p>}
                         </div>
 
-                        <div className="flex justify-end gap-2 border-t border-slate-100 px-6 py-4">
+                        <div className="flex justify-end gap-2 border-t border-sage-100 px-6 py-4">
                             <button
                                 type="button"
                                 onClick={() => setShowEdit(false)}
-                                className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                                className="rounded-xl border border-sage-200 bg-white px-4 py-2.5 text-sm font-medium text-sage-700 transition hover:bg-sage-50"
                             >
                                 Cancel
                             </button>
@@ -205,7 +205,7 @@ export default function UserProfile() {
                                 type="button"
                                 onClick={saveProfile}
                                 disabled={saving}
-                                className="rounded-xl bg-teal-800 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-teal-900 disabled:opacity-60"
+                                className="rounded-xl bg-brand-800 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-900 disabled:opacity-60"
                             >
                                 {saving ? "Saving..." : "Save"}
                             </button>
@@ -215,14 +215,14 @@ export default function UserProfile() {
             )}
 
             {showReset && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
                     <div className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-xl">
-                        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-                            <p className="text-base font-semibold text-slate-900">Reset Password</p>
+                        <div className="flex items-center justify-between border-b border-sage-100 px-6 py-4">
+                            <p className="text-base font-semibold text-sage-900">Reset Password</p>
                             <button
                                 type="button"
                                 onClick={() => setShowReset(false)}
-                                className="flex h-8 w-8 items-center justify-center rounded-lg border-none bg-transparent text-slate-400 transition hover:bg-slate-50 hover:text-slate-700"
+                                className="flex h-8 w-8 items-center justify-center rounded-lg border-none bg-transparent text-sage-400 transition hover:bg-sage-50 hover:text-sage-700"
                                 aria-label="Close"
                             >
                                 <i className="bi bi-x-lg" />
@@ -246,14 +246,14 @@ export default function UserProfile() {
                                 onChange={value => setResetForm(current => ({ ...current, confirm: value }))}
                             />
                             {resetError && <p className="text-sm text-red-500">{resetError}</p>}
-                            {resetDone && <p className="text-sm text-teal-700">Password updated.</p>}
+                            {resetDone && <p className="text-sm text-brand-700">Password updated.</p>}
                         </div>
 
-                        <div className="flex justify-end gap-2 border-t border-slate-100 px-6 py-4">
+                        <div className="flex justify-end gap-2 border-t border-sage-100 px-6 py-4">
                             <button
                                 type="button"
                                 onClick={() => setShowReset(false)}
-                                className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                                className="rounded-xl border border-sage-200 bg-white px-4 py-2.5 text-sm font-medium text-sage-700 transition hover:bg-sage-50"
                             >
                                 Cancel
                             </button>
@@ -261,7 +261,7 @@ export default function UserProfile() {
                                 type="button"
                                 onClick={resetPassword}
                                 disabled={resetSaving}
-                                className="rounded-xl bg-teal-800 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-teal-900 disabled:opacity-60"
+                                className="rounded-xl bg-brand-800 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-900 disabled:opacity-60"
                             >
                                 {resetSaving ? "Saving..." : "Reset password"}
                             </button>
@@ -272,18 +272,18 @@ export default function UserProfile() {
 
             <div className="mb-6">
                 <h1 className="m-0 text-[2rem] font-semibold tracking-tight">My Profile</h1>
-                <p className="mt-1 text-sm text-[#7b8c87]">Your clinic account and contact details</p>
+                <p className="mt-1 text-sm text-sage-500">Your clinic account and contact details</p>
             </div>
 
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-                <div className="rounded-3xl bg-white p-6">
+                <div className="rounded-3xl bg-white p-6 shadow-card">
                     <div className="flex flex-col items-center text-center">
                         <img src={user} className="h-24 w-24 rounded-2xl object-cover" />
                         <p className="mt-4 text-base font-semibold">{fullName}</p>
-                        <p className="mt-1 text-sm text-[#7b8c87]">{roleName}</p>
+                        <p className="mt-1 text-sm text-sage-500">{roleName}</p>
                         <button
                             onClick={openEdit}
-                            className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#7dcf8a] px-6 py-2 text-sm font-semibold text-[#0b3d3a] transition hover:bg-[#6bc37a]"
+                            className="mt-4 inline-flex items-center gap-2 rounded-full bg-leaf-400 px-6 py-2 text-sm font-semibold text-brand-800 transition hover:bg-leaf-500"
                         >
                             Edit
                         </button>
@@ -291,7 +291,7 @@ export default function UserProfile() {
                 </div>
 
                 <div className="flex flex-col gap-4 lg:col-span-2">
-                    <div className="rounded-3xl bg-white p-6">
+                    <div className="rounded-3xl bg-white p-6 shadow-card">
                         <p className="mb-4 text-sm font-semibold">Information</p>
                         <dl className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
                             <InfoRow label="First name" value={staff?.first_name} />
@@ -303,7 +303,7 @@ export default function UserProfile() {
                         </dl>
                     </div>
 
-                    <div className="rounded-3xl bg-white p-6">
+                    <div className="rounded-3xl bg-white p-6 shadow-card">
                         <p className="mb-4 text-sm font-semibold">Account</p>
                         <dl className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
                             <InfoRow label="Username" value={staff?.username} />
@@ -313,7 +313,7 @@ export default function UserProfile() {
                         <button
                             type="button"
                             onClick={openReset}
-                            className="mt-5 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
+                            className="mt-5 inline-flex items-center gap-2 rounded-full border border-sage-200 bg-white px-4 py-2 text-sm font-medium text-sage-600 transition hover:bg-sage-50"
                         >
                             <i className="bi bi-key" /> Reset password
                         </button>
@@ -328,18 +328,18 @@ function PasswordField({ label, value, onChange }: { label: string; value: strin
     const [visible, setVisible] = React.useState(false);
     return (
         <div>
-            <p className="mb-1.5 text-xs font-medium text-slate-500">{label}</p>
-            <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 focus-within:border-teal-300 focus-within:ring-2 focus-within:ring-teal-100">
+            <p className="mb-1.5 text-xs font-medium text-sage-500">{label}</p>
+            <div className="flex items-center gap-2 rounded-xl border border-sage-200 bg-white px-3.5 py-2.5 focus-within:border-brand-300 focus-within:ring-2 focus-within:ring-brand-100">
                 <input
                     type={visible ? "text" : "password"}
                     value={value}
                     onChange={e => onChange(e.target.value)}
-                    className="w-full border-none bg-transparent text-sm text-slate-900 outline-none"
+                    className="w-full border-none bg-transparent text-sm text-sage-900 outline-none"
                 />
                 <button
                     type="button"
                     onClick={() => setVisible(open => !open)}
-                    className="border-none bg-transparent text-slate-400"
+                    className="border-none bg-transparent text-sage-400"
                     aria-label={visible ? "Hide password" : "Show password"}
                 >
                     <i className={`bi ${visible ? "bi-eye-slash" : "bi-eye"}`} />
@@ -352,12 +352,12 @@ function PasswordField({ label, value, onChange }: { label: string; value: strin
 function Field({ label, value, onChange }: { label: string; value?: string; onChange: (value: string) => void }) {
     return (
         <div>
-            <p className="mb-1.5 text-xs font-medium text-slate-500">{label}</p>
+            <p className="mb-1.5 text-xs font-medium text-sage-500">{label}</p>
             <input
                 type="text"
                 value={value || ""}
                 onChange={e => onChange(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-teal-300 focus:ring-2 focus:ring-teal-100"
+                className="w-full rounded-xl border border-sage-200 bg-white px-3.5 py-2.5 text-sm text-sage-900 outline-none placeholder:text-sage-400 focus:border-brand-300 focus:ring-2 focus:ring-brand-100"
             />
         </div>
     );
@@ -366,7 +366,7 @@ function Field({ label, value, onChange }: { label: string; value?: string; onCh
 function InfoRow({ label, value }: { label: string; value?: string | number }) {
     return (
         <div>
-            <dt className="text-[#7b8c87]">{label}</dt>
+            <dt className="text-sage-500">{label}</dt>
             <dd className="mt-1 font-medium">{value || "-"}</dd>
         </div>
     );

@@ -138,19 +138,19 @@ export default function AddRecord(props:any){
         setMedications(medications.filter((_, i) => i !== index));
     }
 
-    const inputClasses = "w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-teal-300 focus:ring-2 focus:ring-teal-100";
-    const labelClasses = "mb-1.5 block text-xs font-medium text-slate-500";
+    const inputClasses = "w-full rounded-xl border border-sage-200 bg-white px-3.5 py-2.5 text-sm text-sage-900 outline-none placeholder:text-sage-400 focus:border-brand-300 focus:ring-2 focus:ring-brand-100";
+    const labelClasses = "mb-1.5 block text-xs font-medium text-sage-500";
 
     return(
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
             <div className="flex max-h-[92vh] w-full max-w-xl flex-col overflow-hidden rounded-2xl bg-white shadow-xl">
 
                 {/* HEADER */}
-                <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-                    <h2 className="text-base font-semibold text-slate-900">Visit Log</h2>
+                <div className="flex items-center justify-between border-b border-sage-100 px-6 py-4">
+                    <h2 className="text-base font-semibold text-sage-900">Visit Log</h2>
                     <button
                         onClick={props.hideForm}
-                        className="flex h-8 w-8 items-center justify-center rounded-full text-xl leading-none text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                        className="flex h-8 w-8 items-center justify-center rounded-full text-xl leading-none text-sage-400 transition hover:bg-sage-100 hover:text-sage-700"
                     >
                         ×
                     </button>
@@ -199,7 +199,7 @@ export default function AddRecord(props:any){
                             <button
                                 type="button"
                                 onClick={addServiceInline}
-                                className="flex h-[42px] w-[42px] flex-shrink-0 items-center justify-center rounded-xl border border-slate-200 text-slate-500 transition hover:bg-slate-50"
+                                className="flex h-[42px] w-[42px] flex-shrink-0 items-center justify-center rounded-xl border border-sage-200 text-sage-500 transition hover:bg-sage-50"
                             >
                                 <i className="bi bi-plus-lg" />
                             </button>
@@ -282,13 +282,13 @@ export default function AddRecord(props:any){
                                 {medications.map((med, index) => {
                                     const medicineInfo = medicines?.find(m => m.supply_id === parseInt(med.supply_id as any))
                                     return (
-                                        <div key={index} className="flex items-end gap-2 rounded-xl border border-slate-200 p-3">
+                                        <div key={index} className="flex items-end gap-2 rounded-xl border border-sage-200 p-3">
                                             <div className="flex-1">
-                                                <label className="mb-1 block text-[11px] font-medium text-slate-400">Medicine</label>
+                                                <label className="mb-1 block text-[11px] font-medium text-sage-400">Medicine</label>
                                                 <select
                                                     value={med.supply_id ?? ""}
                                                     onChange={(e) => updateMedication(index, 'supply_id', e.target.value)}
-                                                    className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-sm outline-none focus:border-teal-300 focus:ring-2 focus:ring-teal-100"
+                                                    className="w-full rounded-lg border border-sage-200 bg-white px-2.5 py-2 text-sm outline-none focus:border-brand-300 focus:ring-2 focus:ring-brand-100"
                                                 >
                                                     {medicines?.map(m => (
                                                         <option key={m.supply_id} value={m.supply_id}>{m.supply_name} ({withUnit(m.available_stock, m.unit)} left)</option>
@@ -297,14 +297,14 @@ export default function AddRecord(props:any){
                                             </div>
 
                                             <div className="w-28">
-                                                <label className="mb-1 block text-[11px] font-medium text-slate-400">Quantity</label>
+                                                <label className="mb-1 block text-[11px] font-medium text-sage-400">Quantity</label>
                                                 <input
                                                     type="number"
                                                     min="1"
                                                     max={medicineInfo?.available_stock}
                                                     value={med.quantity}
                                                     onChange={(e) => updateMedication(index, "quantity", parseInt(e.target.value) > medicineInfo?.available_stock ? medicineInfo?.available_stock : parseInt(e.target.value))}
-                                                    className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-sm outline-none focus:border-teal-300 focus:ring-2 focus:ring-teal-100"
+                                                    className="w-full rounded-lg border border-sage-200 bg-white px-2.5 py-2 text-sm outline-none focus:border-brand-300 focus:ring-2 focus:ring-brand-100"
                                                 />
                                             </div>
 
@@ -323,7 +323,7 @@ export default function AddRecord(props:any){
                             <button
                                 type="button"
                                 onClick={addMedication}
-                                className="mt-2 flex items-center gap-1.5 text-sm font-medium text-teal-900 transition hover:text-teal-800"
+                                className="mt-2 flex items-center gap-1.5 text-sm font-medium text-brand-900 transition hover:text-brand-800"
                             >
                                 <i className="bi bi-plus-lg" /> Add medication
                             </button>
@@ -387,16 +387,16 @@ export default function AddRecord(props:any){
                 </div>
 
                 {/* FOOTER */}
-                <div className="flex justify-end gap-2 border-t border-slate-100 px-6 py-4">
+                <div className="flex justify-end gap-2 border-t border-sage-100 px-6 py-4">
                     <button
                         onClick={props.hideForm}
-                        className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
+                        className="rounded-xl border border-sage-200 px-4 py-2.5 text-sm font-medium text-sage-600 transition hover:bg-sage-50"
                     >
                         Cancel
                     </button>
                     <button
                         onClick={handleSubmit}
-                        className="rounded-xl bg-teal-800 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-teal-900"
+                        className="rounded-xl bg-brand-800 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-brand-900"
                     >
                         Save
                     </button>

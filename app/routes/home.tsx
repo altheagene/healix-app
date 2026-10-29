@@ -5,9 +5,9 @@ import { useNavigate } from "react-router";
 const HOURS = [9, 10, 11, 12, 13, 14]
 const DAY_LABELS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 const BAR_TONES = [
-    { bg: "bg-[#d8ef7a]", text: "text-[#0b3d3a]" },
-    { bg: "bg-[#7dcf8a]", text: "text-[#0b3d3a]" },
-    { bg: "bg-[#0b3d3a]", text: "text-white" },
+    { bg: "bg-citron-300", text: "text-brand-800" },
+    { bg: "bg-leaf-400", text: "text-brand-800" },
+    { bg: "bg-brand-800", text: "text-white" },
 ]
 
 function dateKey(value?: string) {
@@ -83,9 +83,9 @@ export default function Dashboard() {
             const dayAppts = appointments.filter(a => dateKey(a.appointment_date) === key)
             const followUps = dayAppts.filter(a => String(a.status).toLowerCase() === "upcoming").length
             const tones = [
-                { card: "bg-[#eaf6a8] text-[#0b3d3a] divide-[#c6d87a]", label: "text-[#5b716d]" },
-                { card: "bg-[#7dcf8a] text-[#0b3d3a] divide-[#5bb56a]", label: "text-[#0b3d3a]/70" },
-                { card: "bg-[#0b3d3a] text-white divide-white/15", label: "text-white/70" },
+                { card: "bg-citron-200 text-brand-800 divide-citron-400", label: "text-sage-600" },
+                { card: "bg-leaf-400 text-brand-800 divide-leaf-500", label: "text-brand-800/70" },
+                { card: "bg-brand-800 text-white divide-white/15", label: "text-white/70" },
             ][index]
             return {
                 key,
@@ -169,19 +169,19 @@ export default function Dashboard() {
     }
 
     return (
-        <div className="min-h-full bg-white font-sans text-[#0b3d3a]">
+        <div className="min-h-full bg-white font-sans text-brand-800">
             <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                     <h1 className="m-0 text-[2rem] font-semibold tracking-tight">Clinic Dashboard</h1>
-                    <p className="mt-1 text-sm text-[#7b8c87]">Let's check today's clinic activity</p>
+                    <p className="mt-1 text-sm text-sage-500">Let's check today's clinic activity</p>
                 </div>
-                <form onSubmit={submitSearch} className="flex w-full items-center gap-2 rounded-full bg-[#eef3ee] px-4 py-2.5 text-[#7b8c87] sm:w-72">
+                <form onSubmit={submitSearch} className="flex w-full items-center gap-2 rounded-full bg-sage-100 px-4 py-2.5 text-sage-500 sm:w-72">
                     <i className="bi bi-search text-sm" />
                     <input
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         placeholder="Search for a student..."
-                        className="w-full border-none bg-transparent text-sm text-[#0b3d3a] outline-none placeholder:text-[#9aaea8]"
+                        className="w-full border-none bg-transparent text-sm text-brand-800 outline-none placeholder:text-sage-400"
                     />
                 </form>
             </div>
@@ -189,9 +189,9 @@ export default function Dashboard() {
             <div className="grid gap-8 xl:grid-cols-[minmax(0,1.7fr)_minmax(280px,0.9fr)]">
                 <div className="flex flex-col gap-3">
                     {dayCards.map(card => (
-                        <div key={card.key} className={`flex items-center overflow-hidden rounded-[28px] shadow-sm ${card.card}`}>
-                            <div className="date-tab flex h-full min-w-[118px] flex-col justify-center bg-white px-5 py-5 text-[#0b3d3a]">
-                                <span className="text-xs text-[#7b8c87]">{card.weekday}</span>
+                        <div key={card.key} className={`flex items-center overflow-hidden rounded-[28px] shadow-card ${card.card}`}>
+                            <div className="date-tab flex h-full min-w-[118px] flex-col justify-center bg-white px-5 py-5 text-brand-800">
+                                <span className="text-xs text-sage-500">{card.weekday}</span>
                                 <span className="text-[2rem] font-semibold leading-none">{card.day}</span>
                             </div>
                             <div className="grid flex-1 grid-cols-3 divide-x">
@@ -219,7 +219,7 @@ export default function Dashboard() {
             <div className="mt-10 grid gap-10 xl:grid-cols-[minmax(0,1.7fr)_minmax(280px,0.9fr)]">
                 <div>
                     <h2 className="mb-5 text-lg font-semibold">Upcoming Appointments</h2>
-                    <div className="grid grid-cols-[88px_repeat(6,minmax(0,1fr))] text-center text-[11px] text-[#9aaea8]">
+                    <div className="grid grid-cols-[88px_repeat(6,minmax(0,1fr))] text-center text-[11px] text-sage-400">
                         <div />
                         {HOURS.map(hour => (
                             <div key={hour} className="pb-3">{String(hour).padStart(2, "0")}:00</div>
@@ -228,9 +228,9 @@ export default function Dashboard() {
                     <div className="space-y-4">
                         {weekDays.map(day => (
                             <div key={day.key} className="grid grid-cols-[88px_repeat(6,minmax(0,1fr))] items-center">
-                                <div className="text-xs text-[#7b8c87]">{day.label}</div>
+                                <div className="text-xs text-sage-500">{day.label}</div>
                                 <div className="relative col-span-6 h-8">
-                                    <div className="absolute inset-x-0 top-1/2 border-t border-dashed border-[#e4ebe6]" />
+                                    <div className="absolute inset-x-0 top-1/2 border-t border-dashed border-sage-200" />
                                     {day.items.map(item => {
                                         const start = Math.min(Math.max(item.hour, 9), 14)
                                         const left = ((start - 9) / 6) * 100
@@ -256,17 +256,17 @@ export default function Dashboard() {
                     <div className="space-y-5">
                         {todaysSchedule.length > 0 ? todaysSchedule.map(item => (
                             <div key={item.appointment_id} className="flex items-center gap-3">
-                                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-[#d7e3de] text-[#0b3d3a]">
+                                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-sage-300 text-brand-800">
                                     <i className="bi bi-heart-pulse" />
                                 </div>
                                 <div className="min-w-0 flex-1">
                                     <p className="truncate text-sm font-semibold">{item.patient_name}</p>
-                                    <p className="truncate text-xs text-[#7b8c87]">{item.service_name || "Clinic visit"}</p>
+                                    <p className="truncate text-xs text-sage-500">{item.service_name || "Clinic visit"}</p>
                                 </div>
-                                <p className="text-xs font-medium text-[#0b3d3a]">{formatTime(item.start_time)}</p>
+                                <p className="text-xs font-medium text-brand-800">{formatTime(item.start_time)}</p>
                             </div>
                         )) : (
-                            <p className="text-sm text-[#7b8c87]">No upcoming appointments.</p>
+                            <p className="text-sm text-sage-500">No upcoming appointments.</p>
                         )}
                     </div>
                 </div>
@@ -288,11 +288,11 @@ function StatBar({ label, value }: { label: string; value: number }) {
     return (
         <div>
             <div className="mb-2 flex items-center justify-between text-sm">
-                <span className="text-[#5b716d]">{label}</span>
+                <span className="text-sage-600">{label}</span>
                 <span className="font-medium">{value}%</span>
             </div>
-            <div className="h-1.5 overflow-hidden rounded-full bg-[#eef3ee]">
-                <div className="h-full rounded-full bg-[#7dcf8a]" style={{ width: `${value}%` }} />
+            <div className="h-1.5 overflow-hidden rounded-full bg-sage-100">
+                <div className="h-full rounded-full bg-leaf-400" style={{ width: `${value}%` }} />
             </div>
         </div>
     )
@@ -318,7 +318,7 @@ function ProgressRing({ percent }: { percent: number }) {
                     strokeDashoffset={offset}
                 />
             </svg>
-            <div className="absolute inset-0 flex items-center justify-center text-2xl text-[#0b3d3a]">
+            <div className="absolute inset-0 flex items-center justify-center text-2xl text-brand-800">
                 <i className="bi bi-heart-pulse" />
             </div>
         </div>

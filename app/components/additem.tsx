@@ -17,8 +17,8 @@ export default function AddItem(props: any) {
   const [flashMessage, setFlashMessage] = React.useState<string | null>(null)
   const [flashOk, setFlashOk] = React.useState(false)
 
-  const inputClasses = "w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-teal-300 focus:ring-2 focus:ring-teal-100"
-  const labelClasses = "mb-1.5 block text-xs font-medium text-slate-500"
+  const inputClasses = "w-full rounded-xl border border-sage-200 bg-white px-3.5 py-2.5 text-sm text-sage-900 outline-none placeholder:text-sage-400 focus:border-brand-300 focus:ring-2 focus:ring-brand-100"
+  const labelClasses = "mb-1.5 block text-xs font-medium text-sage-500"
 
   async function submitForm() {
     for (const key of ['supply_name', 'brand', 'description', 'category_id'] as const) {
@@ -66,14 +66,14 @@ export default function AddItem(props: any) {
   }, [])
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-          <p className="text-base font-semibold text-slate-900">Add Item</p>
+        <div className="flex items-center justify-between border-b border-sage-100 px-6 py-4">
+          <p className="text-base font-semibold text-sage-900">Add Item</p>
           <button
             type="button"
             onClick={props.hideForm}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border-none bg-transparent text-slate-400 transition hover:bg-slate-50 hover:text-slate-700"
+            className="flex h-8 w-8 items-center justify-center rounded-lg border-none bg-transparent text-sage-400 transition hover:bg-sage-50 hover:text-sage-700"
             aria-label="Close"
           >
             <i className="bi bi-x-lg" />
@@ -174,14 +174,14 @@ export default function AddItem(props: any) {
             </div>
           </div>
 
-          <label className="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+          <label className="flex items-start gap-3 rounded-xl border border-sage-200 bg-sage-50 px-4 py-3">
             <input
               type="checkbox"
               checked={itemDetails.auto_deduct}
               onChange={(e) => setItemDetails({ ...itemDetails, auto_deduct: e.target.checked })}
-              className="mt-0.5 h-4 w-4 rounded border-slate-300 text-teal-800 focus:ring-teal-200"
+              className="mt-0.5 h-4 w-4 rounded border-sage-300 text-brand-800 focus:ring-brand-200"
             />
-            <span className="text-sm text-slate-700">
+            <span className="text-sm text-sage-700">
               Automatically deduct this item when dispensed.
               <span className="mt-1 block text-xs text-red-500">
                 This should only be activated for medicines in units (e.g. capsules, tablets)
@@ -190,18 +190,18 @@ export default function AddItem(props: any) {
           </label>
         </div>
 
-        <div className="flex justify-end gap-2 border-t border-slate-100 px-6 py-4">
+        <div className="flex justify-end gap-2 border-t border-sage-100 px-6 py-4">
           <button
             type="button"
             onClick={props.hideForm}
-            className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+            className="rounded-xl border border-sage-200 bg-white px-4 py-2.5 text-sm font-medium text-sage-700 transition hover:bg-sage-50"
           >
             Cancel
           </button>
           <button
             type="button"
             onClick={submitForm}
-            className="rounded-xl bg-teal-800 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-teal-900"
+            className="rounded-xl bg-brand-800 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-brand-900"
           >
             Save Item
           </button>

@@ -3,8 +3,8 @@ import React from "react";
 import Modal from "./modal";
 import { ADMIN_ROLE_ID, ROLES } from "../roles";
 
-const input = "w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-teal-300 focus:ring-2 focus:ring-teal-100 disabled:bg-slate-50 disabled:text-slate-500"
-const label = "mb-1.5 block text-xs font-medium text-slate-500"
+const input = "w-full rounded-xl border border-sage-200 bg-white px-3.5 py-2.5 text-sm text-sage-900 outline-none placeholder:text-sage-400 focus:border-brand-300 focus:ring-2 focus:ring-brand-100 disabled:bg-sage-50 disabled:text-sage-500"
+const label = "mb-1.5 block text-xs font-medium text-sage-500"
 const PASSWORD_RULE = "At least 8 characters, and not a common password or the username."
 
 const EMPTY = {
@@ -90,7 +90,7 @@ export default function StaffDialog({ staffId, onClose, onSaved }: {
         <Modal title={editing ? "Edit staff member" : "Add staff member"} onClose={onClose} width={560}>
             <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-6 py-5">
                 {error && <p role="alert" className="m-0 rounded-xl bg-red-50 px-4 py-2.5 text-sm text-red-700">{error}</p>}
-                {!loaded && !error && <p className="m-0 text-sm text-slate-500">Loading...</p>}
+                {!loaded && !error && <p className="m-0 text-sm text-sage-500">Loading...</p>}
 
                 {loaded && (
                     <>
@@ -114,9 +114,9 @@ export default function StaffDialog({ staffId, onClose, onSaved }: {
                                 <legend className={label}>Sex</legend>
                                 <div className="flex gap-4 pt-2">
                                     {[["female", "Female"], ["male", "Male"]].map(([value, text]) => (
-                                        <label key={value} className="flex items-center gap-2 text-sm text-slate-700">
+                                        <label key={value} className="flex items-center gap-2 text-sm text-sage-700">
                                             <input type="radio" name="staff-sex" value={value} checked={form.sex === value}
-                                                onChange={set("sex")} className="h-4 w-4 text-teal-800" />
+                                                onChange={set("sex")} className="h-4 w-4 text-brand-800" />
                                             {text}
                                         </label>
                                     ))}
@@ -129,9 +129,9 @@ export default function StaffDialog({ staffId, onClose, onSaved }: {
                                 disabled={roleLocked} aria-describedby={roleLocked ? "staff-role-help" : undefined}>
                                 {ROLES.map(role => <option key={role.staff_category_id} value={String(role.staff_category_id)}>{role.category_name}</option>)}
                             </select>
-                            {roleLocked && <p id="staff-role-help" className="m-0 mt-1 text-xs text-slate-400">Only an admin can change roles.</p>}
+                            {roleLocked && <p id="staff-role-help" className="m-0 mt-1 text-xs text-sage-400">Only an admin can change roles.</p>}
                             {Number(form.staff_category_id) === ADMIN_ROLE_ID && isAdmin && (
-                                <p className="m-0 mt-1 text-xs text-slate-400">Admins can add staff, change roles and see everyone's contacts.</p>
+                                <p className="m-0 mt-1 text-xs text-sage-400">Admins can add staff, change roles and see everyone's contacts.</p>
                             )}
                         </Field>
 
@@ -156,25 +156,25 @@ export default function StaffDialog({ staffId, onClose, onSaved }: {
                                             aria-describedby="staff-password-help" />
                                         <button type="button" onClick={() => setShowPassword(shown => !shown)}
                                             aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword}
-                                            className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-slate-400 hover:text-slate-700">
+                                            className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-sage-400 hover:text-sage-700">
                                             <i className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`} aria-hidden="true" />
                                         </button>
                                     </div>
-                                    <p id="staff-password-help" className="m-0 mt-1 text-xs text-slate-400">{PASSWORD_RULE} They can change it later in their profile.</p>
+                                    <p id="staff-password-help" className="m-0 mt-1 text-xs text-sage-400">{PASSWORD_RULE} They can change it later in their profile.</p>
                                 </Field>
                             )}
                         </div>
 
                         {editing && isAdmin && (
-                            <fieldset className="m-0 rounded-xl border border-slate-200 p-4">
-                                <legend className="px-1 text-xs font-semibold text-slate-600">Reset password</legend>
-                                <p className="m-0 mb-2 text-xs text-slate-500">For someone who forgot theirs. They are signed out everywhere. {PASSWORD_RULE}</p>
+                            <fieldset className="m-0 rounded-xl border border-sage-200 p-4">
+                                <legend className="px-1 text-xs font-semibold text-sage-600">Reset password</legend>
+                                <p className="m-0 mb-2 text-xs text-sage-500">For someone who forgot theirs. They are signed out everywhere. {PASSWORD_RULE}</p>
                                 <div className="flex gap-2">
                                     <label htmlFor="staff-new-password" className="sr-only">New password</label>
                                     <input id="staff-new-password" type="password" autoComplete="new-password" className={input}
                                         value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="New password" />
                                     <button type="button" onClick={resetPassword} disabled={newPassword.length < 8}
-                                        className="flex-shrink-0 rounded-xl border border-slate-200 px-3.5 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50">
+                                        className="flex-shrink-0 rounded-xl border border-sage-200 px-3.5 text-sm font-medium text-sage-700 hover:bg-sage-50 disabled:opacity-50">
                                         Reset
                                     </button>
                                 </div>
@@ -186,13 +186,13 @@ export default function StaffDialog({ staffId, onClose, onSaved }: {
                     </>
                 )}
             </div>
-            <div className="flex justify-end gap-2 border-t border-slate-100 px-6 py-4">
+            <div className="flex justify-end gap-2 border-t border-sage-100 px-6 py-4">
                 <button type="button" onClick={onClose}
-                    className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                    className="rounded-xl border border-sage-200 bg-white px-4 py-2.5 text-sm font-medium text-sage-700 hover:bg-sage-50">
                     Cancel
                 </button>
                 <button type="button" onClick={save} disabled={saving || !loaded}
-                    className="rounded-xl bg-teal-800 px-5 py-2.5 text-sm font-semibold text-white hover:bg-teal-900 disabled:opacity-60">
+                    className="rounded-xl bg-brand-800 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-900 disabled:opacity-60">
                     {saving ? "Saving..." : editing ? "Save changes" : "Add staff member"}
                 </button>
             </div>

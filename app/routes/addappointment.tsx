@@ -148,11 +148,11 @@ export default function AddAppointment() {
         }
     }
 
-    const inputClasses = "w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-teal-300 focus:ring-2 focus:ring-teal-100 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400";
-    const labelClasses = "mb-1.5 block text-xs font-medium text-slate-500";
+    const inputClasses = "w-full rounded-xl border border-sage-200 bg-white px-3.5 py-2.5 text-sm text-sage-900 outline-none placeholder:text-sage-400 focus:border-brand-300 focus:ring-2 focus:ring-brand-100 disabled:cursor-not-allowed disabled:bg-sage-50 disabled:text-sage-400";
+    const labelClasses = "mb-1.5 block text-xs font-medium text-sage-500";
 
     return (
-        <div className="min-h-full font-sans text-slate-900">
+        <div className="min-h-full font-sans text-sage-900">
             <div className="mx-auto max-w-full">
 
                 {showRegister && <AddPatient hideForm={() => {
@@ -164,7 +164,7 @@ export default function AddAppointment() {
                 <div className="mb-6 flex items-center gap-3">
                     <button
                         onClick={() => navigate(-1)}
-                        className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50"
+                        className="flex h-9 w-9 items-center justify-center rounded-full border border-sage-200 bg-white text-sage-500 transition hover:bg-sage-50"
                     >
                         <i className="bi bi-caret-left-fill" />
                     </button>
@@ -187,8 +187,8 @@ export default function AddAppointment() {
                 <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
 
                     {/* LEFT: APPOINTMENT DETAILS */}
-                    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                        <p className="mb-4 text-sm font-semibold text-slate-900">
+                    <div className="rounded-2xl border border-sage-200 bg-white p-6 shadow-card">
+                        <p className="mb-4 text-sm font-semibold text-sage-900">
                             Appointment Details <span className="text-red-500">*</span>
                         </p>
 
@@ -245,7 +245,7 @@ export default function AddAppointment() {
                             <button
                                 onClick={handleSaveAppointment}
                                 disabled={saving}
-                                className="w-full rounded-xl bg-teal-800 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-teal-900 disabled:cursor-not-allowed disabled:opacity-60"
+                                className="w-full rounded-xl bg-brand-800 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-brand-900 disabled:cursor-not-allowed disabled:opacity-60"
                             >
                                 {saving ? "Saving..." : "Save Appointment"}
                             </button>
@@ -253,33 +253,33 @@ export default function AddAppointment() {
                     </div>
 
                     {/* RIGHT: SELECT PATIENT */}
-                    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                        <p className="mb-4 text-sm font-semibold text-slate-900">
+                    <div className="rounded-2xl border border-sage-200 bg-white p-6 shadow-card">
+                        <p className="mb-4 text-sm font-semibold text-sage-900">
                             Select Patient <span className="text-red-500">*</span>
                         </p>
 
                         <div className="relative">
-                            <label className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-slate-400 focus-within:border-teal-300 focus-within:ring-2 focus-within:ring-teal-100">
+                            <label className="flex items-center gap-2 rounded-xl border border-sage-200 bg-white px-3.5 py-2.5 text-sage-400 focus-within:border-brand-300 focus-within:ring-2 focus-within:ring-brand-100">
                                 <i className="bi bi-search text-sm" />
                                 <input
                                     type="text"
                                     placeholder="Search patient..."
                                     value={patientQuery}
                                     onChange={(e) => setPatientQuery(e.target.value)}
-                                    className="w-full border-none bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
+                                    className="w-full border-none bg-transparent text-sm text-sage-900 outline-none placeholder:text-sage-400"
                                 />
                             </label>
 
                             {filteredPatients.length > 0 && (
-                                <ul className="absolute z-20 mt-1.5 w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
+                                <ul className="absolute z-20 mt-1.5 w-full overflow-hidden rounded-xl border border-sage-200 bg-white shadow-lg">
                                     {filteredPatients.map(p => (
                                         <li
                                             key={p.patient_id}
                                             onClick={() => handlePatientSelect(p)}
-                                            className="cursor-pointer px-4 py-2.5 transition hover:bg-slate-50"
+                                            className="cursor-pointer px-4 py-2.5 transition hover:bg-sage-50"
                                         >
-                                            <div className="text-sm font-medium text-slate-900">{p.first_name} {p.last_name}</div>
-                                            <div className="text-xs text-slate-400">ID: {p.student_id}</div>
+                                            <div className="text-sm font-medium text-sage-900">{p.first_name} {p.last_name}</div>
+                                            <div className="text-xs text-sage-400">ID: {p.student_id}</div>
                                         </li>
                                     ))}
                                 </ul>
@@ -287,15 +287,15 @@ export default function AddAppointment() {
                         </div>
 
                         {selectedPatient && (
-                            <div className="mt-3.5 rounded-xl border border-teal-200 bg-teal-50 px-4 py-3">
-                                <p className="text-sm font-semibold text-teal-900">{selectedPatient.first_name} {selectedPatient.last_name}</p>
-                                <p className="text-xs text-teal-900">Student ID: {selectedPatient.student_id}</p>
+                            <div className="mt-3.5 rounded-xl border border-brand-200 bg-brand-50 px-4 py-3">
+                                <p className="text-sm font-semibold text-brand-900">{selectedPatient.first_name} {selectedPatient.last_name}</p>
+                                <p className="text-xs text-brand-900">Student ID: {selectedPatient.student_id}</p>
                             </div>
                         )}
 
                         <button
                             onClick={() => setShowRegister(true)}
-                            className="mt-4 w-full rounded-xl border border-slate-200 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
+                            className="mt-4 w-full rounded-xl border border-sage-200 py-2.5 text-sm font-medium text-sage-600 transition hover:bg-sage-50"
                         >
                             Register New Patient
                         </button>

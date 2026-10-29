@@ -56,7 +56,7 @@ export default function Modal({ title, onClose, children, width = 520 }: ModalPr
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-slate-900/40" onClick={() => onCloseRef.current()} aria-hidden="true" />
+            <div className="absolute inset-0 bg-black/40" onClick={() => onCloseRef.current()} aria-hidden="true" />
             <div
                 ref={panelRef}
                 role="dialog"
@@ -66,13 +66,13 @@ export default function Modal({ title, onClose, children, width = 520 }: ModalPr
                 className="healix-modal relative flex max-h-[calc(100vh-4rem)] w-full flex-col overflow-hidden rounded-2xl bg-white shadow-xl"
                 style={{ maxWidth: width }}
             >
-                <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
-                    <h2 id={titleId} className="m-0 text-lg font-semibold text-slate-900">{title}</h2>
+                <div className="flex items-center justify-between border-b border-sage-200 px-6 py-4">
+                    <h2 id={titleId} className="m-0 text-lg font-semibold text-sage-900">{title}</h2>
                     <button
                         type="button"
                         onClick={() => onCloseRef.current()}
                         aria-label="Close"
-                        className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-800"
+                        className="rounded-lg p-1.5 text-sage-500 hover:bg-sage-100 hover:text-sage-800"
                     >
                         <i className="bi bi-x-lg" aria-hidden="true" />
                     </button>

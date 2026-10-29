@@ -22,9 +22,9 @@ function ParentContact({ visit }: { visit: OpenVisit }) {
         return <p className="m-0 text-sm text-rose-700">No emergency contact phone on file.</p>
     }
     return (
-        <p className="m-0 text-sm text-slate-700">
+        <p className="m-0 text-sm text-sage-700">
             {visit.emergency_contact_name || "Emergency contact"}:{" "}
-            <a href={telHref(visit.emergency_contact_phone)} className="font-semibold text-teal-800">
+            <a href={telHref(visit.emergency_contact_phone)} className="font-semibold text-brand-800">
                 <i className="bi bi-telephone-fill mr-1" aria-hidden="true" />{visit.emergency_contact_phone}
             </a>
         </p>
@@ -153,13 +153,13 @@ export function VisitOutcomeDialog({ visit, onClose, onDone }: { visit: OpenVisi
 
 function DialogButtons({ onCancel, onSave, saveLabel }: { onCancel: () => void; onSave: () => void; saveLabel: string }) {
     return (
-        <div className="flex justify-end gap-2 border-t border-slate-200 px-6 py-4">
+        <div className="flex justify-end gap-2 border-t border-sage-200 px-6 py-4">
             <button type="button" onClick={onCancel}
-                className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                className="rounded-xl border border-sage-200 bg-white px-4 py-2.5 text-sm font-medium text-sage-700 hover:bg-sage-50">
                 Cancel
             </button>
             <button type="button" onClick={onSave}
-                className="rounded-xl bg-teal-800 px-5 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-teal-900">
+                className="rounded-xl bg-brand-800 px-5 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-brand-900">
                 {saveLabel}
             </button>
         </div>
