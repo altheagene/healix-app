@@ -1,10 +1,8 @@
 import { apiFetch } from "../api";
 import React from "react";
-import Modal from "./modal";
+import { ChoiceGroup, Field, ModalForm, Section, inputClass, secondaryButton, selectClass } from "./form";
 import { ADMIN_ROLE_ID, ROLES } from "../roles";
 
-const input = "w-full rounded-xl border border-sage-200 bg-white px-3.5 py-2.5 text-sm text-sage-900 outline-none placeholder:text-sage-400 focus:border-brand-300 focus:ring-2 focus:ring-brand-100 disabled:bg-sage-50 disabled:text-sage-500"
-const label = "mb-1.5 block text-xs font-medium text-sage-500"
 const PASSWORD_RULE = "At least 8 characters, and not a common password or the username."
 
 const EMPTY = {
@@ -87,124 +85,87 @@ export default function StaffDialog({ staffId, onClose, onSaved }: {
 
     const roleLocked = !isAdmin
     return (
-        <Modal title={editing ? "Edit staff member" : "Add staff member"} onClose={onClose} width={560}>
-            <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-6 py-5">
-                {error && <p role="alert" className="m-0 rounded-xl bg-red-50 px-4 py-2.5 text-sm text-red-700">{error}</p>}
-                {!loaded && !error && <p className="m-0 text-sm text-sage-500">Loading...</p>}
+        <ModalForm title={editing ? "Edit staff member" : "Add staff member"} onClose={onClose} onSubmit={save} width={600}
+            submitLabel={editing ? "Save changes" : "Add staff member"} saving={saving} submitDisabled={!loaded} error={error}>
+            {!loaded && !error && <p className="m-0 text-sm text-sage-500">Loading...</p>}
 
-                {loaded && (
-                    <>
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                            <Field id="staff-first" text="First name" required>
-                                <input id="staff-first" className={input} value={form.first_name} onChange={set("first_name")} />
-                            </Field>
-                            <Field id="staff-middle" text="Middle name (optional)">
-                                <input id="staff-middle" className={input} value={form.middle_name} onChange={set("middle_name")} />
-                            </Field>
-                            <Field id="staff-last" text="Last name" required>
-                                <input id="staff-last" className={input} value={form.last_name} onChange={set("last_name")} />
-                            </Field>
+            {loaded && (
+                <>
+                    <Section title="Name" columns={3}>
+                        <Field label="First name" htmlFor="staff-first" required>
+                            <input id="staff-first" className={inputClass} value={form.first_name} onChange={set("first_name")} />
+                        </Field>
+                        <Field label="Middle name" htmlFor="staff-middle" optional>
+                            <input id="staff-middle" className={inputClass} value={form.middle_name} onChange={set("middle_name")} />
+                        </Field>
+                        <Field label="Last name" htmlFor="staff-last" required>
+                            <input id="staff-last" className={inputClass} value={form.last_name} onChange={set("last_name")} />
+                        </Field>
+                        <Field label="Birthday" htmlFor="staff-birthday" optional>
+                            <input id="staff-birthday" type="date" className={inputClass} value={form.birthday} onChange={set("birthday")} />
+                        </Field>
+                        <div className="sm:col-span-2">
+                            <ChoiceGroup legend="Sex" name="staff-sex" value={form.sex}
+                                options={[["female", "Female"], ["male", "Male"]] as const}
+                                onChange={(sex) => setForm(current => ({ ...current, sex }))} />
                         </div>
+                    </Section>
 
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                            <Field id="staff-birthday" text="Birthday">
-                                <input id="staff-birthday" type="date" className={input} value={form.birthday} onChange={set("birthday")} />
-                            </Field>
-                            <fieldset className="m-0 border-0 p-0">
-                                <legend className={label}>Sex</legend>
-                                <div className="flex gap-4 pt-2">
-                                    {[["female", "Female"], ["male", "Male"]].map(([value, text]) => (
-                                        <label key={value} className="flex items-center gap-2 text-sm text-sage-700">
-                                            <input type="radio" name="staff-sex" value={value} checked={form.sex === value}
-                                                onChange={set("sex")} className="h-4 w-4 text-brand-800" />
-                                            {text}
-                                        </label>
-                                    ))}
-                                </div>
-                            </fieldset>
-                        </div>
-
-                        <Field id="staff-role" text="Role" required>
-                            <select id="staff-role" className={input} value={form.staff_category_id} onChange={set("staff_category_id")}
-                                disabled={roleLocked} aria-describedby={roleLocked ? "staff-role-help" : undefined}>
+                    <Section title="Role and contact">
+                        <Field label="Role" htmlFor="staff-role" required className="sm:col-span-2"
+                            hint={roleLocked ? "Only an admin can change roles."
+                                : Number(form.staff_category_id) === ADMIN_ROLE_ID ? "Admins can add staff, change roles and see everyone's contacts." : undefined}>
+                            <select id="staff-role" className={selectClass} value={form.staff_category_id} onChange={set("staff_category_id")} disabled={roleLocked}>
                                 {ROLES.map(role => <option key={role.staff_category_id} value={String(role.staff_category_id)}>{role.category_name}</option>)}
                             </select>
-                            {roleLocked && <p id="staff-role-help" className="m-0 mt-1 text-xs text-sage-400">Only an admin can change roles.</p>}
-                            {Number(form.staff_category_id) === ADMIN_ROLE_ID && isAdmin && (
-                                <p className="m-0 mt-1 text-xs text-sage-400">Admins can add staff, change roles and see everyone's contacts.</p>
-                            )}
                         </Field>
+                        <Field label="Phone" htmlFor="staff-phone" optional>
+                            <input id="staff-phone" type="tel" className={inputClass} value={form.phone} onChange={set("phone")} placeholder="0917 123 4567" />
+                        </Field>
+                        <Field label="Email" htmlFor="staff-email" optional>
+                            <input id="staff-email" type="email" className={inputClass} value={form.email} onChange={set("email")} />
+                        </Field>
+                    </Section>
 
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                            <Field id="staff-phone" text="Phone">
-                                <input id="staff-phone" type="tel" className={input} value={form.phone} onChange={set("phone")} placeholder="0917 123 4567" />
-                            </Field>
-                            <Field id="staff-email" text="Email">
-                                <input id="staff-email" type="email" className={input} value={form.email} onChange={set("email")} />
-                            </Field>
-                        </div>
-
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                            <Field id="staff-username" text="Username" required>
-                                <input id="staff-username" className={input} value={form.username} onChange={set("username")} autoComplete="off" />
-                            </Field>
-                            {!editing && (
-                                <Field id="staff-password" text="Password" required>
-                                    <div className="relative">
-                                        <input id="staff-password" type={showPassword ? "text" : "password"} className={`${input} pr-10`}
-                                            value={form.password} onChange={set("password")} autoComplete="new-password"
-                                            aria-describedby="staff-password-help" />
-                                        <button type="button" onClick={() => setShowPassword(shown => !shown)}
-                                            aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword}
-                                            className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-sage-400 hover:text-sage-700">
-                                            <i className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`} aria-hidden="true" />
-                                        </button>
-                                    </div>
-                                    <p id="staff-password-help" className="m-0 mt-1 text-xs text-sage-400">{PASSWORD_RULE} They can change it later in their profile.</p>
-                                </Field>
-                            )}
-                        </div>
-
-                        {editing && isAdmin && (
-                            <fieldset className="m-0 rounded-xl border border-sage-200 p-4">
-                                <legend className="px-1 text-xs font-semibold text-sage-600">Reset password</legend>
-                                <p className="m-0 mb-2 text-xs text-sage-500">For someone who forgot theirs. They are signed out everywhere. {PASSWORD_RULE}</p>
-                                <div className="flex gap-2">
-                                    <label htmlFor="staff-new-password" className="sr-only">New password</label>
-                                    <input id="staff-new-password" type="password" autoComplete="new-password" className={input}
-                                        value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="New password" />
-                                    <button type="button" onClick={resetPassword} disabled={newPassword.length < 8}
-                                        className="flex-shrink-0 rounded-xl border border-sage-200 px-3.5 text-sm font-medium text-sage-700 hover:bg-sage-50 disabled:opacity-50">
-                                        Reset
+                    <Section title="Sign-in">
+                        <Field label="Username" htmlFor="staff-username" required>
+                            <input id="staff-username" className={inputClass} value={form.username} onChange={set("username")} autoComplete="off" />
+                        </Field>
+                        {!editing && (
+                            <Field label="Password" htmlFor="staff-password" required hint={`${PASSWORD_RULE} They can change it later in their profile.`}>
+                                <div className="relative">
+                                    <input id="staff-password" type={showPassword ? "text" : "password"} className={`${inputClass} pr-10`}
+                                        value={form.password} onChange={set("password")} autoComplete="new-password" />
+                                    <button type="button" onClick={() => setShowPassword(shown => !shown)}
+                                        aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword}
+                                        className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-sage-400 hover:text-sage-700">
+                                        <i className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`} aria-hidden="true" />
                                     </button>
                                 </div>
-                                {resetMessage && (
-                                    <p role="status" className={`m-0 mt-2 text-xs ${resetMessage.ok ? "text-emerald-700" : "text-red-700"}`}>{resetMessage.text}</p>
-                                )}
-                            </fieldset>
+                            </Field>
                         )}
-                    </>
-                )}
-            </div>
-            <div className="flex justify-end gap-2 border-t border-sage-100 px-6 py-4">
-                <button type="button" onClick={onClose}
-                    className="rounded-xl border border-sage-200 bg-white px-4 py-2.5 text-sm font-medium text-sage-700 hover:bg-sage-50">
-                    Cancel
-                </button>
-                <button type="button" onClick={save} disabled={saving || !loaded}
-                    className="rounded-xl bg-brand-800 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-900 disabled:opacity-60">
-                    {saving ? "Saving..." : editing ? "Save changes" : "Add staff member"}
-                </button>
-            </div>
-        </Modal>
-    )
-}
+                    </Section>
 
-function Field({ id, text, required, children }: { id: string; text: string; required?: boolean; children: React.ReactNode }) {
-    return (
-        <div>
-            <label htmlFor={id} className={label}>{text}{required && <span className="text-red-500"> *</span>}</label>
-            {children}
-        </div>
+                    {editing && isAdmin && (
+                        <div className="rounded-xl border border-sage-200 bg-sage-50/60 p-4">
+                            <p className="m-0 text-sm font-semibold text-sage-900">Reset their password</p>
+                            <p className="m-0 mb-3 mt-0.5 text-xs text-sage-500">For someone who forgot theirs. They are signed out everywhere. {PASSWORD_RULE}</p>
+                            <div className="flex gap-2">
+                                <label htmlFor="staff-new-password" className="sr-only">New password</label>
+                                <input id="staff-new-password" type="password" autoComplete="new-password" className={inputClass}
+                                    value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="New password"
+                                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); if (newPassword.length >= 8) resetPassword() } }} />
+                                <button type="button" onClick={resetPassword} disabled={newPassword.length < 8} className={`${secondaryButton} flex-shrink-0`}>
+                                    Reset
+                                </button>
+                            </div>
+                            {resetMessage && (
+                                <p role="status" className={`m-0 mt-2 text-xs ${resetMessage.ok ? "text-leaf-700" : "text-red-700"}`}>{resetMessage.text}</p>
+                            )}
+                        </div>
+                    )}
+                </>
+            )}
+        </ModalForm>
     )
 }

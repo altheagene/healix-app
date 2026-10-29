@@ -1,6 +1,5 @@
 import { apiFetch } from "../api";
 import AddBatch from '~/components/addbatch'
-import UpdateStocks from '~/components/updatestocks';
 import EditItem from '~/components/edititem';
 import React from 'react'
 import { useParams } from 'react-router';
@@ -20,7 +19,6 @@ export default function ItemDetails(){
     const [currentBatch, setCurrentBatch] = React.useState()
     const [batches, setBatches] = React.useState<any[]>([]);
     const [showAddBatch, setShowAddBatch] = React.useState(false);
-    const [showUpdateStock, setShowUpdateStock] = React.useState(false);
     const [showEditDetails, setShowEditDetails] = React.useState(false);
     const [showEditStock, setShowEditStock] = React.useState(false);
     const [showEditBatch, setShowEditBatch] = React.useState(false)
@@ -121,7 +119,6 @@ export default function ItemDetails(){
                         onClose={() => setDisposing(null)} onDone={() => { setDisposing(null); refetchBatches() }} />
                 )}
                 {showEditDetails ? <EditItem  hideForm={() => setShowEditDetails(false)} itemDetails={itemDetails} refetch={refetchDetails}/> : null}
-                {showUpdateStock ? <UpdateStocks hideForm={() => setShowUpdateStock(false)}/> : null}
                 {showAddBatch ? <AddBatch hideForm={() => setShowAddBatch(false)} name={itemDetails?.supply_name} refetch={refetchBatches}/> : null}
 
                 {/* HEADER */}

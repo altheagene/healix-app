@@ -1,5 +1,4 @@
 import React from "react"
-import "./modal.css"
 
 interface ModalProps {
     title: string
@@ -25,7 +24,9 @@ export default function Modal({ title, onClose, children, width = 520 }: ModalPr
         const opener = document.activeElement as HTMLElement | null
         const panel = panelRef.current
         const focusables = () => Array.from(panel?.querySelectorAll<HTMLElement>(FOCUSABLE) ?? [])
-        ;(focusables()[0] ?? panel)?.focus()
+        // Start in the first field when there is one, rather than on the close button.
+        const firstField = panel?.querySelector<HTMLElement>("input:not([type=hidden]):not([disabled]), select:not([disabled]), textarea:not([disabled])")
+        ;(firstField ?? focusables()[0] ?? panel)?.focus()
 
         function onKeyDown(event: KeyboardEvent) {
             if (event.key === "Escape") {
@@ -63,7 +64,7 @@ export default function Modal({ title, onClose, children, width = 520 }: ModalPr
                 aria-modal="true"
                 aria-labelledby={titleId}
                 tabIndex={-1}
-                className="healix-modal relative flex max-h-[calc(100vh-4rem)] w-full flex-col overflow-hidden rounded-2xl bg-white shadow-xl"
+                className="relative flex max-h-[calc(100vh-4rem)] w-full flex-col overflow-hidden rounded-2xl bg-white shadow-xl"
                 style={{ maxWidth: width }}
             >
                 <div className="flex items-center justify-between border-b border-sage-200 px-6 py-4">

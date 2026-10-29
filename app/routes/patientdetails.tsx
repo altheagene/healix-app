@@ -1,4 +1,5 @@
 import { apiFetch } from "../api";
+import { notify } from "../notify";
 import { ROLES, STAFF_ROLE_NAME } from "../roles";
 import AddRecord from '~/components/addrecord'
 import EditPatient from '~/components/editpatient'
@@ -60,7 +61,7 @@ export default function PatientDetails(){
         })
         const result = await response.json()
         if (result.success) refetch()
-        else alert(result.error || 'Could not update the patient')
+        else notify(result.error || 'Could not update the patient', 'error')
     }
 
     React.useEffect(() => {

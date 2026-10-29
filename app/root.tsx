@@ -13,6 +13,9 @@ import {
 import type { Route } from "./+types/root";
 import "./app.css";
 import Navbar from "./components/navbar";
+import Modal from "./components/modal";
+import Notices from "./components/notices";
+import { primaryButton, secondaryButton } from "./components/form";
 import React from "react";
 import LoginPage from "./routes/login";
 
@@ -154,6 +157,7 @@ function logout() {
           </button>
         </div>
       )}
+      <Notices />
       {flashMessage && (
         <div className="flash-message" role="status" aria-live="polite" style={{backgroundColor: validUser ? 'var(--color-leaf-600)' : 'var(--color-red-600)'}}>{flashMessage}</div>
       )}
@@ -170,31 +174,13 @@ function logout() {
               <Outlet></Outlet>
             </div>
             {showLogoutModal && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-                <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
-                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-brand-50 text-xl text-brand-800">
-                    <i className="bi bi-box-arrow-right" />
-                  </div>
-                  <h2 className="m-0 text-lg font-semibold text-sage-900">Log out?</h2>
-                  <p className="mt-1.5 text-sm text-sage-500">You will need to sign in again to continue.</p>
-                  <div className="mt-6 flex justify-end gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setShowLogoutModal(false)}
-                      className="rounded-xl border border-sage-200 bg-white px-4 py-2.5 text-sm font-medium text-sage-700 transition hover:bg-sage-50"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="button"
-                      onClick={logout}
-                      className="rounded-xl bg-brand-800 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-brand-900"
-                    >
-                      Log out
-                    </button>
-                  </div>
+              <Modal title="Log out?" onClose={() => setShowLogoutModal(false)} width={400}>
+                <p className="m-0 px-6 py-5 text-sm text-sage-600">You will need to sign in again to continue.</p>
+                <div className="flex justify-end gap-2 border-t border-sage-100 px-6 py-4">
+                  <button type="button" onClick={() => setShowLogoutModal(false)} className={secondaryButton}>Cancel</button>
+                  <button type="button" onClick={logout} className={primaryButton}>Log out</button>
                 </div>
-              </div>
+              </Modal>
             )}
           </div>
         </>

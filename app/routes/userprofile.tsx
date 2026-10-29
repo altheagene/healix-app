@@ -1,21 +1,19 @@
 import { apiFetch } from "../api";
 import { ROLES } from "../roles";
+import StaffDialog from "~/components/staffdialog";
+import { Field, ModalForm, inputClass } from "~/components/form";
+import { notify } from "../notify";
 import React from "react";
 import user from "../images/user.png";
 
 export default function UserProfile() {
     const userId = localStorage.getItem("userid");
-    const isAdmin = localStorage.getItem("admin") === "true";
     const [staff, setStaff] = React.useState<any>();
     const [showEdit, setShowEdit] = React.useState(false);
     const [showReset, setShowReset] = React.useState(false);
-    const [form, setForm] = React.useState<any>({});
-    const [saving, setSaving] = React.useState(false);
-    const [error, setError] = React.useState("");
     const [resetForm, setResetForm] = React.useState({ current: "", next: "", confirm: "" });
     const [resetError, setResetError] = React.useState("");
     const [resetSaving, setResetSaving] = React.useState(false);
-    const [resetDone, setResetDone] = React.useState(false);
 
     function loadProfile() {
         if (!userId) return;
@@ -28,58 +26,10 @@ export default function UserProfile() {
         loadProfile();
     }, []);
 
-    function openEdit() {
-        setForm({
-            staff_id: staff?.staff_id,
-            first_name: staff?.first_name || "",
-            last_name: staff?.last_name || "",
-            sex: staff?.sex || "",
-            phone: staff?.phone || "",
-            email: staff?.email || "",
-            username: staff?.username || "",
-            staff_category_id: staff?.staff_category_id,
-        });
-        setError("");
-        setShowEdit(true);
-    }
-
     function openReset() {
         setResetForm({ current: "", next: "", confirm: "" });
         setResetError("");
-        setResetDone(false);
         setShowReset(true);
-    }
-
-    function updateField(field: string, value: string) {
-        setForm((current: any) => ({ ...current, [field]: value }));
-    }
-
-    async function saveProfile() {
-        if (!form.first_name || !form.last_name || !form.username) {
-            setError("Please fill in your name and username.");
-            return;
-        }
-
-        setSaving(true);
-        setError("");
-        try {
-            const response = await apiFetch("/updatestaff", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(form),
-            });
-            const result = await response.json();
-            if (!response.ok || !result.success) {
-                setError(result.error || "Could not save your profile.");
-                return;
-            }
-            setShowEdit(false);
-            loadProfile();
-        } catch {
-            setError("Could not save your profile.");
-        } finally {
-            setSaving(false);
-        }
     }
 
     async function resetPassword() {
@@ -114,8 +64,8 @@ export default function UserProfile() {
             }
             // The server signs out other sessions and sends this one a fresh token.
             if (result.token) localStorage.setItem("token", result.token);
-            setResetDone(true);
-            setResetForm({ current: "", next: "", confirm: "" });
+            setShowReset(false);
+            notify("Password changed. Other devices have been signed out.");
         } catch {
             setResetError("Could not reset your password.");
         } finally {
@@ -133,141 +83,23 @@ export default function UserProfile() {
 
     return (
         <div className="-mx-8 -my-7 min-h-full bg-sage-50 px-8 py-7 font-sans text-brand-800">
-            {showEdit && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-                    <div className="flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl bg-white shadow-xl">
-                        <div className="flex items-center justify-between border-b border-sage-100 px-6 py-4">
-                            <p className="text-base font-semibold text-sage-900">Edit Profile</p>
-                            <button
-                                type="button"
-                                onClick={() => setShowEdit(false)}
-                                className="flex h-8 w-8 items-center justify-center rounded-lg border-none bg-transparent text-sage-400 transition hover:bg-sage-50 hover:text-sage-700"
-                                aria-label="Close"
-                            >
-                                <i className="bi bi-x-lg" />
-                            </button>
-                        </div>
-
-                        <div className="space-y-3.5 overflow-y-auto px-6 py-5">
-                            <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
-                                <Field label="First name" value={form.first_name} onChange={value => updateField("first_name", value)} />
-                                <Field label="Last name" value={form.last_name} onChange={value => updateField("last_name", value)} />
-                            </div>
-                            <div>
-                                <p className="mb-1.5 text-xs font-medium text-sage-500">Sex</p>
-                                <div className="flex gap-2">
-                                    {["Female", "Male"].map(option => (
-                                        <button
-                                            key={option}
-                                            type="button"
-                                            onClick={() => updateField("sex", option)}
-                                            className={`flex-1 rounded-xl border px-3.5 py-2.5 text-sm font-medium transition ${
-                                                String(form.sex || "").toLowerCase() === option.toLowerCase()
-                                                    ? "border-brand-300 bg-brand-50 text-brand-800"
-                                                    : "border-sage-200 text-sage-500 hover:bg-sage-50"
-                                            }`}
-                                        >
-                                            {option}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                            <Field label="Email" value={form.email} onChange={value => updateField("email", value)} />
-                            <Field label="Phone" value={form.phone} onChange={value => updateField("phone", value)} />
-                            <Field label="Username" value={form.username} onChange={value => updateField("username", value)} />
-                            <div>
-                                <p className="mb-1.5 text-xs font-medium text-sage-500">Role</p>
-                                <select
-                                    value={String(form.staff_category_id ?? "")}
-                                    disabled={!isAdmin}
-                                    onChange={e => updateField("staff_category_id", e.target.value)}
-                                    className="w-full rounded-xl border border-sage-200 bg-white px-3.5 py-2.5 text-sm text-sage-900 outline-none focus:border-brand-300 focus:ring-2 focus:ring-brand-100 disabled:bg-sage-50 disabled:text-sage-400"
-                                >
-                                    {ROLES.map(role => (
-                                        <option key={role.staff_category_id} value={role.staff_category_id}>
-                                            {role.category_name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            {error && <p className="text-sm text-red-500">{error}</p>}
-                        </div>
-
-                        <div className="flex justify-end gap-2 border-t border-sage-100 px-6 py-4">
-                            <button
-                                type="button"
-                                onClick={() => setShowEdit(false)}
-                                className="rounded-xl border border-sage-200 bg-white px-4 py-2.5 text-sm font-medium text-sage-700 transition hover:bg-sage-50"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                type="button"
-                                onClick={saveProfile}
-                                disabled={saving}
-                                className="rounded-xl bg-brand-800 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-900 disabled:opacity-60"
-                            >
-                                {saving ? "Saving..." : "Save"}
-                            </button>
-                        </div>
-                    </div>
-                </div>
+            {showEdit && staff && (
+                <StaffDialog staffId={staff.staff_id} onClose={() => setShowEdit(false)}
+                    onSaved={() => { setShowEdit(false); notify("Profile saved."); loadProfile(); }} />
             )}
 
             {showReset && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-                    <div className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-xl">
-                        <div className="flex items-center justify-between border-b border-sage-100 px-6 py-4">
-                            <p className="text-base font-semibold text-sage-900">Reset Password</p>
-                            <button
-                                type="button"
-                                onClick={() => setShowReset(false)}
-                                className="flex h-8 w-8 items-center justify-center rounded-lg border-none bg-transparent text-sage-400 transition hover:bg-sage-50 hover:text-sage-700"
-                                aria-label="Close"
-                            >
-                                <i className="bi bi-x-lg" />
-                            </button>
-                        </div>
-
-                        <div className="space-y-3.5 px-6 py-5">
-                            <PasswordField
-                                label="Current password"
-                                value={resetForm.current}
-                                onChange={value => setResetForm(current => ({ ...current, current: value }))}
-                            />
-                            <PasswordField
-                                label="New password"
-                                value={resetForm.next}
-                                onChange={value => setResetForm(current => ({ ...current, next: value }))}
-                            />
-                            <PasswordField
-                                label="Confirm new password"
-                                value={resetForm.confirm}
-                                onChange={value => setResetForm(current => ({ ...current, confirm: value }))}
-                            />
-                            {resetError && <p className="text-sm text-red-500">{resetError}</p>}
-                            {resetDone && <p className="text-sm text-brand-700">Password updated.</p>}
-                        </div>
-
-                        <div className="flex justify-end gap-2 border-t border-sage-100 px-6 py-4">
-                            <button
-                                type="button"
-                                onClick={() => setShowReset(false)}
-                                className="rounded-xl border border-sage-200 bg-white px-4 py-2.5 text-sm font-medium text-sage-700 transition hover:bg-sage-50"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                type="button"
-                                onClick={resetPassword}
-                                disabled={resetSaving}
-                                className="rounded-xl bg-brand-800 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-900 disabled:opacity-60"
-                            >
-                                {resetSaving ? "Saving..." : "Reset password"}
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                <ModalForm title="Change password" onClose={() => setShowReset(false)} onSubmit={resetPassword}
+                    submitLabel="Change password" saving={resetSaving} error={resetError} width={460}>
+                    <PasswordField id="pw-current" label="Current password" autoComplete="current-password" value={resetForm.current}
+                        onChange={value => setResetForm(current => ({ ...current, current: value }))} />
+                    <PasswordField id="pw-new" label="New password" autoComplete="new-password" value={resetForm.next}
+                        hint="At least 8 characters, and not a common password or your username."
+                        onChange={value => setResetForm(current => ({ ...current, next: value }))} />
+                    <PasswordField id="pw-confirm" label="Confirm new password" autoComplete="new-password" value={resetForm.confirm}
+                        onChange={value => setResetForm(current => ({ ...current, confirm: value }))} />
+                    <p className="m-0 text-xs text-sage-500">You stay signed in here; other devices are signed out.</p>
+                </ModalForm>
             )}
 
             <div className="mb-6">
@@ -282,7 +114,7 @@ export default function UserProfile() {
                         <p className="mt-4 text-base font-semibold">{fullName}</p>
                         <p className="mt-1 text-sm text-sage-500">{roleName}</p>
                         <button
-                            onClick={openEdit}
+                            onClick={() => setShowEdit(true)}
                             className="mt-4 inline-flex items-center gap-2 rounded-full bg-leaf-400 px-6 py-2 text-sm font-semibold text-brand-800 transition hover:bg-leaf-500"
                         >
                             Edit
@@ -324,42 +156,22 @@ export default function UserProfile() {
     );
 }
 
-function PasswordField({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
+function PasswordField({ id, label, value, onChange, hint, autoComplete }: {
+    id: string; label: string; value: string; onChange: (value: string) => void; hint?: string; autoComplete: string
+}) {
     const [visible, setVisible] = React.useState(false);
     return (
-        <div>
-            <p className="mb-1.5 text-xs font-medium text-sage-500">{label}</p>
-            <div className="flex items-center gap-2 rounded-xl border border-sage-200 bg-white px-3.5 py-2.5 focus-within:border-brand-300 focus-within:ring-2 focus-within:ring-brand-100">
-                <input
-                    type={visible ? "text" : "password"}
-                    value={value}
-                    onChange={e => onChange(e.target.value)}
-                    className="w-full border-none bg-transparent text-sm text-sage-900 outline-none"
-                />
-                <button
-                    type="button"
-                    onClick={() => setVisible(open => !open)}
-                    className="border-none bg-transparent text-sage-400"
-                    aria-label={visible ? "Hide password" : "Show password"}
-                >
-                    <i className={`bi ${visible ? "bi-eye-slash" : "bi-eye"}`} />
+        <Field label={label} htmlFor={id} required hint={hint}>
+            <div className="relative">
+                <input id={id} type={visible ? "text" : "password"} autoComplete={autoComplete} value={value}
+                    onChange={e => onChange(e.target.value)} className={`${inputClass} pr-10`} />
+                <button type="button" onClick={() => setVisible(open => !open)} aria-pressed={visible}
+                    aria-label={visible ? `Hide ${label.toLowerCase()}` : `Show ${label.toLowerCase()}`}
+                    className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-sage-400 hover:text-sage-700">
+                    <i className={`bi ${visible ? "bi-eye-slash" : "bi-eye"}`} aria-hidden="true" />
                 </button>
             </div>
-        </div>
-    );
-}
-
-function Field({ label, value, onChange }: { label: string; value?: string; onChange: (value: string) => void }) {
-    return (
-        <div>
-            <p className="mb-1.5 text-xs font-medium text-sage-500">{label}</p>
-            <input
-                type="text"
-                value={value || ""}
-                onChange={e => onChange(e.target.value)}
-                className="w-full rounded-xl border border-sage-200 bg-white px-3.5 py-2.5 text-sm text-sage-900 outline-none placeholder:text-sage-400 focus:border-brand-300 focus:ring-2 focus:ring-brand-100"
-            />
-        </div>
+        </Field>
     );
 }
 

@@ -1,25 +1,29 @@
 import { apiFetch } from "../api";
-import { withUnit } from "../inventory";
 import { useParams } from "react-router"
 import React from "react"
-import { DISPOSITIONS, LEAVES_SCHOOL, localDateTime } from "../visitOutcomes"
+import { DISPOSITIONS, LEAVES_SCHOOL, localDateTime, visitDateParts } from "../visitOutcomes"
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import { Field, ModalForm, Section, inputClass, selectClass, secondaryButton } from "./form"
+import VisitFields, { type MedicineChoice, type MedicineRow } from "./visitfields"
+import { notify } from "../notify"
 
-export default function AddRecord(props:any){
-
-    const {id} = useParams()
-    const now = new Date()
-    const [services, setServices] = React.useState<any[]>()
-    const [staff, setStaff] = React.useState<any[]>()
-    const [newService, setNewService] = React.useState("");
-
-    const [recordDetails, setRecordDetails] = React.useState<any>({
+export default function AddRecord(props: any) {
+    const { id } = useParams()
+    const [services, setServices] = React.useState<any[]>([])
+    const [staff, setStaff] = React.useState<any[]>([])
+    const [medicines, setMedicines] = React.useState<MedicineChoice[]>([])
+    const [medications, setMedications] = React.useState<MedicineRow[]>([])
+    const [newService, setNewService] = React.useState("")
+    const [addingService, setAddingService] = React.useState(false)
+    const [saving, setSaving] = React.useState(false)
+    const [error, setError] = React.useState("")
+    const [details, setDetails] = React.useState<Record<string, any>>({
         patient_id: id,
         appointment_id: null,
         weight: '',
         temperature: '',
         // Local clinic time; toISOString() gave UTC, hours off from the wall clock.
-        visit_datetime : localDateTime(now),
+        visit_datetime: localDateTime(new Date()),
         service_id: 1,
         staff_id: 0,
         notes: '',
@@ -31,377 +35,114 @@ export default function AddRecord(props:any){
         referred_to: '',
         picked_up_by: '',
     })
-    const [medicines, setMedicine] = React.useState<any[]>();
-    const [medications, setMedications] = React.useState<{ supply_id: number | null; auto_deduct: false | true; quantity: number }[]>([]);
+    const set = (patch: Record<string, any>) => setDetails(current => ({ ...current, ...patch }))
 
     React.useEffect(() => {
-        apiFetch(`/getallservices`)
-        .then(res => res.json())
-        .then(data => setServices(data))
-
-        apiFetch(`/getstaffandcateg`)
-        .then(res => res.json())
-        // Staff who have left cannot attend new visits.
-        .then(data => setStaff(Array.isArray(data) ? data.filter(person => person.is_active !== 0) : []))
-
-        apiFetch(`/getallmedicine`)
-        .then(res => res.json())
-        .then(data => setMedicine(data))
+        apiFetch(`/getallservices`).then(res => res.json()).then(data => {
+            const list = Array.isArray(data) ? data : []
+            setServices(list)
+            if (list.length) setDetails(current => ({ ...current, service_id: list[0].service_id }))
+        })
+        apiFetch(`/getstaffandcateg`).then(res => res.json()).then(data => {
+            // Staff who have left cannot attend new visits. The signed-in person attends by default.
+            const list = Array.isArray(data) ? data.filter((person: any) => person.is_active !== 0) : []
+            setStaff(list)
+            const me = Number(localStorage.getItem("userid"))
+            const pick = list.find((p: any) => p.staff_id === me) || list[0]
+            if (pick) setDetails(current => ({ ...current, staff_id: pick.staff_id }))
+        })
+        apiFetch(`/getallmedicine`).then(res => res.json()).then(data => setMedicines(Array.isArray(data) ? data : []))
     }, [])
 
-    React.useEffect(() => {
-    if (staff && staff.length > 0) {
-        setRecordDetails({...recordDetails,staff_id: staff[0].staff_id});
-    }
-    }, [staff]);
-
     async function addServiceInline() {
-        if (!newService.trim()) return;
-
+        const name = newService.trim()
+        if (!name) return
         const res = await apiFetch(`/addservice`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ service_name: newService.trim() })
-        });
-
-        const result = await res.json();
-
-        // reload services
-        const refreshed = await apiFetch(`/getallservices`)
-            .then(r => r.json());
-
-        setServices(refreshed);
-
-        // auto-select newly added service (assuming backend returns id)
-        if (result?.service_id) {
-            setRecordDetails({
-                ...recordDetails,
-                service_id: result.service_id
-            });
-        }
-
-        setNewService("");
+            body: JSON.stringify({ service_name: name })
+        })
+        const result = await res.json().catch(() => ({}))
+        const refreshed = await apiFetch(`/getallservices`).then(r => r.json())
+        setServices(Array.isArray(refreshed) ? refreshed : services)
+        const created = result?.service_id ?? refreshed?.find?.((s: any) => s.service_name === name)?.service_id
+        if (created) set({ service_id: created })
+        setNewService("")
+        setAddingService(false)
     }
 
-    async function handleSubmit(){
+    async function save() {
         // A visit needs a reason: the complaint, or failing that some notes.
-        if (!recordDetails?.complaint?.trim() && !recordDetails?.notes?.trim()) {
-            alert('Please fill in the chief complaint.')
-            return;
+        if (!details.complaint?.trim() && !details.notes?.trim()) return setError("Enter the chief complaint.")
+        if ((details.disposition === "referred" || details.disposition === "emergency") && !details.referred_to?.trim()) {
+            return setError(details.disposition === "emergency" ? "Say where the student was taken." : "Say where the student was referred.")
         }
-        const response = await apiFetch(`/addvisitlog`,
-            {
-                method: 'POST',
-                headers: {
-                    'Content-Type' : 'application/json'
-                },
-                // The visit and its medicines are saved together, all or nothing.
-                body: JSON.stringify({ ...recordDetails, medications })
-            }
-        )
-        const result = await response.json()
-        if (!response.ok || !result.visit_id) {
-            alert(result.error || 'Failed to save the visit')
+        if (details.disposition === "sent_home" && !details.picked_up_by?.trim()) return setError("Say who picked the student up.")
+
+        setSaving(true)
+        setError("")
+        const response = await apiFetch(`/addvisitlog`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            // The visit and its medicines are saved together, all or nothing.
+            body: JSON.stringify({ ...details, medications })
+        }).catch(() => null)
+        const result = await response?.json().catch(() => ({}))
+        setSaving(false)
+        if (!response?.ok || !result?.visit_id) {
+            setError(result?.error || "Could not save the visit.")
             return
         }
-
+        notify(details.disposition ? "Visit saved." : "Visit saved. The student shows as in the clinic until you close it.")
         props.hideForm()
         props.refetch()
     }
 
-    function addMedication() {
-            setMedications([...medications, { supply_id: medicines?.[0]?.supply_id, auto_deduct: medicines?.[0]?.auto_deduct, quantity: 1 }]
-        );
-    }
+    const when = visitDateParts(details.visit_datetime)
+    const leavesWith = details.disposition === "emergency" ? "Taken to" : "Referred to"
+    return (
+        <ModalForm title="Record a visit" onClose={props.hideForm} onSubmit={save} submitLabel="Save visit" saving={saving}
+            error={error} width={680}>
+            <p className="m-0 text-sm text-sage-500">
+                <i className="bi bi-clock mr-1.5" aria-hidden="true" />{when.date} at {when.time}
+            </p>
 
-    function updateMedication(
-        index: number,
-        field: "supply_id" | "quantity",
-        value: any
-    ) {
-        const updated: any = [...medications];
-        updated[index][field] = value;
-        if (field === "supply_id"){
-             const med = medicines?.find(m => m.supply_id === parseInt(value))
-            if (med.auto_deduct === 0){
-                updated[index]['auto_deduct'] = false;
-                updated[index]['quantity'] = 0
-            }else{
-                updated[index]['auto_deduct'] = true;
-            }
-        }
-
-        setMedications(updated);
-    }
-
-    function removeMedication(index: number) {
-        setMedications(medications.filter((_, i) => i !== index));
-    }
-
-    const inputClasses = "w-full rounded-xl border border-sage-200 bg-white px-3.5 py-2.5 text-sm text-sage-900 outline-none placeholder:text-sage-400 focus:border-brand-300 focus:ring-2 focus:ring-brand-100";
-    const labelClasses = "mb-1.5 block text-xs font-medium text-sage-500";
-
-    return(
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-            <div className="flex max-h-[92vh] w-full max-w-xl flex-col overflow-hidden rounded-2xl bg-white shadow-xl">
-
-                {/* HEADER */}
-                <div className="flex items-center justify-between border-b border-sage-100 px-6 py-4">
-                    <h2 className="text-base font-semibold text-sage-900">Visit Log</h2>
-                    <button
-                        onClick={props.hideForm}
-                        className="flex h-8 w-8 items-center justify-center rounded-full text-xl leading-none text-sage-400 transition hover:bg-sage-100 hover:text-sage-700"
-                    >
-                        ×
-                    </button>
-                </div>
-
-                {/* SCROLLABLE BODY */}
-                <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
-
-                    <div>
-                        <label className={labelClasses}>Date <span className="text-red-500">*</span></label>
-                        <input
-                            type="date"
-                            value={recordDetails.visit_datetime.slice(0, 10)}
-                            readOnly
-                            className={inputClasses}
-                        />
+            <VisitFields details={details} onChange={set} services={services} staff={staff} medicines={medicines}
+                rows={medications} onRowsChange={setMedications} allergies={props.allergies || []}
+                extraService={addingService ? (
+                    <div className="mt-2 flex gap-2">
+                        <label htmlFor="new-service" className="sr-only">New service name</label>
+                        <input id="new-service" className={inputClass} placeholder="New service name" value={newService} autoFocus
+                            onChange={(e) => setNewService(e.target.value)}
+                            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addServiceInline() } }} />
+                        <button type="button" onClick={addServiceInline} className={`${secondaryButton} flex-shrink-0`}>Add</button>
                     </div>
+                ) : (
+                    <button type="button" onClick={() => setAddingService(true)}
+                        className="mt-1.5 text-xs font-semibold text-brand-800 hover:underline">+ Add a service that isn't listed</button>
+                )} />
 
-                    <div>
-                        <label className={labelClasses}>Service <span className="text-red-500">*</span></label>
-                        <select
-                            value={recordDetails.service_id}
-                            onChange={(e) =>
-                                setRecordDetails({
-                                    ...recordDetails,
-                                    service_id: parseInt(e.target.value)
-                                })
-                            }
-                            className={inputClasses}
-                        >
-                            {services?.map(service => (
-                                <option key={service.service_id} value={service.service_id}>
-                                    {service.service_name}
-                                </option>
-                            ))}
-                        </select>
-
-                        <div className="mt-2 flex items-center gap-2">
-                            <input
-                                type="text"
-                                placeholder="Add new service"
-                                value={newService}
-                                onChange={(e) => setNewService(e.target.value)}
-                                className={inputClasses}
-                            />
-                            <button
-                                type="button"
-                                onClick={addServiceInline}
-                                className="flex h-[42px] w-[42px] flex-shrink-0 items-center justify-center rounded-xl border border-sage-200 text-sage-500 transition hover:bg-sage-50"
-                            >
-                                <i className="bi bi-plus-lg" />
-                            </button>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3.5">
-                        <div>
-                            <label className={labelClasses} htmlFor="weight">Weight</label>
-                            <input
-                                type="text"
-                                id="weight"
-                                value={recordDetails?.weight}
-                                onChange={(e) => setRecordDetails({...recordDetails, weight: e.target.value})}
-                                className={inputClasses}
-                            />
-                        </div>
-                        <div>
-                            <label className={labelClasses} htmlFor="temp">Temperature</label>
-                            <input
-                                type="text"
-                                id="temp"
-                                value={recordDetails?.temperature}
-                                onChange={(e) => setRecordDetails({...recordDetails, temperature: e.target.value})}
-                                className={inputClasses}
-                            />
-                        </div>
-                    </div>
-
-                    <div>
-                        <label className={labelClasses} htmlFor="complaint">Chief complaint <span className="text-red-500">*</span></label>
-                        <input
-                            id="complaint"
-                            type="text"
-                            placeholder="e.g. Headache, fever, sprained ankle"
-                            value={recordDetails?.complaint || ''}
-                            onChange={(e) => setRecordDetails({...recordDetails, complaint: e.target.value})}
-                            className={inputClasses}
-                        />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3.5">
-                        <div>
-                            <label className={labelClasses} htmlFor="assessment">Assessment</label>
-                            <textarea
-                                id="assessment"
-                                rows={2}
-                                value={recordDetails?.assessment || ''}
-                                onChange={(e) => setRecordDetails({...recordDetails, assessment: e.target.value})}
-                                className={inputClasses}
-                            />
-                        </div>
-                        <div>
-                            <label className={labelClasses} htmlFor="treatment">Treatment</label>
-                            <textarea
-                                id="treatment"
-                                rows={2}
-                                value={recordDetails?.treatment || ''}
-                                onChange={(e) => setRecordDetails({...recordDetails, treatment: e.target.value})}
-                                className={inputClasses}
-                            />
-                        </div>
-                    </div>
-
-                    {props.allergies && props.allergies.length > 0 && (
-                        <div role="alert" className="flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 px-3.5 py-3 text-sm text-red-800">
-                            <i className="bi bi-exclamation-octagon-fill mt-0.5" aria-hidden="true" />
-                            <p className="m-0">
-                                <span className="font-semibold">Allergic to {props.allergies.map((a: any) => a.allergy_name).join(', ')}.</span>
-                                {' '}Check every medicine below against this.
-                            </p>
-                        </div>
-                    )}
-
-                    {medicines && medicines.length > 0 && (
-                        <div>
-                            <label className={labelClasses}>Medications</label>
-
-                            <div className="space-y-2">
-                                {medications.map((med, index) => {
-                                    const medicineInfo = medicines?.find(m => m.supply_id === parseInt(med.supply_id as any))
-                                    return (
-                                        <div key={index} className="flex items-end gap-2 rounded-xl border border-sage-200 p-3">
-                                            <div className="flex-1">
-                                                <label className="mb-1 block text-[11px] font-medium text-sage-400">Medicine</label>
-                                                <select
-                                                    value={med.supply_id ?? ""}
-                                                    onChange={(e) => updateMedication(index, 'supply_id', e.target.value)}
-                                                    className="w-full rounded-lg border border-sage-200 bg-white px-2.5 py-2 text-sm outline-none focus:border-brand-300 focus:ring-2 focus:ring-brand-100"
-                                                >
-                                                    {medicines?.map(m => (
-                                                        <option key={m.supply_id} value={m.supply_id}>{m.supply_name} ({withUnit(m.available_stock, m.unit)} left)</option>
-                                                    ))}
-                                                </select>
-                                            </div>
-
-                                            <div className="w-28">
-                                                <label className="mb-1 block text-[11px] font-medium text-sage-400">Quantity</label>
-                                                <input
-                                                    type="number"
-                                                    min="1"
-                                                    max={medicineInfo?.available_stock}
-                                                    value={med.quantity}
-                                                    onChange={(e) => updateMedication(index, "quantity", parseInt(e.target.value) > medicineInfo?.available_stock ? medicineInfo?.available_stock : parseInt(e.target.value))}
-                                                    className="w-full rounded-lg border border-sage-200 bg-white px-2.5 py-2 text-sm outline-none focus:border-brand-300 focus:ring-2 focus:ring-brand-100"
-                                                />
-                                            </div>
-
-                                            <button
-                                                type="button"
-                                                onClick={() => removeMedication(index)}
-                                                className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-red-500 transition hover:bg-red-50"
-                                            >
-                                                <i className="bi bi-trash" />
-                                            </button>
-                                        </div>
-                                    )
-                                })}
-                            </div>
-
-                            <button
-                                type="button"
-                                onClick={addMedication}
-                                className="mt-2 flex items-center gap-1.5 text-sm font-medium text-brand-900 transition hover:text-brand-800"
-                            >
-                                <i className="bi bi-plus-lg" /> Add medication
-                            </button>
-                        </div>
-                    )}
-
-                    <div>
-                        <label className={labelClasses}>Staff <span className="text-red-500">*</span></label>
-                        <select
-                            value={recordDetails?.staff_id}
-                            onChange={(e) => setRecordDetails({...recordDetails, staff_id: parseInt(e.target.value)})}
-                            className={inputClasses}
-                        >
-                            {staff?.map(person => (
-                                <option key={person.staff_id} value={person.staff_id}>{person.first_name} {person.last_name}</option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div>
-                        <label className={labelClasses} htmlFor="disposition">How did the visit end?</label>
-                        <select
-                            id="disposition"
-                            value={recordDetails.disposition}
-                            onChange={(e) => setRecordDetails({...recordDetails, disposition: e.target.value})}
-                            className={inputClasses}
-                        >
-                            <option value="">Still in the clinic (close it later)</option>
-                            {Object.entries(DISPOSITIONS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
-                        </select>
-                        {(recordDetails.disposition === 'referred' || recordDetails.disposition === 'emergency') && (
-                            <input
-                                aria-label={recordDetails.disposition === 'emergency' ? 'Taken to' : 'Referred to'}
-                                placeholder={recordDetails.disposition === 'emergency' ? 'Taken to, e.g. City General Hospital' : 'Referred to, e.g. dentist, guidance office'}
-                                value={recordDetails.referred_to}
-                                onChange={(e) => setRecordDetails({...recordDetails, referred_to: e.target.value})}
-                                className={`${inputClasses} mt-2`}
-                            />
-                        )}
-                        {LEAVES_SCHOOL.has(recordDetails.disposition) && (
-                            <input
-                                aria-label="Picked up by"
-                                placeholder="Picked up by, e.g. Maria Cruz (mother)"
-                                value={recordDetails.picked_up_by}
-                                onChange={(e) => setRecordDetails({...recordDetails, picked_up_by: e.target.value})}
-                                className={`${inputClasses} mt-2`}
-                            />
-                        )}
-                    </div>
-
-                    <div>
-                        <label className={labelClasses} htmlFor="notes">Other notes</label>
-                        <textarea
-                            id="notes"
-                            rows={3}
-                            value={recordDetails?.notes}
-                            onChange={(e) => setRecordDetails({...recordDetails, notes: e.target.value})}
-                            className={inputClasses}
-                        />
-                    </div>
-                </div>
-
-                {/* FOOTER */}
-                <div className="flex justify-end gap-2 border-t border-sage-100 px-6 py-4">
-                    <button
-                        onClick={props.hideForm}
-                        className="rounded-xl border border-sage-200 px-4 py-2.5 text-sm font-medium text-sage-600 transition hover:bg-sage-50"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        onClick={handleSubmit}
-                        className="rounded-xl bg-brand-800 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-brand-900"
-                    >
-                        Save
-                    </button>
-                </div>
-            </div>
-        </div>
+            <Section title="How did it end?" description="Leave as 'still in the clinic' to close the visit later from the clinic board.">
+                <Field label="Outcome" htmlFor="visit-outcome" className="sm:col-span-2">
+                    <select id="visit-outcome" className={selectClass} value={details.disposition} onChange={(e) => set({ disposition: e.target.value })}>
+                        <option value="">Still in the clinic</option>
+                        {Object.entries(DISPOSITIONS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                    </select>
+                </Field>
+                {(details.disposition === "referred" || details.disposition === "emergency") && (
+                    <Field label={leavesWith} htmlFor="visit-referred" required>
+                        <input id="visit-referred" className={inputClass} value={details.referred_to}
+                            placeholder={details.disposition === "emergency" ? "e.g. City General Hospital" : "e.g. Dentist, guidance office"}
+                            onChange={(e) => set({ referred_to: e.target.value })} />
+                    </Field>
+                )}
+                {LEAVES_SCHOOL.has(details.disposition) && (
+                    <Field label="Picked up by" htmlFor="visit-picked-up" required={details.disposition === "sent_home"}>
+                        <input id="visit-picked-up" className={inputClass} value={details.picked_up_by} placeholder="e.g. Maria Cruz (mother)"
+                            onChange={(e) => set({ picked_up_by: e.target.value })} />
+                    </Field>
+                )}
+            </Section>
+        </ModalForm>
     )
 }
