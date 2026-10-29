@@ -94,9 +94,11 @@ export default function Records() {
 function VisitList({ isClinician }: { isClinician: boolean }) {
     const [searchTerm, setSearchTerm] = React.useState("")
     const [query, setQuery] = React.useState("")
-    const [range, setRange] = React.useState("month")
-    const [dateFrom, setDateFrom] = React.useState(monthStart())
-    const [dateTo, setDateTo] = React.useState(today())
+    // All time by default: a quiet clinic can go weeks without a visit, and an empty
+    // "this month" list reads as if the records were gone.
+    const [range, setRange] = React.useState("all")
+    const [dateFrom, setDateFrom] = React.useState("")
+    const [dateTo, setDateTo] = React.useState("")
     const [filters, setFilters] = React.useState({ outcome: "", service_id: "", staff_id: "", department: "", stage: "" })
     const [sort, setSort] = React.useState<{ key: SortKey; direction: "asc" | "desc" }>({ key: "date", direction: "desc" })
     const [page, setPage] = React.useState(1)
@@ -268,7 +270,15 @@ function VisitList({ isClinician }: { isClinician: boolean }) {
                                 <tr>
                                     <td colSpan={6} className="px-5 py-12 text-center">
                                         <i className="bi bi-clipboard-x text-2xl text-slate-300" aria-hidden="true" />
-                                        <p className="m-0 mt-2 text-sm text-slate-400">{loading ? "Loading..." : "No visits match these filters."}</p>
+                                        <p className="m-0 mt-2 text-sm text-slate-400">
+                                            {loading ? "Loading..." : (dateFrom || dateTo) ? "No visits in these dates." : "No visits match these filters."}
+                                        </p>
+                                        {!loading && (dateFrom || dateTo) && (
+                                            <button type="button" onClick={() => chooseRange("all")}
+                                                className="mt-2 text-sm font-medium text-teal-800 hover:underline">
+                                                Show all dates
+                                            </button>
+                                        )}
                                     </td>
                                 </tr>
                             ) : result.visits.map(visit => {
