@@ -205,13 +205,13 @@ export default function Reports() {
                 <>
                     {/* KPI ROW */}
                     <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                        <Kpi icon="bi-clipboard2-pulse" look="citron" value={t.visits} label="Clinic visits"
+                        <Kpi icon="bi-clipboard2-pulse" value={t.visits} label="Clinic visits"
                             note={<Change now={t.visits} before={t.previous_visits} days={report.by_day.length} />} />
-                        <Kpi icon="bi-people" look="leaf" value={t.students} label="Students seen"
+                        <Kpi icon="bi-people" value={t.students} label="Students seen"
                             note={<><Strong>{t.repeat_students}</Strong> came more than once</>} />
-                        <Kpi icon="bi-box-arrow-right" look="deep" value={t.left_school} label="Sent home or referred"
+                        <Kpi icon="bi-box-arrow-right" value={t.left_school} label="Sent home or referred"
                             note={t.left_school ? <>Parents told for <Strong>{t.parents_told}</Strong> of {t.left_school}</> : "No one left school"} />
-                        <Kpi icon="bi-capsule" look="pale" value={t.units_given} label="Medicine units given"
+                        <Kpi icon="bi-capsule" value={t.units_given} label="Medicine units given"
                             note={<>Across <Strong>{report.medicines.length}</Strong> medicine{report.medicines.length === 1 ? "" : "s"}</>} />
                     </div>
 
@@ -233,8 +233,8 @@ export default function Reports() {
                                         <Panel title="How visits ended" icon="bi-signpost-split" chip="leaf">
                                             <OutcomeBar outcomes={report.outcomes} total={t.visits} />
                                         </Panel>
-                                        <Panel title="Visits per day" icon="bi-calendar3" chip="deep" wide>
-                                            <Columns busiest="Busiest day" color="deep" rows={report.by_day.map(d => ({ key: d.day, value: d.visits, tick: tickForDay(d.day, report.by_day.length), tip: visitDateParts(d.day).date }))} />
+                                        <Panel title={report.by_day.length <= DAILY_DAYS ? "Visits by day" : "Visits by week"} icon="bi-graph-up" chip="deep" wide>
+                                            <VisitTrend days={report.by_day} />
                                         </Panel>
                                         <Panel title="Busiest hours" icon="bi-clock" chip="leaf">
                                             <Columns busiest="Busiest hour" color="leaf" rows={report.by_hour.map(h => ({
@@ -297,28 +297,20 @@ function Change({ now, before, days }: { now: number; before: number; days: numb
     )
 }
 
-// The dashboard's card colours: lime, leaf green and deep green, plus a pale leaf.
-const KPI_LOOKS = {
-    citron: { card: "bg-citron-200 text-brand-900", icon: "bg-white/70 text-brand-800", muted: "text-brand-800/75", line: "border-citron-400" },
-    leaf: { card: "bg-leaf-400 text-brand-900", icon: "bg-white/60 text-brand-800", muted: "text-brand-900/85", line: "border-leaf-500" },
-    deep: { card: "bg-brand-800 text-white", icon: "bg-white/15 text-white", muted: "text-white/75", line: "border-white/15" },
-    pale: { card: "bg-leaf-100 text-brand-900", icon: "bg-white/80 text-brand-800", muted: "text-brand-800/75", line: "border-leaf-300" },
-}
 
-function Kpi({ icon, look, value, label, note }: { icon: string; look: keyof typeof KPI_LOOKS; value: number; label: string; note: React.ReactNode }) {
-    const style = KPI_LOOKS[look]
+function Kpi({ icon, value, label, note }: { icon: string; value: number; label: string; note: React.ReactNode }) {
     return (
-        <div className={`kpi-card rounded-[24px] p-5 shadow-card ${style.card}`}>
+        <div className="kpi-card rounded-2xl border border-sage-200 bg-white p-5 shadow-card">
             <div className="flex items-center gap-4">
-                <div className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full text-xl ${style.icon}`}>
+                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-brand-50 text-xl text-brand-800">
                     <i className={`bi ${icon}`} aria-hidden="true" />
                 </div>
                 <div>
-                    <div className="text-3xl font-bold leading-none tabular-nums">{value}</div>
-                    <div className={`mt-1 text-xs font-medium ${style.muted}`}>{label}</div>
+                    <div className="text-3xl font-bold leading-none tabular-nums text-sage-900">{value}</div>
+                    <div className="mt-1 text-xs font-medium text-sage-500">{label}</div>
                 </div>
             </div>
-            <p className={`m-0 mt-4 border-t pt-3 text-xs ${style.line} ${style.muted}`}>{note}</p>
+            <p className="m-0 mt-4 border-t border-sage-100 pt-3 text-xs text-sage-600">{note}</p>
         </div>
     )
 }
@@ -440,11 +432,101 @@ function Columns({ rows, busiest, color = "deep" }: { rows: { key: string; value
     )
 }
 
-function tickForDay(day: string, count: number) {
-    const date = Number(day.slice(8, 10))
-    const every = count > 60 ? 14 : count > 31 ? 7 : count > 14 ? 5 : 1
-    if (date === 1 || (date - 1) % every === 0) return date === 1 && count > 31 ? visitDateParts(day).date.slice(0, 3) : String(date)
-    return ""
+
+
+// Up to two months reads as one point a day; longer than that, as weekly totals.
+const DAILY_DAYS = 62
+
+function parseDay(iso: string) {
+    const [y, m, d] = iso.split("-").map(Number)
+    return new Date(y, m - 1, d)
+}
+
+/** Visits over the period as a line: daily for short periods, weekly for long ones. */
+function VisitTrend({ days }: { days: Report["by_day"] }) {
+    const daily = days.length <= DAILY_DAYS
+    const points: { start: string; visits: number; weekend?: boolean }[] = []
+    for (const d of days) {
+        const date = parseDay(d.day)
+        if (daily) {
+            points.push({ start: d.day, visits: d.visits, weekend: date.getDay() === 0 || date.getDay() === 6 })
+            continue
+        }
+        date.setDate(date.getDate() - ((date.getDay() + 6) % 7))
+        const key = localDateTime(date).slice(0, 10)
+        const current = points[points.length - 1]
+        if (current?.start === key) current.visits += d.visits
+        else points.push({ start: key, visits: d.visits })
+    }
+
+    const [hover, setHover] = React.useState<number | null>(null)
+    const W = 640, H = 200, PAD = { l: 30, r: 14, t: 14, b: 28 }
+    const max = Math.max(...points.map(p => p.visits), 1)
+    // Whole-number gridlines, so the axis never says 2.5 visits.
+    const step = Math.max(1, Math.ceil(max / 4))
+    const top = step * Math.ceil(max / step)
+    const ticks = Array.from({ length: top / step + 1 }, (_, i) => i * step)
+    const x = (i: number) => PAD.l + (points.length === 1 ? (W - PAD.l - PAD.r) / 2 : (i / (points.length - 1)) * (W - PAD.l - PAD.r))
+    const y = (v: number) => PAD.t + (1 - v / top) * (H - PAD.t - PAD.b)
+    const path = points.map((p, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(p.visits).toFixed(1)}`).join(" ")
+    const busiest = points.reduce((best, p) => (p.visits > best.visits ? p : best), points[0])
+    const shown = hover !== null ? points[hover] : busiest
+    const what = daily ? "" : "week of "
+    // Date labels: every Monday for daily charts, the first week of each month for weekly ones.
+    const labelAt = (i: number) => {
+        const date = parseDay(points[i].start)
+        if (daily) return i === 0 || date.getDay() === 1 ? `${date.toLocaleString("en", { month: "short" })} ${date.getDate()}` : ""
+        return i === 0 || date.getMonth() !== parseDay(points[i - 1].start).getMonth() ? date.toLocaleString("en", { month: "short" }) : ""
+    }
+    const slot = (W - PAD.l - PAD.r) / Math.max(points.length - 1, 1)
+
+    return (
+        <div>
+            <p className="m-0 mb-2 h-4 text-xs text-sage-600" aria-live="polite">
+                {busiest.visits === 0 && hover === null ? "No visits in this period." : (
+                    <>{hover !== null ? (daily ? "" : "Week of ") : `Busiest ${daily ? "day" : "week"}: ${what}`}
+                        <span className="font-semibold text-sage-900">{visitDateParts(shown.start).date}</span>, {shown.visits} visit{shown.visits === 1 ? "" : "s"}</>
+                )}
+            </p>
+            <svg viewBox={`0 0 ${W} ${H}`} className="h-52 w-full" role="img"
+                aria-label={`Visits each ${daily ? "day" : "week"}; busiest ${what}${visitDateParts(busiest.start).date} with ${busiest.visits}`}
+                onMouseLeave={() => setHover(null)}>
+                {/* Weekends, shaded so a quiet Saturday reads as a weekend, not a gap. */}
+                {daily && points.map((p, i) => p.weekend ? (
+                    <rect key={`w${p.start}`} x={x(i) - slot / 2} y={PAD.t} width={slot} height={H - PAD.t - PAD.b} fill="var(--color-sage-50)" />
+                ) : null)}
+                {ticks.map(t => (
+                    <g key={t}>
+                        <line x1={PAD.l} x2={W - PAD.r} y1={y(t)} y2={y(t)} stroke="var(--color-sage-100)" />
+                        <text x={PAD.l - 6} y={y(t) + 3} textAnchor="end" fontSize="10" fill="var(--color-sage-600)">{t}</text>
+                    </g>
+                ))}
+                <path d={`${path} L${x(points.length - 1)},${y(0)} L${x(0)},${y(0)} Z`} fill="var(--color-brand-50)" opacity="0.8" />
+                <path d={path} fill="none" stroke="var(--color-brand-600)" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+                {points.map((p, i) => {
+                    const label = labelAt(i)
+                    return (
+                        <g key={p.start} onMouseEnter={() => setHover(i)}>
+                            <rect x={x(i) - slot / 2} y={0} width={slot} height={H} fill="transparent" />
+                            {hover === i && <line x1={x(i)} x2={x(i)} y1={PAD.t} y2={H - PAD.b} stroke="var(--color-sage-300)" strokeDasharray="3 3" />}
+                            {(hover === i || p === busiest) && p.visits > 0 && (
+                                <circle cx={x(i)} cy={y(p.visits)} r={hover === i ? 5 : 4} fill="var(--color-brand-600)" stroke="#fff" strokeWidth="2" />
+                            )}
+                            {label && <text x={x(i)} y={H - 9} textAnchor="middle" fontSize="10" fill="var(--color-sage-600)">{label}</text>}
+                        </g>
+                    )
+                })}
+            </svg>
+            <div className="mt-1 flex flex-wrap gap-x-4 text-[11px] text-sage-600" aria-hidden="true">
+                <span className="inline-flex items-center gap-1.5"><span className="h-0.5 w-5 rounded bg-brand-600" /> Visits {daily ? "per day" : "per week"}</span>
+                {daily && <span className="inline-flex items-center gap-1.5"><span className="h-3 w-4 rounded-sm bg-sage-50 ring-1 ring-sage-100" /> Weekend</span>}
+            </div>
+            <table className="sr-only">
+                <caption>Visits each {daily ? "day" : "week"}</caption>
+                <tbody>{points.map(p => <tr key={p.start}><th>{daily ? "" : "Week of "}{visitDateParts(p.start).date}</th><td>{p.visits}</td></tr>)}</tbody>
+            </table>
+        </div>
+    )
 }
 
 function hourLabel(hour: number) {

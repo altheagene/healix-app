@@ -116,7 +116,7 @@ def clinic_report(date_from, date_to):
             FROM visit_logs v WHERE {_IN_RANGE} GROUP BY day""",
         params,
     )}
-    every_day = [(start + timedelta(days=n)).isoformat() for n in range(min(length, 120))]
+    every_day = [(start + timedelta(days=n)).isoformat() for n in range(min(length, 400))]
     by_day = [{"day": day, "visits": days.get(day, 0)} for day in every_day]
 
     frequent = _rows(
