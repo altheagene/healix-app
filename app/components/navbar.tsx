@@ -1,6 +1,7 @@
 import React from "react";
 import { NavLink, useLocation } from "react-router";
 import { STAFF_ROLE_NAME } from "../roles";
+import Logo from "./logo";
 
 const NAV_ITEMS = [
     { route: "/", text: "Dashboard", icon: "bi-clock", match: ["/"] },
@@ -34,14 +35,22 @@ export default function Navbar(props: {
 
     return (
         <nav className={`flex h-full flex-shrink-0 flex-col border-r border-sage-200 bg-white transition-all duration-200 ${expanded ? "w-56" : "w-[72px]"}`}>
-            <button
-                type="button"
-                title={expanded ? "Collapse menu" : "Expand menu"}
-                onClick={props.onToggle}
-                className={`mt-3 flex h-12 items-center border-none bg-transparent text-xl text-brand-800 ${expanded ? "justify-start px-5" : "w-full justify-center"}`}
-            >
-                <i className="bi bi-list" />
-            </button>
+            <div className={`mt-4 flex px-2 ${expanded ? "items-center justify-between pl-4" : "flex-col items-center gap-2"}`}>
+                <NavLink to="/" aria-label="Healix, go to the dashboard" title={expanded ? undefined : "Healix"}
+                    className="flex h-11 items-center rounded-lg no-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700">
+                    <Logo markOnly={!expanded} />
+                </NavLink>
+                <button
+                    type="button"
+                    title={expanded ? "Collapse menu" : "Expand menu"}
+                    aria-label={expanded ? "Collapse menu" : "Expand menu"}
+                    aria-expanded={expanded}
+                    onClick={props.onToggle}
+                    className="flex h-10 w-10 items-center justify-center rounded-lg border-none bg-transparent text-xl text-sage-500 transition hover:bg-sage-50 hover:text-brand-800"
+                >
+                    <i className={`bi ${expanded ? "bi-chevron-bar-left" : "bi-list"}`} aria-hidden="true" />
+                </button>
+            </div>
 
             <ul className="mt-2 flex w-full flex-col gap-1 px-2">
                 {NAV_ITEMS.filter(item => !(item.cliniciansOnly && isStaffRole)).map((item) => {
