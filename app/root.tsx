@@ -18,6 +18,7 @@ import Notices from "./components/notices";
 import { primaryButton, secondaryButton } from "./components/form";
 import React from "react";
 import LoginPage from "./routes/login";
+import Landing from "./components/landing";
 
 
 // Limits where the page may load from and send data to, so injected script cannot
@@ -89,6 +90,10 @@ export default function App() {
   const [apiError, setApiError] = React.useState("");
 
   const [validUser, setValidUser] = React.useState(false);
+  // Signed-out visitors see the landing page first; Sign in shows the form.
+  const [showSignIn, setShowSignIn] = React.useState(false);
+  // Whether the stored session has been read yet, so signed-in users never see the landing page flash.
+  const [sessionChecked, setSessionChecked] = React.useState(false);
   const [, setRoleChecked] = React.useState(0);
 
   // The role saved at login can be out of date if an admin changed it since.
@@ -116,12 +121,15 @@ export default function App() {
 React.useEffect(() => {
   const loggedIn = localStorage.getItem("loggedIn") === "true" && !!localStorage.getItem("token");
   setValidUser(loggedIn);
+  setSessionChecked(true);
   if (loggedIn) refreshRole();
 
   const onExpired = () => {
     localStorage.removeItem("token");
     localStorage.setItem("loggedIn", "false");
     setValidUser(false);
+    // They were working a moment ago: take them straight back to the form.
+    setShowSignIn(true);
   };
   window.addEventListener("auth-expired", onExpired);
   return () => window.removeEventListener("auth-expired", onExpired);
@@ -184,8 +192,13 @@ function logout() {
             )}
           </div>
         </>
-        :
-        <LoginPage validate={validate} setFlash={() => {setFlashMessage('Invalid credentials!'); setTimeout(() => setFlashMessage(""), 3000);}}/>
+        : !sessionChecked ? null
+        : showSignIn ? (
+          <LoginPage validate={validate} onBack={() => setShowSignIn(false)}
+            setFlash={() => {setFlashMessage('Invalid credentials!'); setTimeout(() => setFlashMessage(""), 3000);}}/>
+        ) : (
+          <Landing onSignIn={() => setShowSignIn(true)} />
+        )
       }    
     </>
   );
