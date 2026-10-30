@@ -1,5 +1,6 @@
 import { apiFetch } from "../api";
 import React from "react";
+import Pagination, { usePaged } from '~/components/pagination'
 import { REASONS, withUnit } from "../inventory";
 import { localDateTime, visitDateParts } from "../visitOutcomes";
 
@@ -49,6 +50,8 @@ export default function InventoryReport() {
     const totalOut = shown.reduce((sum, log) => sum + log.item_out, 0)
     const dispensed = logs.filter(log => log.reason === "dispensed").reduce((sum, log) => sum + log.item_out, 0)
     const reasonsSeen = Array.from(new Set(logs.map(log => log.reason || "")))
+
+    const { pageRows: pagedLogs, pager } = usePaged(shown, "inventory-report")
 
     return (
         <div className="min-h-full font-sans text-sage-900">
@@ -102,7 +105,7 @@ export default function InventoryReport() {
                         <tbody>
                             {shown.length === 0 ? (
                                 <tr><td colSpan={7} className="px-5 py-12 text-center text-sm text-sage-400">No stock movements in these dates.</td></tr>
-                            ) : shown.map(log => {
+                            ) : pagedLogs.map(log => {
                                 const when = visitDateParts(log.moved_at)
                                 return (
                                     <tr key={log.inv_id} className="align-top">
@@ -125,6 +128,7 @@ export default function InventoryReport() {
                         </tbody>
                     </table>
                 </div>
+                <Pagination {...pager} />
             </div>
         </div>
     )

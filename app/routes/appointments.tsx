@@ -1,5 +1,6 @@
 import { apiFetch } from "../api";
 import React from 'react'
+import Pagination, { usePaged } from '~/components/pagination'
 import { useNavigate } from 'react-router'
 import 'bootstrap-icons/font/bootstrap-icons.css'
 import EditAppointment from '~/components/editappointment'
@@ -88,6 +89,8 @@ export default function Appointments() {
         return 'bg-brand-50 text-brand-800 ring-1 ring-brand-200/60'
     }
 
+    const { pageRows: pagedAppointments, pager } = usePaged(filteredAppointments, 'appointments')
+
     return (
         <div className="min-h-full font-sans text-sage-900">
             <div className="mx-auto max-w-full">
@@ -168,7 +171,7 @@ export default function Appointments() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {filteredAppointments.length > 0 ? filteredAppointments.map(appt => (
+                                {pagedAppointments.length > 0 ? pagedAppointments.map(appt => (
                                     <tr key={appt.appointment_id} className="transition hover:bg-brand-50/40">
                                         <td className="border-b border-sage-100 px-5 py-3 text-sm last:border-none">
                                             <button type="button" onClick={() => navigate(`/patientdetails/${appt.patient_id}`)} className={rowLinkClass}>
@@ -215,6 +218,7 @@ export default function Appointments() {
                             </tbody>
                         </table>
                     </div>
+                    <Pagination {...pager} />
                 </div>
             </div>
         </div>

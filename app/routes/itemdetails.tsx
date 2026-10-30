@@ -3,6 +3,7 @@ import RowActions from '~/components/rowactions';
 import AddBatch from '~/components/addbatch'
 import EditItem from '~/components/edititem';
 import React from 'react'
+import Pagination, { usePaged } from '~/components/pagination'
 import { useParams } from 'react-router';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import EditStock from '~/components/editstocks';
@@ -108,6 +109,8 @@ export default function ItemDetails(){
 
     const totalStock = batches.filter(b => b.is_active).reduce((sum, b) => sum + (b.stock_level || 0), 0)
     const itemStatus = stockStatus(totalStock, itemDetails?.reorder_level)
+    const { pageRows: pagedBatches, pager } = usePaged(filteredBatches, 'batches')
+
     return(
         <div className="min-h-full font-sans text-sage-900">
             <div className="mx-auto max-w-full">
@@ -204,7 +207,7 @@ export default function ItemDetails(){
                                 </tr>
                             </thead>
                             <tbody>
-                                {filteredBatches.length > 0 ? filteredBatches.map((batch) => (
+                                {pagedBatches.length > 0 ? pagedBatches.map((batch) => (
                                     <tr key={batch.batch_id} className="transition hover:bg-brand-50/40">
                                         <td className="border-b border-sage-100 px-5 py-3 text-sm font-medium text-sage-900 last:border-none">
                                             {batch.batch_number}
@@ -250,9 +253,7 @@ export default function ItemDetails(){
                                 )}
                             </tbody>
                         </table>
-                        <div className="border-t border-sage-100 px-5 py-3 text-center text-xs text-sage-400">
-                            End of table
-                        </div>
+                        <Pagination {...pager} />
                     </div>
                 </div>
             </div>

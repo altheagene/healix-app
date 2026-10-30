@@ -1,7 +1,7 @@
 import { apiFetch } from "../api";
 import React from "react";
 import { Link, useNavigate } from "react-router";
-import Pagination from "~/components/pagination";
+import Pagination, { usePageSize } from "~/components/pagination";
 import ViewVisit from "~/components/viewVisit";
 import RowActions, { inlineActionClass, rowLinkClass } from "~/components/rowactions";
 import { VisitOutcomeDialog } from "~/components/visitoutcome";
@@ -40,7 +40,6 @@ type SortKey = "date" | "patient" | "outcome"
 const EMPTY: SearchResult = {
     visits: [], total: 0, stats: { today: 0, this_week: 0, in_clinic: 0, left_school_today: 0 }, services: [], staff: [],
 }
-const PAGE_SIZE = 20
 
 const today = () => localDateTime().slice(0, 10)
 function daysAgo(n: number) {
@@ -104,6 +103,7 @@ function VisitList({ isClinician }: { isClinician: boolean }) {
     const [filters, setFilters] = React.useState({ outcome: "", service_id: "", staff_id: "", department: "", stage: "" })
     const [sort, setSort] = React.useState<{ key: SortKey; direction: "asc" | "desc" }>({ key: "date", direction: "desc" })
     const [page, setPage] = React.useState(1)
+    const [pageSize, setPageSize] = usePageSize("visits")
     const [result, setResult] = React.useState<SearchResult>(EMPTY)
     const [loading, setLoading] = React.useState(false)
     const [reloadKey, setReloadKey] = React.useState(0)
@@ -128,7 +128,7 @@ function VisitList({ isClinician }: { isClinician: boolean }) {
         setLoading(true)
         const p = new URLSearchParams(params)
         p.set("page", String(page))
-        p.set("page_size", String(PAGE_SIZE))
+        p.set("page_size", String(pageSize))
         apiFetch(`/searchvisits?${p}`)
             .then(res => res.json())
             .then(data => {
@@ -137,7 +137,7 @@ function VisitList({ isClinician }: { isClinician: boolean }) {
                 setLoading(false)
             })
         return () => { stale = true }
-    }, [params, page, reloadKey])
+    }, [params, page, pageSize, reloadKey])
 
     function chooseRange(key: string) {
         const chosen = RANGES.find(r => r.key === key)
@@ -175,7 +175,7 @@ function VisitList({ isClinician }: { isClinician: boolean }) {
     }
 
     const activeFilters = Object.values(filters).filter(Boolean).length + (query ? 1 : 0)
-    const totalPages = Math.max(1, Math.ceil(result.total / PAGE_SIZE))
+    const totalPages = Math.max(1, Math.ceil(result.total / pageSize))
 
     return (
         <>
@@ -323,7 +323,8 @@ function VisitList({ isClinician }: { isClinician: boolean }) {
                     </table>
                 </div>
 
-                <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
+                <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} pageSize={pageSize}
+                    onPageSizeChange={(size) => { setPageSize(size); setPage(1) }} totalItems={result.total} />
             </div>
         </>
     )

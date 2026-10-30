@@ -1,6 +1,7 @@
 import { apiFetch } from "../api";
 import RowActions, { rowLinkClass } from "~/components/rowactions"
 import React from "react"
+import Pagination, { usePaged } from "~/components/pagination"
 import 'bootstrap-icons/font/bootstrap-icons.css'
 import StaffDialog from "~/components/staffdialog"
 import ViewStaff, { fullName, lastSignIn } from "~/components/viewstaff"
@@ -74,6 +75,8 @@ export default function Staff() {
         return [fullName(person), person.category_name, person.email, person.phone, person.username]
             .some(value => String(value || "").toLowerCase().includes(query))
     })
+
+    const { pageRows: pagedStaff, pager } = usePaged(filteredStaff, "staff")
 
     return (
         <div className="min-h-full font-sans text-sage-900">
@@ -168,7 +171,7 @@ export default function Staff() {
                         <>
                             {/* Phones: one card per person */}
                             <ul className="m-0 list-none divide-y divide-sage-100 p-0 sm:hidden">
-                                {filteredStaff.map(person => (
+                                {pagedStaff.map(person => (
                                     <li key={person.staff_id} className="flex items-start justify-between gap-3 px-5 py-4">
                                         <div className="min-w-0">
                                             <NameButton person={person} isMe={person.staff_id === myId} onOpen={() => setViewing(person)} />
@@ -192,7 +195,7 @@ export default function Staff() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {filteredStaff.map(person => (
+                                        {pagedStaff.map(person => (
                                             <tr key={person.staff_id} className="transition hover:bg-brand-50/40">
                                                 <td className="border-b border-sage-100 px-5 py-3 text-sm">
                                                     <NameButton person={person} isMe={person.staff_id === myId} onOpen={() => setViewing(person)} />
@@ -212,6 +215,7 @@ export default function Staff() {
                                     </tbody>
                                 </table>
                             </div>
+                            <Pagination {...pager} />
                         </>
                     )}
                     {!isAdmin && (

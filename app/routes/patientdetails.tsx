@@ -6,6 +6,7 @@ import AddRecord from '~/components/addrecord'
 import EditPatient from '~/components/editpatient'
 import ViewVisit from '~/components/viewVisit'
 import React from 'react'
+import Pagination, { usePaged } from '~/components/pagination'
 import { useParams, useNavigate, useSearchParams } from 'react-router';
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import 'bootstrap-icons/font/bootstrap-icons.css';
@@ -106,6 +107,10 @@ export default function PatientDetails(){
         ? `${currentUser.first_name || ""} ${currentUser.last_name || ""}`.trim()
         : "Staff"
     const userRole = ROLES.find(r => r.staff_category_id === Number(currentUser?.staff_category_id))?.category_name
+
+    // Newest visit first.
+    const visitHistory = React.useMemo(() => [...(clinicLogs || [])].reverse(), [clinicLogs])
+    const { pageRows: pagedVisits, pager: visitPager } = usePaged(visitHistory, 'patient-visits')
 
     return(
         <div className="-mx-8 -my-7 min-h-full bg-sage-50 px-8 py-7 font-sans text-brand-800">
@@ -314,7 +319,7 @@ export default function PatientDetails(){
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {clinicLogs && clinicLogs.length > 0 ? [...clinicLogs].reverse().map((log, idx) => (
+                                    {pagedVisits.length > 0 ? pagedVisits.map((log, idx) => (
                                         <tr key={idx} className="align-top">
                                             <td className="whitespace-nowrap border-t border-sage-100 px-4 py-3.5 text-sm">
                                                 <button type="button" onClick={() => { setShowVisit(true); setVisitChosen(log); }} className={rowLinkClass}>
@@ -354,6 +359,7 @@ export default function PatientDetails(){
                                 </tbody>
                             </table>
                         </div>
+                        <Pagination {...visitPager} />
                     </section>
 
                     <PatientTimeline timeline={timeline} />

@@ -1,6 +1,6 @@
 import { apiFetch } from "../api";
 import AddPatient from '~/components/addpatient'
-import Pagination from '~/components/pagination'
+import Pagination, { usePageSize } from '~/components/pagination'
 import ClinicNow from '~/components/clinicnow'
 import { DEPARTMENTS, STAGES, describeLevel, levelOptions } from '../school'
 import React from 'react'
@@ -71,7 +71,6 @@ const NO_FILTERS: Filters = {
     has_allergies: false, has_conditions: false, archived: false,
 }
 
-const PAGE_SIZE = 10
 
 export default function Patients() {
     const navigate = useNavigate()
@@ -83,6 +82,7 @@ export default function Patients() {
     const [filters, setFilters] = React.useState<Filters>(NO_FILTERS)
     const [sort, setSort] = React.useState<{ key: SortKey; direction: "asc" | "desc" }>({ key: "patient_id", direction: "asc" })
     const [currentPage, setCurrentPage] = React.useState(1)
+    const [pageSize, setPageSize] = usePageSize('patients')
     const [result, setResult] = React.useState<SearchResult>(EMPTY_RESULT)
     const [reloadKey, setReloadKey] = React.useState(0)
     const [isClinician, setIsClinician] = React.useState(false)
@@ -120,7 +120,7 @@ export default function Patients() {
         const params = new URLSearchParams({
             q: query,
             page: String(currentPage),
-            page_size: String(PAGE_SIZE),
+            page_size: String(pageSize),
             sort: sort.key,
             direction: sort.direction,
         })
@@ -134,7 +134,7 @@ export default function Patients() {
                 if (!stale) setResult(data && Array.isArray(data.patients) ? data : EMPTY_RESULT)
             })
         return () => { stale = true }
-    }, [query, currentPage, filters, sort, reloadKey])
+    }, [query, currentPage, pageSize, filters, sort, reloadKey])
 
     function refetchPatients() {
         setReloadKey(key => key + 1)
@@ -159,7 +159,7 @@ export default function Patients() {
     }
 
     const activeFilterCount = Object.entries(filters).filter(([, value]) => value !== "" && value !== false).length
-    const totalPages = Math.max(1, Math.ceil(result.total / PAGE_SIZE))
+    const totalPages = Math.max(1, Math.ceil(result.total / pageSize))
     const stats = result.stats
 
     function initials(patient: Patient) {
@@ -366,6 +366,9 @@ export default function Patients() {
                     currentPage={currentPage}
                     totalPages={totalPages}
                     onPageChange={setCurrentPage}
+                    pageSize={pageSize}
+                    onPageSizeChange={(size) => { setPageSize(size); setCurrentPage(1) }}
+                    totalItems={result.total}
                 />
             </div>
         </div>

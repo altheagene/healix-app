@@ -4,6 +4,7 @@ import AddItem from "~/components/additem";
 import Modal from "~/components/modal";
 import DisposeBatch from "~/components/disposebatch";
 import React from "react";
+import Pagination, { usePaged } from '~/components/pagination'
 import { useNavigate } from "react-router";
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { DEFAULT_REORDER_LEVEL, canManageStock, expiryLabel, stockStatus, withUnit } from "../inventory";
@@ -79,6 +80,8 @@ export default function Inventory() {
   );
 
   const activeCount = supplies.filter(s => s.is_active).length;
+
+  const { pageRows: pagedSupplies, pager } = usePaged(filteredSupplies, "inventory");
 
   return (
     <div className="min-h-full font-sans text-sage-900">
@@ -225,7 +228,7 @@ export default function Inventory() {
                 </tr>
               </thead>
               <tbody>
-                {filteredSupplies.length > 0 ? filteredSupplies.map((supply) => {
+                {pagedSupplies.length > 0 ? pagedSupplies.map((supply) => {
                   const status = stockStatus(supply.total_stock, supply.reorder_level)
                   const days = expiryLabel(supply.nearest_expiry)
                   const updated = visitDateParts(supply.last_updated)
@@ -279,6 +282,7 @@ export default function Inventory() {
               </tbody>
             </table>
           </div>
+          <Pagination {...pager} />
           <p className="m-0 border-t border-sage-100 px-5 py-3 text-xs text-sage-400">
             * Default reorder level. Set each item's own level, and its unit, with Edit Details on its page.
           </p>
