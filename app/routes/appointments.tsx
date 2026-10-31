@@ -8,6 +8,7 @@ import RowActions, { inlineActionClass, rowLinkClass } from '~/components/rowact
 import { notify } from '../notify'
 import { visitDateParts } from '../visitOutcomes'
 import { SkeletonRows } from '~/components/skeleton'
+import { FilterBar, QuickSelect, type FilterChip } from '~/components/filterbar'
 
 export default function Appointments() {
     const [_width, setWidth] = React.useState(0)
@@ -26,7 +27,7 @@ export default function Appointments() {
     const [loaded, setLoaded] = React.useState(false)
     const [searchQuery, setSearchQuery] = React.useState('')
     const [showEdit, setShowEdit] = React.useState(false)
-    const [selectedDate, setSelectedDate] = React.useState(); // default to today
+    const [selectedDate, setSelectedDate] = React.useState('')
 
 
     const navigate = useNavigate()
@@ -80,6 +81,10 @@ export default function Appointments() {
         return patientName.includes(query) || serviceName.includes(query);
     });
 
+    const chips: FilterChip[] = []
+    if (apptStatus !== 'All') chips.push({ key: 'status', label: apptStatus, onRemove: () => setApptStatus('All') })
+    if (selectedDate) chips.push({ key: 'date', label: visitDateParts(selectedDate).date, onRemove: () => setSelectedDate('') })
+
     const totalAppointments = appointments.length
     const todayCount = appointments.filter(appt => String(appt.appointment_date || "").trim() === today).length
     const upcomingCount = appointments.filter(appt => String(appt.status || "").toLowerCase() === "upcoming").length
@@ -122,42 +127,18 @@ export default function Appointments() {
 
                 {/* CONTROLS */}
                 <div className="rounded-2xl border border-sage-200 bg-white shadow-card overflow-hidden">
-                    <div className="flex flex-col gap-3 border-b border-sage-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="flex flex-wrap gap-2">
-                            {apptStatuses.map(status => (
-                                <button
-                                    key={status}
-                                    onClick={() => setApptStatus(status)}
-                                    className={`rounded-full px-3.5 py-1.5 text-xs font-medium transition ${
-                                        apptStatus === status
-                                            ? 'bg-sage-900 text-white'
-                                            : 'bg-sage-100 text-sage-500 hover:bg-sage-200'
-                                    }`}
-                                >
-                                    {status}
-                                </button>
-                            ))}
-                        </div>
-
-                        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-                            <label className="flex w-full items-center gap-2 rounded-full border border-sage-200 bg-sage-50 px-3.5 py-2 text-sage-400 focus-within:border-brand-300 focus-within:ring-2 focus-within:ring-brand-100 sm:w-64">
-                                <i className="bi bi-search text-sm" />
-                                <input
-                                    type="text"
-                                    placeholder="Search by patient or service"
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full border-none bg-transparent text-sm text-sage-900 outline-none placeholder:text-sage-400"
-                                />
-                            </label>
-                            <input
-                                type="date"
-                                value={selectedDate}
-                                onChange={(e) => setSelectedDate(e.target.value as any)}
-                                className="rounded-full border border-sage-200 bg-sage-50 px-3.5 py-2 text-sm text-sage-700 outline-none focus:border-brand-300 focus:ring-2 focus:ring-brand-100"
-                            />
-                        </div>
-                    </div>
+                    <FilterBar
+                        search={{ value: searchQuery, onChange: setSearchQuery, placeholder: "Search by patient or service", label: "Search appointments" }}
+                        quick={<>
+                            <QuickSelect label="Status" value={apptStatus === 'All' ? '' : apptStatus} onChange={v => setApptStatus(v || 'All')}
+                                options={[['', 'Any status'], ...apptStatuses.filter(st => st !== 'All').map(st => [st, st] as [string, string])]} />
+                            <input type="date" aria-label="Appointment date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)}
+                                className={`h-9 rounded-full border px-3.5 text-sm outline-none focus:ring-2 focus:ring-brand-100 ${selectedDate ? 'border-brand-300 bg-brand-50 text-brand-900' : 'border-sage-200 bg-white text-sage-700'}`} />
+                        </>}
+                        chips={chips}
+                        onClearAll={() => { setApptStatus('All'); setSelectedDate('') }}
+                        summary={`${filteredAppointments.length} appointment${filteredAppointments.length === 1 ? '' : 's'}`}
+                    />
 
                     {/* TABLE */}
                     <div className="overflow-x-auto">

@@ -10,6 +10,7 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import { DEFAULT_REORDER_LEVEL, canManageStock, expiryLabel, stockStatus, withUnit } from "../inventory";
 import { visitDateParts } from "../visitOutcomes";
 import { SkeletonRows } from "~/components/skeleton";
+import { FilterBar, QuickSelect, QuickToggle, type FilterChip } from "~/components/filterbar";
 
 interface AlertBatch {
   batch_id: number
@@ -82,6 +83,11 @@ export default function Inventory() {
   );
 
   const activeCount = supplies.filter(s => s.is_active).length;
+
+  // "Needs reordering" is switched on from its card above the table.
+  const chips: FilterChip[] = [];
+  if (selectedCategory !== "All Items") chips.push({ key: "category", label: selectedCategory, onRemove: () => setSelectedCategory("All Items") });
+  if (onlyReorder) chips.push({ key: "reorder", label: "Needs reordering", onRemove: () => setOnlyReorder(false) });
 
   const { pageRows: pagedSupplies, pager } = usePaged(filteredSupplies, "inventory");
 
@@ -166,57 +172,24 @@ export default function Inventory() {
 
         {/* CONTROLS */}
         <div className="rounded-2xl border border-sage-200 bg-white shadow-card overflow-hidden">
-          <div className="flex flex-col gap-3 border-b border-sage-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="flex rounded-full bg-sage-100 p-1">
-                {([[true, "Active Supplies"], [false, "Deleted Supplies"]] as const).map(([active, label]) => (
-                  <button key={label} type="button" aria-pressed={chosenActive === active} onClick={() => setChosenActive(active)}
-                    className={`rounded-full px-3.5 py-1.5 text-xs font-medium transition ${chosenActive === active ? 'bg-white text-sage-900 shadow-sm' : 'text-sage-500'}`}>
-                    {label}
-                  </button>
-                ))}
-              </div>
-
-              <select
-                aria-label="Category"
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="rounded-full border border-sage-200 bg-sage-50 px-3.5 py-2 text-xs font-medium text-sage-700 outline-none focus:border-brand-300 focus:ring-2 focus:ring-brand-100"
-              >
-                {categories.map(category => <option key={category} value={category}>{category}</option>)}
-              </select>
-
-              <label className="inline-flex items-center gap-1.5 text-xs font-medium text-sage-600">
-                <input type="checkbox" checked={onlyReorder} onChange={(e) => setOnlyReorder(e.target.checked)}
-                  className="h-4 w-4 rounded border-sage-300 text-brand-800 focus:ring-brand-200" />
-                Needs reordering only
-              </label>
-            </div>
-
-            <div className="flex w-full items-center gap-2 sm:w-auto">
-              <label className="flex w-full items-center gap-2 rounded-full border border-sage-200 bg-sage-50 px-3.5 py-2 text-sage-400 focus-within:border-brand-300 focus-within:ring-2 focus-within:ring-brand-100 sm:w-64">
-                <i className="bi bi-search text-sm" aria-hidden="true" />
-                <span className="sr-only">Search items</span>
-                <input
-                  type="text"
-                  placeholder="Search item"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full border-none bg-transparent text-sm text-sage-900 outline-none placeholder:text-sage-400"
-                />
-              </label>
-
-              {canManage && (
-                <button
-                  type="button"
-                  onClick={() => setShowAddItem(true)}
-                  className="inline-flex flex-shrink-0 items-center gap-2 rounded-lg bg-brand-800 px-4 py-2.5 text-sm font-medium text-white shadow-md transition hover:bg-brand-900"
-                >
-                  <i className="bi bi-plus-lg" aria-hidden="true" /> Add Item
-                </button>
-              )}
-            </div>
-          </div>
+          <FilterBar
+            search={{ value: searchTerm, onChange: setSearchTerm, placeholder: "Search item or category", label: "Search items" }}
+            quick={<>
+              <QuickToggle label="Show" value={chosenActive} onChange={setChosenActive} options={[[true, "Active"], [false, "Deleted"]]} />
+              <QuickSelect label="Category" value={selectedCategory === "All Items" ? "" : selectedCategory}
+                onChange={v => setSelectedCategory(v || "All Items")}
+                options={[["", "All categories"], ...categories.slice(1).map(c => [c, c] as [string, string])]} />
+            </>}
+            actions={canManage && (
+              <button type="button" onClick={() => setShowAddItem(true)}
+                className="inline-flex h-9 flex-shrink-0 items-center gap-2 rounded-full bg-brand-800 px-4 text-sm font-medium text-white shadow-md transition hover:bg-brand-900">
+                <i className="bi bi-plus-lg" aria-hidden="true" /> Add Item
+              </button>
+            )}
+            chips={chips}
+            onClearAll={() => { setSelectedCategory("All Items"); setOnlyReorder(false) }}
+            summary={`${filteredSupplies.length} item${filteredSupplies.length === 1 ? "" : "s"}`}
+          />
 
           {/* TABLE */}
           <div className="overflow-x-auto">

@@ -5,9 +5,9 @@ import Pagination, { usePaged } from "~/components/pagination"
 import 'bootstrap-icons/font/bootstrap-icons.css'
 import StaffDialog from "~/components/staffdialog"
 import ViewStaff, { fullName, lastSignIn } from "~/components/viewstaff"
-import { ROLES } from "../roles"
 import { telHref } from "../visitOutcomes"
 import { SkeletonList } from "~/components/skeleton"
+import { FilterBar, QuickToggle } from "~/components/filterbar"
 
 const ROLE_TONES: Record<string, string> = {
     Nurse: "bg-brand-50 text-brand-800 ring-brand-200/60",
@@ -137,32 +137,16 @@ export default function Staff() {
                 </div>
 
                 <div className="overflow-hidden rounded-2xl border border-sage-200 bg-white shadow-card">
-                    <div className="flex flex-col gap-3 border-b border-sage-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="flex flex-wrap items-center gap-2">
-                            {isAdmin && (
-                                <div className="flex rounded-full bg-sage-100 p-1">
-                                    {([[true, "Active"], [false, `Switched off${inactiveCount ? ` (${inactiveCount})` : ""}`]] as const).map(([value, text]) => (
-                                        <button key={String(value)} type="button" aria-pressed={showActive === value} onClick={() => setShowActive(value)}
-                                            className={`rounded-full px-3.5 py-1.5 text-xs font-medium transition ${showActive === value ? "bg-white text-sage-900 shadow-sm" : "text-sage-500"}`}>
-                                            {text}
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
-                            <select aria-label="Role" value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}
-                                className={`rounded-full border px-3.5 py-2 text-xs font-medium outline-none focus:ring-2 focus:ring-brand-100 ${roleFilter ? "border-brand-300 bg-brand-50 text-brand-900" : "border-sage-200 bg-sage-50 text-sage-700"}`}>
-                                <option value="">Every role</option>
-                                {ROLES.map(role => <option key={role.staff_category_id} value={role.category_name}>{role.category_name}</option>)}
-                            </select>
-                        </div>
-                        <label className="flex w-full items-center gap-2 rounded-full border border-sage-200 bg-sage-50 px-3.5 py-2 text-sage-400 focus-within:border-brand-300 focus-within:ring-2 focus-within:ring-brand-100 sm:w-72">
-                            <i className="bi bi-search text-sm" aria-hidden="true" />
-                            <span className="sr-only">Search staff</span>
-                            <input type="text" placeholder={isAdmin ? "Name, role, email, phone or username" : "Name or role"} value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full border-none bg-transparent text-sm text-sage-900 outline-none placeholder:text-sage-400" />
-                        </label>
-                    </div>
+                    {/* The role cards above filter by role, so there is no role dropdown here. */}
+                    <FilterBar
+                        search={{ value: searchQuery, onChange: setSearchQuery, placeholder: isAdmin ? "Name, role, email, phone or username" : "Name or role", label: "Search staff" }}
+                        quick={isAdmin && (
+                            <QuickToggle label="Show" value={showActive} onChange={setShowActive}
+                                options={[[true, "Active"], [false, `Switched off${inactiveCount ? ` (${inactiveCount})` : ""}`]]} />
+                        )}
+                        chips={roleFilter ? [{ key: "role", label: ROLE_CARDS.find(c => c.role === roleFilter)?.label ?? roleFilter, onRemove: () => setRoleFilter("") }] : []}
+                        summary={`${filteredStaff.length} ${filteredStaff.length === 1 ? "person" : "people"}`}
+                    />
 
                     {!loaded ? <SkeletonList rows={5} /> : filteredStaff.length === 0 ? (
                         <div className="px-5 py-12 text-center">

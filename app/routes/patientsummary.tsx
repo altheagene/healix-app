@@ -2,6 +2,8 @@ import { apiFetch } from "../api";
 import React from "react";
 import { useNavigate, useParams } from "react-router";
 import { describeLevel } from "../school";
+import { downloadPdf } from "../pdf";
+import PdfButton from "~/components/pdfbutton";
 
 interface Visit {
     at: string
@@ -63,13 +65,16 @@ export default function PatientSummary() {
                     <i className="bi bi-arrow-left" aria-hidden="true" /> Back to patient
                 </button>
                 {summary && (
+                    <div className="flex flex-wrap items-center gap-2">
+                    <PdfButton build={() => summaryPdf(summary)} />
                     <button
                         type="button"
                         onClick={() => window.print()}
                         className="inline-flex items-center gap-2 rounded-xl bg-brand-800 px-4 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-brand-900"
                     >
-                        <i className="bi bi-printer" aria-hidden="true" /> Print / Save as PDF
+                        <i className="bi bi-printer" aria-hidden="true" /> Print
                     </button>
+                    </div>
                 )}
             </div>
 
@@ -172,4 +177,36 @@ function Field({ label, value }: { label: string; value: string | number | null 
             <span className="font-medium">{value || "-"}</span>
         </p>
     )
+}
+
+/** The same summary as a PDF file, for a referral letter or to send to a parent. */
+function summaryPdf(summary: Summary) {
+    const p = summary.patient
+    const name = [p.first_name, p.middle_name, p.last_name].filter(Boolean).join(" ")
+    const contact = [p.emergency_contact_name, p.emergency_contact_phone].filter(Boolean).join(" · ")
+    return downloadPdf({
+        title: "Patient summary",
+        subtitle: name + (summary.generated_by ? ` · prepared by ${summary.generated_by}` : ""),
+        filename: `patient-summary-${String(p.student_id || p.patient_id || "patient").replace(/[^\w-]/g, "")}.pdf`,
+        footer: "Confidential: share only with the student, their parent or guardian, or a health professional caring for them.",
+        tables: [
+            { title: "Patient", columns: ["", ""], rows: [
+                ["Name", name], ["Student ID", p.student_id], ["Birthday", p.birthday], ["Sex", p.sex],
+                ["Department", p.department], ["Level", describeLevel(p.department as string, p.level, p.strand as string)],
+                ["Phone", p.phone], ["Email", p.email],
+            ] },
+            { title: "Health", columns: ["", ""], rows: [
+                ["Allergies", summary.allergies.length ? summary.allergies.join(", ") : "None recorded"],
+                ["Conditions", summary.conditions.length ? summary.conditions.join(", ") : "None recorded"],
+                ["Emergency contact", contact],
+                ...(p.notes ? [["Notes", p.notes]] : []),
+            ] },
+            { title: "Recent visits", columns: ["Date", "Reason", "Assessment and treatment", "Medicines"],
+                rows: summary.recent_visits.map(visit => [
+                    String(visit.at).slice(0, 10), visit.complaint || visit.service_name,
+                    [visit.assessment, visit.treatment].filter(Boolean).join(" · ") || visit.notes, visit.medicines,
+                ]),
+                empty: "No visits recorded." },
+        ],
+    })
 }

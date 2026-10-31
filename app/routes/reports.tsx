@@ -5,6 +5,8 @@ import { describeLevel } from "../school";
 import { DISPOSITIONS, localDateTime, visitDateParts } from "../visitOutcomes";
 import { withUnit } from "../inventory";
 import { STAFF_ROLE_NAME } from "../roles";
+import { downloadPdf } from "../pdf";
+import PdfButton from "~/components/pdfbutton";
 
 interface Report {
     date_from: string
@@ -166,6 +168,7 @@ export default function Reports() {
                     <p className="m-0 mt-1 text-sm text-sage-500">Clinic activity for {range}, for the school office and the clinic's own planning.</p>
                 </div>
                 <div className="no-print flex flex-wrap items-center gap-2">
+                    {report && <PdfButton build={() => clinicReportPdf(report, range)} />}
                     <button type="button" onClick={() => window.print()}
                         className="inline-flex items-center gap-1.5 rounded-lg border border-sage-200 bg-white px-3 py-2 text-sm font-medium text-sage-700 hover:bg-sage-50">
                         <i className="bi bi-printer" aria-hidden="true" /> Print
@@ -442,8 +445,8 @@ function parseDay(iso: string) {
     return new Date(y, m - 1, d)
 }
 
-/** Visits over the period as a line: daily for short periods, weekly for long ones. */
-function VisitTrend({ days }: { days: Report["by_day"] }) {
+/** Visits per day for short periods, per week (starting Monday) for long ones. */
+function trendPoints(days: Report["by_day"]) {
     const daily = days.length <= DAILY_DAYS
     const points: { start: string; visits: number; weekend?: boolean }[] = []
     for (const d of days) {
@@ -458,7 +461,12 @@ function VisitTrend({ days }: { days: Report["by_day"] }) {
         if (current?.start === key) current.visits += d.visits
         else points.push({ start: key, visits: d.visits })
     }
+    return { daily, points }
+}
 
+/** Visits over the period as a line: daily for short periods, weekly for long ones. */
+function VisitTrend({ days }: { days: Report["by_day"] }) {
+    const { daily, points } = trendPoints(days)
     const [hover, setHover] = React.useState<number | null>(null)
     const W = 640, H = 200, PAD = { l: 30, r: 14, t: 14, b: 28 }
     const max = Math.max(...points.map(p => p.visits), 1)
@@ -629,3 +637,55 @@ const PRINT_CSS = `
   @page { margin: 12mm; }
 }
 `
+
+/** The whole clinic report as one PDF, every tab included, for the school office. */
+function clinicReportPdf(report: Report, range: string) {
+    const t = report.totals
+    const { daily, points } = trendPoints(report.by_day)
+    const outcomes = OUTCOME_ORDER
+        .map(key => [OUTCOME_LABELS[key], report.outcomes.find(o => o.outcome === key)?.visits ?? 0] as const)
+        .filter(([, visits]) => visits > 0)
+    const percent = (n: number) => (t.visits ? `${Math.round((n / t.visits) * 100)}%` : "-")
+    const stock = report.stock
+    return downloadPdf({
+        title: "Clinic report",
+        subtitle: range,
+        filename: `clinic-report-${report.date_from}-to-${report.date_to}.pdf`,
+        summary: [
+            ["Clinic visits", t.visits],
+            ["Students seen", t.students],
+            ["Sent home or referred", t.left_school],
+            ["Medicine units given", t.units_given],
+            ["Came more than once", t.repeat_students],
+            ["Parents told", t.left_school ? `${t.parents_told} of ${t.left_school}` : "-"],
+            ["Days with visits", t.days_open],
+            ["Visits in the period before", t.previous_visits],
+        ],
+        tables: [
+            { title: "How visits ended", columns: ["Outcome", "Visits", "Share"], numeric: [1, 2], bar: 1,
+                rows: outcomes.map(([label, visits]) => [label, visits, percent(visits)]), empty: "No visits in this period." },
+            { title: "Top complaints", columns: ["Complaint", "Visits"], numeric: [1], bar: 1,
+                rows: report.complaints.map(c => [c.complaint, c.visits]), empty: "No complaints recorded." },
+            { title: "Visits by grade or college", columns: ["Grade or college", "Visits"], numeric: [1], bar: 1,
+                rows: report.by_group.map(g => [g.group, g.visits]) },
+            { title: "Busiest hours", columns: ["Hour", "Visits"], numeric: [1], bar: 1,
+                rows: report.by_hour.map(h => [`${hourLabel(h.hour)} to ${hourLabel(h.hour + 1)}`, h.visits]) },
+            { title: daily ? "Visits by day" : "Visits by week", columns: [daily ? "Day" : "Week of", "Visits"], numeric: [1], bar: 1,
+                rows: points.filter(p => p.visits > 0).map(p => [visitDateParts(p.start).date, p.visits]),
+                note: "Days with no visits are left out." },
+            { title: "Students who came back most", columns: ["Student", "Student ID", "Grade or college", "Visits", "Last visit", "Last complaint"], numeric: [3],
+                rows: report.frequent.map(f => [f.patient_name, f.student_id, describeLevel(f.department, f.level, f.strand, true), f.visits, visitDateParts(f.last_visit).date, f.last_complaint]),
+                empty: "No student visited more than once in this period.",
+                note: "Students who keep coming back may need a follow-up or a talk with their parents." },
+            { title: "Medicines given", columns: ["Medicine", "Units"], numeric: [1], bar: 1,
+                rows: report.medicines.map(m => [m.supply_name, m.units]), empty: "No medicine was given in this period." },
+            { title: "Stock to watch", columns: ["Item", "Batch", "Issue", "Quantity"], numeric: [3],
+                rows: [
+                    ...stock.to_dispose.map(b => [b.supply_name, b.batch_number, `Expired ${visitDateParts(b.expiration_date).date}, dispose`, withUnit(b.stock_level, b.unit)]),
+                    ...stock.expiring.map(b => [b.supply_name, b.batch_number, `Expires ${visitDateParts(b.expiration_date).date}`, withUnit(b.stock_level, b.unit)]),
+                    ...stock.reorder.map(item => [item.supply_name, "", "Below reorder level", withUnit(item.total_stock, item.unit)]),
+                ],
+                empty: "Nothing expiring, expired or low on stock." },
+        ],
+    })
+}

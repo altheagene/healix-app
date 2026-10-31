@@ -2,7 +2,7 @@ import { apiFetch } from "../api";
 import AddPatient from '~/components/addpatient'
 import Pagination, { usePageSize } from '~/components/pagination'
 import ClinicNow from '~/components/clinicnow'
-import { DEPARTMENTS, STAGES, describeLevel, levelOptions } from '../school'
+import { describeLevel, levelOptions } from '../school'
 import React from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import 'bootstrap-icons/font/bootstrap-icons.css';
@@ -10,6 +10,7 @@ import RowActions, { rowLinkClass } from '~/components/rowactions'
 import { STAFF_ROLE_NAME } from '../roles'
 import { notify } from '../notify'
 import { SkeletonRows } from '~/components/skeleton'
+import { FilterBar, PanelChecks, PanelSelect, QuickSelect, gradeLabel, gradeOptions, gradeValue, parseGrade, useUrlFilters, type FilterChip } from '~/components/filterbar'
 
 interface Patient {
     patient_id: string | number
@@ -80,7 +81,8 @@ export default function Patients() {
     const [prefillStudentId, setPrefillStudentId] = React.useState<string | undefined>()
     const [searchTerm, setSearchTerm] = React.useState(searchParams.get("q") || "")
     const [query, setQuery] = React.useState(searchTerm)
-    const [filters, setFilters] = React.useState<Filters>(NO_FILTERS)
+    // Kept in the address, so Back from a patient returns to the same filtered list.
+    const [filters, setFilters] = useUrlFilters<Filters>(NO_FILTERS)
     const [sort, setSort] = React.useState<{ key: SortKey; direction: "asc" | "desc" }>({ key: "patient_id", direction: "asc" })
     const [currentPage, setCurrentPage] = React.useState(1)
     const [pageSize, setPageSize] = usePageSize('patients')
@@ -143,7 +145,12 @@ export default function Patients() {
     }
 
     function updateFilter<K extends keyof Filters>(key: K, value: Filters[K]) {
-        setFilters(current => ({ ...current, [key]: value }))
+        setFilters({ ...filters, [key]: value })
+        setCurrentPage(1)
+    }
+
+    function setGrade(value: string) {
+        setFilters({ ...filters, ...parseGrade(value), level: "" })
         setCurrentPage(1)
     }
 
@@ -160,7 +167,21 @@ export default function Patients() {
         setShowForm(true)
     }
 
-    const activeFilterCount = Object.entries(filters).filter(([, value]) => value !== "" && value !== false).length
+    // What is switched on, as removable chips under the search.
+    const chips: FilterChip[] = []
+    const chip = (key: string, label: string, clear: Partial<Filters>) =>
+        chips.push({ key, label, onRemove: () => { setFilters({ ...filters, ...clear }); setCurrentPage(1) } })
+    if (filters.flag) chip("flag", filters.flag === "missing_info" ? "Missing contact or birthday" : "Frequent visitors", { flag: "" })
+    if (filters.patient_type) chip("patient_type", optionLabel(PATIENT_TYPES, filters.patient_type), { patient_type: "" })
+    if (filters.department || filters.stage) chip("grade", gradeLabel(filters.department, filters.stage), { department: "", stage: "", level: "" })
+    if (filters.level) chip("level", describeLevel(filters.department, Number(filters.level)) || `Level ${filters.level}`, { level: "" })
+    if (filters.sex) chip("sex", optionLabel(SEXES, filters.sex), { sex: "" })
+    if (filters.visited_within) chip("visited_within", optionLabel(LAST_VISIT, filters.visited_within), { visited_within: "" })
+    if (filters.has_allergies) chip("has_allergies", "Has allergies", { has_allergies: false })
+    if (filters.has_conditions) chip("has_conditions", "Has conditions", { has_conditions: false })
+    if (filters.archived) chip("archived", "Archived", { archived: false })
+    const panelCount = [filters.department || filters.stage, filters.level, filters.sex, filters.visited_within,
+        filters.has_allergies, filters.has_conditions, filters.archived].filter(Boolean).length
     const totalPages = Math.max(1, Math.ceil(result.total / pageSize))
     const stats = result.stats
 
@@ -219,55 +240,34 @@ export default function Patients() {
             )}
 
             <div className="rounded-2xl border border-sage-200 bg-white shadow-card overflow-hidden">
-                <div className="flex flex-col gap-3 border-b border-sage-200 px-5 py-3">
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                        <p className="m-0 text-sm text-sage-500">
-                            {filters.archived ? "Archived patients" : "Patients"} · {result.total} shown
-                            {activeFilterCount > 0 && (
-                                <button
-                                    type="button"
-                                    onClick={() => { setFilters(NO_FILTERS); setCurrentPage(1) }}
-                                    className="ml-3 text-xs font-medium text-brand-800 hover:underline"
-                                >
-                                    Clear {activeFilterCount} filter{activeFilterCount > 1 ? "s" : ""}
-                                </button>
-                            )}
-                        </p>
-                        <div className="flex w-full sm:w-64 items-center gap-2 rounded-full border border-sage-200 bg-sage-50 px-3 py-1.5 text-sage-400">
-                            <i className="bi bi-search text-sm" />
-                            <input
-                                type="text"
-                                placeholder="Search by name or ID"
-                                aria-label="Search patients by name or ID"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full border-none bg-transparent text-sm text-sage-900 outline-none placeholder:text-sage-400"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Filter patients">
-                        <FilterSelect label="Department" value={filters.department}
-                            onChange={v => { setFilters(current => ({ ...current, department: v, level: "", stage: "" })); setCurrentPage(1) }}
-                            options={[["", "All departments"], ...departmentChoices(result.departments).map(d => [d, d] as [string, string])]} />
-                        <FilterSelect label="Basic Education stage" value={filters.stage}
-                            onChange={v => { setFilters(current => ({ ...current, stage: v, department: v ? "" : current.department, level: "" })); setCurrentPage(1) }}
-                            options={[["", "All stages"], ...Object.entries(STAGES).map(([key, s]) => [key, s.label] as [string, string])]} />
+                <FilterBar
+                    search={{ value: searchTerm, onChange: setSearchTerm, placeholder: "Search by name or ID", label: "Search patients by name or ID" }}
+                    quick={
+                        <QuickSelect label="Patient type" value={filters.patient_type} onChange={v => updateFilter("patient_type", v)}
+                            options={PATIENT_TYPES} />
+                    }
+                    panelCount={panelCount}
+                    panel={<>
+                        <PanelSelect label="Grade or department" value={gradeValue(filters.department, filters.stage)} onChange={setGrade}
+                            options={gradeOptions(result.departments)} />
                         {filters.department && (
-                            <FilterSelect label="Level" value={filters.level} onChange={v => updateFilter("level", v)}
+                            <PanelSelect label="Level" value={filters.level} onChange={v => updateFilter("level", v)}
                                 options={[["", "All levels"], ...levelOptions(filters.department).flatMap(g => g.options).map(([n, label]) => [String(n), label] as [string, string])]} />
                         )}
-                        <FilterSelect label="Sex" value={filters.sex} onChange={v => updateFilter("sex", v)}
-                            options={[["", "Any sex"], ["male", "Male"], ["female", "Female"]]} />
-                        <FilterSelect label="Patient type" value={filters.patient_type} onChange={v => updateFilter("patient_type", v)}
-                            options={[["", "Students and others"], ["student", "Students"], ["other", "Staff and visitors"]]} />
-                        <FilterSelect label="Last visit" value={filters.visited_within} onChange={v => updateFilter("visited_within", v)}
-                            options={[["", "Any time"], ["7", "Visited in 7 days"], ["30", "Visited in 30 days"]]} />
-                        <FilterCheck label="Has allergies" checked={filters.has_allergies} onChange={v => updateFilter("has_allergies", v)} />
-                        <FilterCheck label="Has conditions" checked={filters.has_conditions} onChange={v => updateFilter("has_conditions", v)} />
-                        <FilterCheck label={`Archived (${stats.archived})`} checked={filters.archived} onChange={v => updateFilter("archived", v)} />
-                    </div>
-                </div>
+                        <PanelSelect label="Sex" value={filters.sex} onChange={v => updateFilter("sex", v)} options={SEXES} />
+                        <PanelSelect label="Last visit" value={filters.visited_within} onChange={v => updateFilter("visited_within", v)} options={LAST_VISIT} />
+                        <PanelChecks label="Health" items={[
+                            { label: "Has allergies", checked: filters.has_allergies, onChange: v => updateFilter("has_allergies", v) },
+                            { label: "Has conditions", checked: filters.has_conditions, onChange: v => updateFilter("has_conditions", v) },
+                        ]} />
+                        <PanelChecks label="Show" items={[
+                            { label: `Archived patients only (${stats.archived})`, checked: filters.archived, onChange: v => updateFilter("archived", v) },
+                        ]} />
+                    </>}
+                    chips={chips}
+                    onClearAll={() => { setFilters(NO_FILTERS); setCurrentPage(1) }}
+                    summary={`${filters.archived ? "Archived patients" : "Patients"} · ${result.total} shown`}
+                />
 
                 <div className="overflow-x-auto">
                     <table id="patients-table" className="w-full border-collapse">
@@ -379,10 +379,6 @@ export default function Patients() {
 }
 
 /** The school's departments, plus any other names still found in older records. */
-function departmentChoices(fromServer: string[]) {
-    return [...DEPARTMENTS, ...fromServer.filter(d => !DEPARTMENTS.includes(d))]
-}
-
 /** Type or scan a student ID: opens the patient ready for a visit, or starts a new patient. */
 function CheckIn({ onExistingPatient, onNewPatient }: {
     onExistingPatient: (patientId: string | number) => void
@@ -477,31 +473,12 @@ function SortHeader({ label, sortKey, sort, onSort, className = "" }: {
     )
 }
 
-function FilterSelect({ label, value, onChange, options }: {
-    label: string
-    value: string
-    onChange: (value: string) => void
-    options: [string, string][]
-}) {
-    return (
-        <select
-            aria-label={label}
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            className={`rounded-full border px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-brand-100 ${value ? "border-brand-300 bg-brand-50 text-brand-900" : "border-sage-200 bg-white text-sage-600"}`}
-        >
-            {options.map(([optionValue, text]) => <option key={optionValue} value={optionValue}>{text}</option>)}
-        </select>
-    )
-}
+const PATIENT_TYPES: [string, string][] = [["", "Students and others"], ["student", "Students"], ["other", "Staff and visitors"]]
+const SEXES: [string, string][] = [["", "Any sex"], ["male", "Male"], ["female", "Female"]]
+const LAST_VISIT: [string, string][] = [["", "Any time"], ["7", "Visited in the last 7 days"], ["30", "Visited in the last 30 days"]]
 
-function FilterCheck({ label, checked, onChange }: { label: string; checked: boolean; onChange: (value: boolean) => void }) {
-    return (
-        <label className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs ${checked ? "border-brand-300 bg-brand-50 text-brand-900" : "border-sage-200 bg-white text-sage-600"}`}>
-            <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="accent-brand-800" />
-            {label}
-        </label>
-    )
+function optionLabel(options: [string, string][], value: string) {
+    return options.find(([key]) => key === value)?.[1] ?? value
 }
 
 const BADGE_TONES = {

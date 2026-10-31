@@ -4,6 +4,9 @@ import Pagination, { usePaged } from '~/components/pagination'
 import { REASONS, withUnit } from "../inventory";
 import { localDateTime, visitDateParts } from "../visitOutcomes";
 import { SkeletonRows } from "~/components/skeleton"
+import { downloadPdf } from "../pdf"
+import PdfButton from "~/components/pdfbutton"
+import { DateRangeSelect, FilterBar, QuickSelect, type FilterChip, type RangeChoice } from "~/components/filterbar"
 
 interface Movement {
     inv_id: number
@@ -20,9 +23,23 @@ interface Movement {
 }
 
 const today = () => localDateTime().slice(0, 10)
+function daysAgo(n: number) {
+    const d = new Date()
+    d.setDate(d.getDate() - n)
+    return localDateTime(d).slice(0, 10)
+}
+
+// The report always covers a period, so there is no "All time".
+const RANGES: RangeChoice[] = [
+    { key: "today", label: "Today", from: today, to: today },
+    { key: "month", label: "This month", from: () => `${today().slice(0, 7)}-01`, to: today },
+    { key: "30", label: "Last 30 days", from: () => daysAgo(29), to: today },
+    { key: "year", label: "This year", from: () => `${today().slice(0, 4)}-01-01`, to: today },
+]
 
 export default function InventoryReport() {
-    const [dateRange, setDateRange] = React.useState({ from_date: `${today().slice(0, 7)}-01`, to_date: today() })
+    const [period, setPeriod] = React.useState({ key: "month", from: `${today().slice(0, 7)}-01`, to: today() })
+    const dateRange = React.useMemo(() => ({ from_date: period.from, to_date: period.to }), [period.from, period.to])
     const [logs, setLogs] = React.useState<Movement[]>([])
     const [loading, setLoading] = React.useState(true)
     const [reasonFilter, setReasonFilter] = React.useState("")
@@ -56,6 +73,43 @@ export default function InventoryReport() {
 
     const { pageRows: pagedLogs, pager } = usePaged(shown, "inventory-report")
 
+    const reasonOptions: [string, string][] = [["", "Every reason"], ...reasonsSeen.filter(Boolean).map(reason => [reason, REASONS[reason] || reason] as [string, string])]
+    const chips: FilterChip[] = []
+    if (period.key !== "month") {
+        const preset = RANGES.find(r => r.key === period.key)
+        chips.push({
+            key: "period",
+            label: preset ? preset.label : `${visitDateParts(period.from).date} to ${visitDateParts(period.to).date}`,
+            onRemove: () => setPeriod({ key: "month", from: RANGES[1].from(), to: RANGES[1].to() }),
+        })
+    }
+    if (reasonFilter) chips.push({ key: "reason", label: REASONS[reasonFilter] || reasonFilter, onRemove: () => setReasonFilter("") })
+
+    function downloadPdfReport() {
+        // Units given per medicine, as a short summary before the full list.
+        const given = new Map<string, number>()
+        for (const log of shown) if (log.reason === "dispensed") given.set(log.supply_name, (given.get(log.supply_name) ?? 0) + log.item_out)
+        return downloadPdf({
+            title: "Inventory report",
+            subtitle: `${visitDateParts(period.from).date} – ${visitDateParts(period.to).date}`,
+            filename: `inventory-${period.from}-to-${period.to}.pdf`,
+            landscape: true,
+            summary: [["Units in", `+${totalIn}`], ["Units out", `-${totalOut}`], ["Given at visits", dispensed], ["Movements", shown.length]],
+            notes: reasonFilter ? [`Only movements for: ${REASONS[reasonFilter] || reasonFilter}`] : [],
+            tables: [
+                { title: "Given at visits, by medicine", columns: ["Medicine", "Units"], numeric: [1], bar: 1,
+                    rows: [...given.entries()].sort((a, b) => b[1] - a[1]), empty: "No medicine was given in these dates." },
+                { title: "Every movement", columns: ["When", "Item", "Batch", "In", "Out", "Reason", "Note", "Recorded by"], numeric: [3, 4],
+                    rows: shown.map(log => {
+                        const when = visitDateParts(log.moved_at)
+                        return [`${when.date} ${when.time}`, log.supply_name, log.batch_number, log.item_in ? withUnit(log.item_in, log.unit) : "",
+                            log.item_out ? withUnit(log.item_out, log.unit) : "", log.reason ? REASONS[log.reason] || log.reason : "Not recorded", log.note, log.staff_name]
+                    }),
+                    empty: "No stock movements in these dates." },
+            ],
+        })
+    }
+
     return (
         <div className="min-h-full font-sans text-sage-900">
             <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -63,10 +117,13 @@ export default function InventoryReport() {
                     <h1 className="m-0 text-[2rem] font-semibold tracking-tight">Inventory Report</h1>
                     <p className="m-0 mt-1 text-sm text-sage-500">Every stock movement: what, how many, why, and who recorded it.</p>
                 </div>
-                <button type="button" onClick={downloadReport}
-                    className="inline-flex items-center gap-2 self-start rounded-lg bg-brand-800 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-900">
-                    <i className="bi bi-download" aria-hidden="true" /> Download CSV
-                </button>
+                <div className="flex flex-wrap items-center gap-2 self-start">
+                    <PdfButton build={downloadPdfReport} />
+                    <button type="button" onClick={downloadReport}
+                        className="inline-flex h-9 items-center gap-2 rounded-full bg-brand-800 px-4 text-sm font-medium text-white hover:bg-brand-900">
+                        <i className="bi bi-download" aria-hidden="true" /> Download CSV
+                    </button>
+                </div>
             </div>
 
             <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -76,26 +133,15 @@ export default function InventoryReport() {
             </div>
 
             <div className="overflow-hidden rounded-2xl border border-sage-200 bg-white shadow-card">
-                <div className="flex flex-wrap items-center gap-3 border-b border-sage-100 px-5 py-4 text-sm text-sage-600">
-                    <label className="inline-flex items-center gap-1.5">
-                        From
-                        <input type="date" value={dateRange.from_date} max={dateRange.to_date}
-                            onChange={(e) => setDateRange({ ...dateRange, from_date: e.target.value })}
-                            className="rounded-lg border border-sage-200 px-2 py-1" />
-                    </label>
-                    <label className="inline-flex items-center gap-1.5">
-                        to
-                        <input type="date" value={dateRange.to_date} min={dateRange.from_date}
-                            onChange={(e) => setDateRange({ ...dateRange, to_date: e.target.value })}
-                            className="rounded-lg border border-sage-200 px-2 py-1" />
-                    </label>
-                    <select aria-label="Reason" value={reasonFilter} onChange={(e) => setReasonFilter(e.target.value)}
-                        className="rounded-full border border-sage-200 px-3 py-1.5 text-xs">
-                        <option value="">Every reason</option>
-                        {reasonsSeen.map(reason => <option key={reason} value={reason}>{reason ? REASONS[reason] || reason : "Not recorded"}</option>)}
-                    </select>
-                    <span className="text-xs text-sage-400">{shown.length} movement{shown.length === 1 ? "" : "s"}</span>
-                </div>
+                <FilterBar
+                    quick={<>
+                        <DateRangeSelect ranges={RANGES} value={period} onChange={setPeriod} idleKey="month" />
+                        <QuickSelect label="Reason" value={reasonFilter} onChange={setReasonFilter} options={reasonOptions} />
+                    </>}
+                    chips={chips}
+                    onClearAll={() => { setPeriod({ key: "month", from: RANGES[1].from(), to: RANGES[1].to() }); setReasonFilter("") }}
+                    summary={`${shown.length} movement${shown.length === 1 ? "" : "s"}`}
+                />
                 <div className="overflow-x-auto">
                     <table className="w-full border-collapse text-sm">
                         <thead>
