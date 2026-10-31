@@ -5,10 +5,10 @@ import Logo from "./logo";
 
 const NAV_ITEMS = [
     { route: "/", text: "Dashboard", icon: "bi-clock", match: ["/"] },
-    { route: "/appointments", text: "Appointments", icon: "bi-calendar-date", match: ["/appointments", "/addappointment", "/appointmentreports"] },
     { route: "/patients", text: "Student Records", icon: "bi-folder", match: ["/patients", "/patientdetails", "/addnewpatient"] },
     { route: "/records", text: "Clinic Visits", icon: "bi-file-earmark-text", match: ["/records", "/patientreport", "/others"] },
     { route: "/inventory", text: "Medicine Inventory", icon: "bi-box", match: ["/inventory", "/itemdetails", "/inventoryreport"] },
+    { route: "/appointments", text: "Appointments", icon: "bi-calendar-date", match: ["/appointments", "/addappointment", "/appointmentreports"] },
     { route: "/reports", text: "Reports", icon: "bi-bar-chart-line", match: ["/reports"], cliniciansOnly: true },
     { route: "/staff", text: "Staff", icon: "bi-people", match: ["/staff"] },
 ]
