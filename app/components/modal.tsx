@@ -1,4 +1,5 @@
 import React from "react"
+import { createPortal } from "react-dom"
 
 interface ModalProps {
     title: string
@@ -55,7 +56,9 @@ export default function Modal({ title, onClose, children, width = 520 }: ModalPr
         }
     }, [])
 
-    return (
+    // Rendered straight into <body>, so the backdrop always covers the whole window,
+    // whatever page layout or animation the dialog was opened from.
+    return createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/40" onClick={() => onCloseRef.current()} aria-hidden="true" />
             <div
@@ -80,6 +83,7 @@ export default function Modal({ title, onClose, children, width = 520 }: ModalPr
                 </div>
                 <div className="flex min-h-0 flex-1 flex-col">{children}</div>
             </div>
-        </div>
+        </div>,
+        document.body,
     )
 }

@@ -7,8 +7,9 @@ import RowActions, { inlineActionClass, rowLinkClass } from "~/components/rowact
 import { VisitOutcomeDialog } from "~/components/visitoutcome";
 import { STAFF_ROLE_NAME } from "../roles";
 import { describeLevel } from "../school";
-import { downloadPdf } from "../pdf";
+import { fetchVisits, outcomeText, visitsReport } from "../pdfreports";
 import PdfButton from "~/components/pdfbutton";
+import type { PdfReport } from "../pdf";
 import { DateRangeSelect, FilterBar, PanelSelect, QuickSelect, gradeLabel, gradeOptions, gradeValue, parseGrade, useUrlFilters, type FilterChip } from "~/components/filterbar";
 import { DISPOSITIONS, DISPOSITION_SHORT, DISPOSITION_TONES, localDateTime, visitDateParts } from "../visitOutcomes";
 
@@ -57,14 +58,6 @@ function weekStart() {
 }
 function monthStart() {
     return `${today().slice(0, 7)}-01`
-}
-
-// Enough for months of visits; past this, a PDF is too long to be read anyway.
-const PDF_LIMIT = 2000
-
-function outcomeText(visit: VisitRow) {
-    if (visit.disposition) return `${DISPOSITIONS[visit.disposition] || visit.disposition}${visit.referred_to ? ` (${visit.referred_to})` : ""}`
-    return visit.time_in && !visit.time_out ? "Still in the clinic" : "Not recorded"
 }
 
 const NO_FILTERS = { range: "all", from: "", to: "", outcome: "", service_id: "", staff_id: "", department: "", stage: "" }
@@ -185,48 +178,11 @@ function VisitList({ isClinician }: { isClinician: boolean }) {
         URL.revokeObjectURL(url)
     }
 
-    /** Every visit the current search and filters match, as a PDF (up to PDF_LIMIT). */
-    async function exportPdf() {
-        const rows: VisitRow[] = []
-        for (let page = 1; rows.length < PDF_LIMIT; page++) {
-            const p = new URLSearchParams(params)
-            p.set("page", String(page))
-            p.set("page_size", "200")
-            const data = await apiFetch(`/searchvisits?${p}`).then(res => res.json())
-            const batch: VisitRow[] = Array.isArray(data?.visits) ? data.visits : []
-            rows.push(...batch)
-            if (batch.length < 200 || rows.length >= (data?.total ?? 0)) break
-        }
-        const shown = rows.slice(0, PDF_LIMIT)
-        const period = dateFrom || dateTo
-            ? `${dateFrom ? visitDateParts(dateFrom).date : "The start"} – ${dateTo ? visitDateParts(dateTo).date : "today"}`
-            : "All dates"
-        const left = shown.filter(v => v.disposition === "sent_home" || v.disposition === "referred" || v.disposition === "emergency").length
-        await downloadPdf({
-            title: "Visit records",
-            subtitle: period,
-            landscape: true,
-            filename: `visits${dateFrom ? `-${dateFrom}` : ""}${dateTo ? `-to-${dateTo}` : ""}.pdf`,
-            summary: [
-                ["Visits", result.total],
-                ["Students and others seen", new Set(shown.map(v => v.patient_id)).size],
-                ["Sent home, referred or emergency", left],
-                ["Still in the clinic", shown.filter(v => !v.disposition && v.time_in && !v.time_out).length],
-            ],
-            notes: [
-                ...(chips.length || query ? [`Filtered by: ${[query && `search "${query}"`, ...chips.map(c => c.label)].filter(Boolean).join(", ")}`] : []),
-                ...(result.total > PDF_LIMIT ? [`Showing the first ${PDF_LIMIT} of ${result.total} visits. Narrow the dates to include the rest.`] : []),
-            ],
-            tables: [{
-                title: "Visits",
-                columns: ["Date", "Time", "Patient", "Student ID", "Grade or college", "Complaint", "Outcome", "Attending"],
-                rows: shown.map(v => [
-                    visitDateParts(v.visit_datetime).date, visitDateParts(v.visit_datetime).time, v.patient_name, v.student_id,
-                    describeLevel(v.department, v.level, v.strand, true), v.complaint || v.service_name, outcomeText(v), v.staff_name,
-                ]),
-                empty: "No visits match these filters.",
-            }],
-        })
+    /** Every visit the current search and filters match, as a PDF. */
+    async function pdfReport() {
+        const { rows, total } = await fetchVisits(params)
+        const used = [query && `search "${query}"`, ...chips.map(c => c.label)].filter(Boolean)
+        return visitsReport({ rows, total, from: dateFrom, to: dateTo, notes: used.length ? [`Filtered by: ${used.join(", ")}`] : [] })
     }
 
     const outcomes: [string, string][] = [["", "Any outcome"], ["in_clinic", "Still in the clinic"], ...Object.entries(DISPOSITIONS), ["unrecorded", "Not recorded"]]
@@ -281,7 +237,7 @@ function VisitList({ isClinician }: { isClinician: boolean }) {
                             onChange={v => change(parseGrade(v))} options={gradeOptions()} />
                     </>}
                     actions={isClinician && (<>
-                        <PdfButton build={exportPdf} label="PDF" />
+                        <PdfButton report={pdfReport} />
                         <button type="button" onClick={exportCsv}
                             className="inline-flex h-9 items-center gap-1.5 rounded-full border border-sage-200 px-3.5 text-sm font-medium text-sage-700 hover:bg-sage-50">
                             <i className="bi bi-download" aria-hidden="true" /> Export CSV
@@ -393,8 +349,8 @@ function DailyLog() {
     const counts = Object.keys(DISPOSITIONS).map(key => [key, visits.filter(v => v.disposition === key).length] as const)
     const open = visits.filter(v => !v.disposition && v.time_in && !v.time_out).length
 
-    function dailyPdf() {
-        return downloadPdf({
+    function dailyPdf(): PdfReport {
+        return {
             title: "Clinic daily log",
             subtitle: visitDateParts(day).date,
             filename: `daily-log-${day}.pdf`,
@@ -412,7 +368,7 @@ function DailyLog() {
                 ]),
                 empty: "No visits on this day.",
             }],
-        })
+        }
     }
 
     return (
@@ -434,7 +390,7 @@ function DailyLog() {
                         <input type="date" value={day} max={today()} onChange={(e) => e.target.value && setDay(e.target.value)}
                             className="rounded-lg border border-sage-200 px-2.5 py-1.5 text-sm" />
                     </label>
-                    <PdfButton build={dailyPdf} />
+                    <PdfButton report={dailyPdf} />
                     <button type="button" onClick={() => window.print()}
                         className="inline-flex items-center gap-1.5 rounded-lg bg-brand-800 px-3.5 py-2 text-sm font-semibold text-white hover:bg-brand-900">
                         <i className="bi bi-printer" aria-hidden="true" /> Print

@@ -4,7 +4,7 @@ import Pagination, { usePaged } from '~/components/pagination'
 import { REASONS, withUnit } from "../inventory";
 import { localDateTime, visitDateParts } from "../visitOutcomes";
 import { SkeletonRows } from "~/components/skeleton"
-import { downloadPdf } from "../pdf"
+import { movementsReport } from "../pdfreports"
 import PdfButton from "~/components/pdfbutton"
 import { DateRangeSelect, FilterBar, QuickSelect, type FilterChip, type RangeChoice } from "~/components/filterbar"
 
@@ -85,30 +85,7 @@ export default function InventoryReport() {
     }
     if (reasonFilter) chips.push({ key: "reason", label: REASONS[reasonFilter] || reasonFilter, onRemove: () => setReasonFilter("") })
 
-    function downloadPdfReport() {
-        // Units given per medicine, as a short summary before the full list.
-        const given = new Map<string, number>()
-        for (const log of shown) if (log.reason === "dispensed") given.set(log.supply_name, (given.get(log.supply_name) ?? 0) + log.item_out)
-        return downloadPdf({
-            title: "Inventory report",
-            subtitle: `${visitDateParts(period.from).date} – ${visitDateParts(period.to).date}`,
-            filename: `inventory-${period.from}-to-${period.to}.pdf`,
-            landscape: true,
-            summary: [["Units in", `+${totalIn}`], ["Units out", `-${totalOut}`], ["Given at visits", dispensed], ["Movements", shown.length]],
-            notes: reasonFilter ? [`Only movements for: ${REASONS[reasonFilter] || reasonFilter}`] : [],
-            tables: [
-                { title: "Given at visits, by medicine", columns: ["Medicine", "Units"], numeric: [1], bar: 1,
-                    rows: [...given.entries()].sort((a, b) => b[1] - a[1]), empty: "No medicine was given in these dates." },
-                { title: "Every movement", columns: ["When", "Item", "Batch", "In", "Out", "Reason", "Note", "Recorded by"], numeric: [3, 4],
-                    rows: shown.map(log => {
-                        const when = visitDateParts(log.moved_at)
-                        return [`${when.date} ${when.time}`, log.supply_name, log.batch_number, log.item_in ? withUnit(log.item_in, log.unit) : "",
-                            log.item_out ? withUnit(log.item_out, log.unit) : "", log.reason ? REASONS[log.reason] || log.reason : "Not recorded", log.note, log.staff_name]
-                    }),
-                    empty: "No stock movements in these dates." },
-            ],
-        })
-    }
+
 
     return (
         <div className="min-h-full font-sans text-sage-900">
@@ -118,7 +95,7 @@ export default function InventoryReport() {
                     <p className="m-0 mt-1 text-sm text-sage-500">Every stock movement: what, how many, why, and who recorded it.</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 self-start">
-                    <PdfButton build={downloadPdfReport} />
+                    <PdfButton report={() => movementsReport({ logs, from: period.from, to: period.to, reason: reasonFilter })} />
                     <button type="button" onClick={downloadReport}
                         className="inline-flex h-9 items-center gap-2 rounded-full bg-brand-800 px-4 text-sm font-medium text-white hover:bg-brand-900">
                         <i className="bi bi-download" aria-hidden="true" /> Download CSV

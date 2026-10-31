@@ -188,7 +188,9 @@ body{
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: none; }
 }
-.page-enter { animation: page-enter 0.28s ease-out both; }
+/* "backwards", not "both": a transform left on the page after the fade would trap
+   position: fixed dialogs inside the content area instead of covering the window. */
+.page-enter { animation: page-enter 0.28s ease-out backwards; }
 
 @keyframes loading-bar {
   from { transform: translateX(-100%); }

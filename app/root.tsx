@@ -32,6 +32,8 @@ const CONTENT_SECURITY_POLICY = [
   "img-src 'self' data:",
   `connect-src 'self' ${new URL(API_BASE_URL).origin}`,
   "object-src 'none'",
+  // The PDF preview shows the file, built in the browser, from a blob: URL.
+  "frame-src blob:",
   "base-uri 'self'",
   "form-action 'self'",
   "frame-ancestors 'none'",
@@ -83,6 +85,7 @@ import './routepages.css'
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { useLocation, useNavigate } from "react-router";
 import LoadingBar from "./components/loadingbar";
+import { enableEnterToNext } from "./enternext";
 export default function App() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -111,6 +114,9 @@ export default function App() {
         setRoleChecked(n => n + 1);
       });
   }
+
+  // Enter moves to the next field in every form, and submits from the last one.
+  React.useEffect(() => enableEnterToNext(), []);
 
   // Server or network failures: stays up until dismissed, so it is not missed.
   React.useEffect(() => {

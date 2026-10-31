@@ -5,8 +5,11 @@ import { describeLevel } from "../school";
 import { DISPOSITIONS, localDateTime, visitDateParts } from "../visitOutcomes";
 import { withUnit } from "../inventory";
 import { STAFF_ROLE_NAME } from "../roles";
-import { downloadPdf } from "../pdf";
-import PdfButton from "~/components/pdfbutton";
+import type { PdfReport } from "../pdf";
+import { PdfPreview } from "~/components/pdfbutton";
+import { ModalForm } from "~/components/form";
+import { appointmentsReport, fetchMovements, fetchVisits, movementsReport, patientsReport, stockReport, visitsReport } from "../pdfreports";
+import { notify } from "../notify";
 
 interface Report {
     date_from: string
@@ -115,6 +118,7 @@ export default function Reports() {
     const [report, setReport] = React.useState<Report | null>(null)
     const [error, setError] = React.useState("")
     const [isStaffRole, setIsStaffRole] = React.useState(false)
+    const [downloading, setDownloading] = React.useState(false)
     // The tab lives in the address, so a refresh or a shared link opens the same one.
     const [searchParams, setSearchParams] = useSearchParams()
     const tab: TabKey = TABS.some(([key]) => key === searchParams.get("tab")) ? searchParams.get("tab") as TabKey : "visits"
@@ -140,17 +144,6 @@ export default function Reports() {
         setRange(periodFor(key))
     }
 
-    async function download(path: string, name: string) {
-        const response = await apiFetch(path)
-        if (!response.ok) return
-        const url = URL.createObjectURL(await response.blob())
-        const link = document.createElement("a")
-        link.href = url
-        link.download = name
-        link.click()
-        URL.revokeObjectURL(url)
-    }
-
     if (isStaffRole) {
         return <p className="text-sm text-sage-500">Reports are for the nurse, doctor and admins.</p>
     }
@@ -160,6 +153,7 @@ export default function Reports() {
     return (
         <div className="min-h-full font-sans text-sage-900">
             <style>{PRINT_CSS}</style>
+            {downloading && <DownloadDialog from={dateFrom} to={dateTo} onClose={() => setDownloading(false)} />}
 
             {/* HEADER */}
             <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
@@ -168,16 +162,14 @@ export default function Reports() {
                     <p className="m-0 mt-1 text-sm text-sage-500">Clinic activity for {range}, for the school office and the clinic's own planning.</p>
                 </div>
                 <div className="no-print flex flex-wrap items-center gap-2">
-                    {report && <PdfButton build={() => clinicReportPdf(report, range)} />}
                     <button type="button" onClick={() => window.print()}
                         className="inline-flex items-center gap-1.5 rounded-lg border border-sage-200 bg-white px-3 py-2 text-sm font-medium text-sage-700 hover:bg-sage-50">
                         <i className="bi bi-printer" aria-hidden="true" /> Print
                     </button>
-                    <DownloadMenu onPick={(kind) => {
-                        if (kind === "visits") download(`/download/visits?date_from=${dateFrom}&date_to=${dateTo}`, `visits-${dateFrom}-to-${dateTo}.csv`)
-                        if (kind === "inventory") download(`/download/inventorylogs?fromdate=${dateFrom}&todate=${dateTo}`, `inventory-${dateFrom}-to-${dateTo}.csv`)
-                        if (kind === "appointments") download(`/download/appointmentlogs?fromdate=${dateFrom}&todate=${dateTo}`, `appointments-${dateFrom}-to-${dateTo}.csv`)
-                    }} />
+                    <button type="button" onClick={() => setDownloading(true)}
+                        className="inline-flex items-center gap-1.5 rounded-lg bg-brand-800 px-3.5 py-2 text-sm font-semibold text-white hover:bg-brand-900">
+                        <i className="bi bi-download" aria-hidden="true" /> Download
+                    </button>
                 </div>
             </div>
 
@@ -604,29 +596,6 @@ function FrequentTable({ rows }: { rows: Report["frequent"] }) {
     )
 }
 
-function DownloadMenu({ onPick }: { onPick: (kind: "visits" | "inventory" | "appointments") => void }) {
-    const [open, setOpen] = React.useState(false)
-    return (
-        <div className="relative">
-            <button type="button" aria-expanded={open} onClick={() => setOpen(o => !o)}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-brand-800 px-3.5 py-2 text-sm font-semibold text-white hover:bg-brand-900">
-                <i className="bi bi-download" aria-hidden="true" /> Download CSV <i className="bi bi-chevron-down text-xs" aria-hidden="true" />
-            </button>
-            {open && (
-                <>
-                    <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-                    <div className="absolute right-0 z-20 mt-1 w-52 overflow-hidden rounded-xl border border-sage-200 bg-white shadow-lg">
-                        {([["visits", "Clinic visits"], ["inventory", "Stock movements"], ["appointments", "Appointments"]] as const).map(([kind, text]) => (
-                            <button key={kind} type="button" onClick={() => { setOpen(false); onPick(kind) }}
-                                className="flex w-full items-center px-4 py-2.5 text-left text-sm text-sage-700 hover:bg-sage-50">{text}</button>
-                        ))}
-                    </div>
-                </>
-            )}
-        </div>
-    )
-}
-
 const PRINT_CSS = `
 @media print {
   nav, .no-print { display: none !important; }
@@ -639,7 +608,7 @@ const PRINT_CSS = `
 `
 
 /** The whole clinic report as one PDF, every tab included, for the school office. */
-function clinicReportPdf(report: Report, range: string) {
+function clinicReportPdf(report: Report, range: string): PdfReport {
     const t = report.totals
     const { daily, points } = trendPoints(report.by_day)
     const outcomes = OUTCOME_ORDER
@@ -647,7 +616,7 @@ function clinicReportPdf(report: Report, range: string) {
         .filter(([, visits]) => visits > 0)
     const percent = (n: number) => (t.visits ? `${Math.round((n / t.visits) * 100)}%` : "-")
     const stock = report.stock
-    return downloadPdf({
+    return {
         title: "Clinic report",
         subtitle: range,
         filename: `clinic-report-${report.date_from}-to-${report.date_to}.pdf`,
@@ -687,5 +656,169 @@ function clinicReportPdf(report: Report, range: string) {
                 ],
                 empty: "Nothing expiring, expired or low on stock." },
         ],
-    })
+    }
+}
+
+const PDF_KINDS = [
+    { key: "clinic", title: "Clinic summary", icon: "bi-clipboard2-pulse", dated: true,
+        text: "Visits, outcomes, complaints, busiest hours, repeat visitors and stock, for the school office." },
+    { key: "visits", title: "Visit list", icon: "bi-list-ul", dated: true,
+        text: "Every visit in the dates: who, when, the complaint, how it ended and who attended." },
+    { key: "patients", title: "Patient list", icon: "bi-people", dated: false,
+        text: "Everyone on record, by grade or college, with allergies and their last visit." },
+    { key: "appointments", title: "Appointments", icon: "bi-calendar-check", dated: true,
+        text: "Appointments in the dates, by service and status." },
+    { key: "inventory", title: "Stock movements", icon: "bi-arrow-left-right", dated: true,
+        text: "Every unit in and out, and medicine given at visits." },
+    { key: "stock", title: "Medicine and stock", icon: "bi-capsule", dated: false,
+        text: "What is on the shelves today: stock levels, what to reorder, what is expiring or expired." },
+] as const
+type PdfKind = typeof PDF_KINDS[number]["key"]
+
+/** The reports that also come as a spreadsheet: the server's CSV export and the file name. */
+const CSV_FILES: Partial<Record<PdfKind, (from: string, to: string) => [string, string]>> = {
+    visits: (from, to) => [`/download/visits?date_from=${from}&date_to=${to}`, `visits-${from}-to-${to}.csv`],
+    appointments: (from, to) => [`/download/appointmentlogs?fromdate=${from}&todate=${to}`, `appointments-${from}-to-${to}.csv`],
+    inventory: (from, to) => [`/download/inventorylogs?fromdate=${from}&todate=${to}`, `inventory-${from}-to-${to}.csv`],
+}
+
+async function downloadCsv(path: string, name: string) {
+    const response = await apiFetch(path)
+    if (!response.ok) throw new Error("Could not download the file. Please try again.")
+    const url = URL.createObjectURL(await response.blob())
+    const link = document.createElement("a")
+    link.href = url
+    link.download = name
+    link.click()
+    URL.revokeObjectURL(url)
+}
+
+const FORMATS = [
+    { key: "pdf", title: "PDF", icon: "bi-file-earmark-pdf", text: "To read, print or send" },
+    { key: "csv", title: "CSV", icon: "bi-filetype-csv", text: "To open in Excel or Sheets" },
+] as const
+
+/** Pick a report, its format and dates. A PDF is previewed before it downloads; a CSV downloads straight away. */
+function DownloadDialog({ from: initialFrom, to: initialTo, onClose }: { from: string; to: string; onClose: () => void }) {
+    const [format, setFormat] = React.useState<"pdf" | "csv">("pdf")
+    const [kind, setKind] = React.useState<PdfKind>("clinic")
+    const [from, setFrom] = React.useState(initialFrom)
+    const [to, setTo] = React.useState(initialTo)
+    const [busy, setBusy] = React.useState(false)
+    const [error, setError] = React.useState("")
+    const [preview, setPreview] = React.useState<PdfReport | null>(null)
+    const chosen = PDF_KINDS.find(k => k.key === kind)!
+
+    async function build() {
+        if (chosen.dated && (!from || !to || from > to)) return setError("Choose a start date on or before the end date.")
+        setBusy(true)
+        setError("")
+        try {
+            const csv = CSV_FILES[kind]
+            if (format === "csv" && csv) {
+                await downloadCsv(...csv(from, to))
+                notify("Download started.", "success")
+                return onClose()
+            }
+            const range = `${visitDateParts(from).date} – ${visitDateParts(to).date}`
+            if (kind === "clinic") {
+                const res = await apiFetch(`/getclinicreport?date_from=${from}&date_to=${to}`)
+                const data = await res.json().catch(() => null)
+                if (!res.ok || !data?.totals) throw new Error(data?.error)
+                setPreview(clinicReportPdf(data, range))
+            } else if (kind === "visits") {
+                const { rows, total } = await fetchVisits(new URLSearchParams({ date_from: from, date_to: to, sort: "date", direction: "asc" }))
+                setPreview(visitsReport({ rows, total, from, to }))
+            } else if (kind === "patients") {
+                setPreview(await patientsReport())
+            } else if (kind === "appointments") {
+                setPreview(await appointmentsReport(from, to))
+            } else if (kind === "inventory") {
+                setPreview(movementsReport({ logs: await fetchMovements(from, to), from, to }))
+            } else {
+                setPreview(await stockReport())
+            }
+        } catch (err) {
+            setError((err as Error)?.message || "Could not make the report. Please try again.")
+        } finally {
+            setBusy(false)
+        }
+    }
+
+    if (preview) return <PdfPreview report={preview} onClose={onClose} onBack={() => setPreview(null)} />
+
+    return (
+        <ModalForm title="Download report" onClose={onClose} onSubmit={build}
+            submitLabel={format === "pdf" ? "Preview" : "Download CSV"} saving={busy} savingLabel="Preparing…" error={error} width={640}>
+            <fieldset className="m-0 border-0 p-0">
+                <legend className="mb-2 p-0 text-sm font-medium text-sage-800">Format</legend>
+                <div className="grid grid-cols-2 gap-2">
+                    {FORMATS.map(option => {
+                        const selected = option.key === format
+                        return (
+                            <label key={option.key}
+                                className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-brand-600 ${selected ? "border-brand-400 bg-brand-50/60 ring-2 ring-brand-100" : "border-sage-200 hover:border-brand-200 hover:bg-sage-50"}`}>
+                                <input type="radio" name="report-format" value={option.key} checked={selected} className="sr-only"
+                                    onChange={() => {
+                                        setFormat(option.key)
+                                        // Not every report has a spreadsheet; land on one that does.
+                                        if (option.key === "csv" && !CSV_FILES[kind]) setKind("visits")
+                                    }} />
+                                <i className={`bi ${option.icon} text-xl ${selected ? "text-brand-800" : "text-sage-500"}`} aria-hidden="true" />
+                                <span className="min-w-0">
+                                    <span className="block text-sm font-semibold text-sage-900">{option.title}</span>
+                                    <span className="block text-xs text-sage-500">{option.text}</span>
+                                </span>
+                            </label>
+                        )
+                    })}
+                </div>
+            </fieldset>
+
+            <fieldset className="m-0 border-0 p-0">
+                <legend className="mb-2 p-0 text-sm font-medium text-sage-800">Which report?</legend>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    {PDF_KINDS.map(option => {
+                        const selected = option.key === kind
+                        const pdfOnly = format === "csv" && !CSV_FILES[option.key]
+                        return (
+                            <label key={option.key}
+                                className={`flex gap-3 rounded-xl border p-3 transition has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-brand-600 ${pdfOnly ? "cursor-not-allowed border-sage-100 opacity-50" : selected ? "cursor-pointer border-brand-400 bg-brand-50/60 ring-2 ring-brand-100" : "cursor-pointer border-sage-200 hover:border-brand-200 hover:bg-sage-50"}`}>
+                                <input type="radio" name="report-kind" value={option.key} checked={selected} disabled={pdfOnly} onChange={() => setKind(option.key)} className="sr-only" />
+                                <span className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg ${selected ? "bg-brand-800 text-white" : "bg-sage-100 text-sage-700"}`} aria-hidden="true">
+                                    <i className={`bi ${option.icon}`} />
+                                </span>
+                                <span className="min-w-0">
+                                    <span className="flex items-center gap-2 text-sm font-semibold text-sage-900">
+                                        {option.title}
+                                        {pdfOnly && <span className="rounded-full bg-sage-100 px-2 py-0.5 text-[0.68rem] font-medium text-sage-600">PDF only</span>}
+                                    </span>
+                                    <span className="mt-0.5 block text-xs leading-relaxed text-sage-500">{option.text}</span>
+                                </span>
+                            </label>
+                        )
+                    })}
+                </div>
+            </fieldset>
+
+            {chosen.dated ? (
+                <div className="grid grid-cols-2 gap-3">
+                    <label className="flex flex-col gap-1.5 text-sm font-medium text-sage-800">
+                        From
+                        <input type="date" value={from} max={to} onChange={(e) => setFrom(e.target.value)}
+                            className="h-10 rounded-xl border border-sage-200 px-3 text-sm font-normal outline-none focus:border-brand-300 focus:ring-2 focus:ring-brand-100" />
+                    </label>
+                    <label className="flex flex-col gap-1.5 text-sm font-medium text-sage-800">
+                        To
+                        <input type="date" value={to} min={from} onChange={(e) => setTo(e.target.value)}
+                            className="h-10 rounded-xl border border-sage-200 px-3 text-sm font-normal outline-none focus:border-brand-300 focus:ring-2 focus:ring-brand-100" />
+                    </label>
+                </div>
+            ) : (
+                <p className="m-0 rounded-xl bg-sage-50 px-4 py-3 text-sm text-sage-600">
+                    <i className="bi bi-info-circle mr-1.5" aria-hidden="true" />This report shows things as they are today, so it has no dates.
+                </p>
+            )}
+        </ModalForm>
+    )
 }

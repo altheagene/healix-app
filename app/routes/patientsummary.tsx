@@ -2,7 +2,7 @@ import { apiFetch } from "../api";
 import React from "react";
 import { useNavigate, useParams } from "react-router";
 import { describeLevel } from "../school";
-import { downloadPdf } from "../pdf";
+import type { PdfReport } from "../pdf";
 import PdfButton from "~/components/pdfbutton";
 
 interface Visit {
@@ -66,7 +66,7 @@ export default function PatientSummary() {
                 </button>
                 {summary && (
                     <div className="flex flex-wrap items-center gap-2">
-                    <PdfButton build={() => summaryPdf(summary)} />
+                    <PdfButton report={() => summaryPdf(summary)} />
                     <button
                         type="button"
                         onClick={() => window.print()}
@@ -180,11 +180,11 @@ function Field({ label, value }: { label: string; value: string | number | null 
 }
 
 /** The same summary as a PDF file, for a referral letter or to send to a parent. */
-function summaryPdf(summary: Summary) {
+function summaryPdf(summary: Summary): PdfReport {
     const p = summary.patient
     const name = [p.first_name, p.middle_name, p.last_name].filter(Boolean).join(" ")
     const contact = [p.emergency_contact_name, p.emergency_contact_phone].filter(Boolean).join(" · ")
-    return downloadPdf({
+    return {
         title: "Patient summary",
         subtitle: name + (summary.generated_by ? ` · prepared by ${summary.generated_by}` : ""),
         filename: `patient-summary-${String(p.student_id || p.patient_id || "patient").replace(/[^\w-]/g, "")}.pdf`,
@@ -208,5 +208,5 @@ function summaryPdf(summary: Summary) {
                 ]),
                 empty: "No visits recorded." },
         ],
-    })
+    }
 }
