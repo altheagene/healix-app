@@ -25,7 +25,7 @@ _EVERYONE_GET = (
     "/getmedicationdetails", "/getpatient", "/getpatientallergies",
     "/getpatientcliniclogs", "/getpatientconditions",
     "/getstaffandcateg", "/getstaffcategories", "/getstudent", "/getsupplydetails",
-    "/getvisitlogs", "/me", "/searchpatients", "/checkin", "/patienttimeline", "/clinicnow",
+    "/getvisitlogs", "/me", "/myactivity", "/searchpatients", "/checkin", "/patienttimeline", "/clinicnow",
     "/searchvisits", "/getvisit", "/getinventoryalerts",
 )
 _EVERYONE_POST = (

@@ -42,3 +42,27 @@ def test_viewing_a_patient_record_is_audited(client, headers, db):
 def test_listing_services_is_not_audited(client, headers, db):
     client.get("/getallservices", headers=headers("staff"))
     assert db.execute("SELECT COUNT(*) FROM audit_logs WHERE path = '/getallservices'").fetchone()[0] == 0
+
+
+def test_my_activity_shows_my_changes_and_failed_sign_ins_only(client, headers, login):
+    client.post("/validateuser", json={"username": "nurse", "password": "nope"})
+    nurse = headers("nurse")
+    client.post("/updatepatient", headers=nurse, json={"patient_id": 1, "notes": "x"})
+    client.get("/getpatient?idnum=1", headers=nurse)
+    client.post("/updatepatient", headers=headers("staff"), json={"patient_id": 1, "notes": "y"})
+
+    rows = client.get("/myactivity", headers=nurse).json
+    actions = [row["action"] for row in rows]
+    assert actions[0] == "patient_update"
+    assert "login" in actions and "login_failed" in actions
+    assert "patient_view" not in actions
+    assert actions.count("patient_update") == 1
+    assert set(rows[0]) == {"audit_id", "created_at", "action", "resource", "success"}
+
+
+def test_my_activity_caps_the_limit(client, headers):
+    nurse = headers("nurse")
+    for _ in range(3):
+        client.post("/logout", headers=nurse)
+        nurse = headers("nurse")
+    assert len(client.get("/myactivity?limit=2", headers=nurse).json) == 2

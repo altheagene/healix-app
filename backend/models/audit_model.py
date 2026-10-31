@@ -299,3 +299,26 @@ def list_audit_logs(from_date=None, to_date=None, staff_id=None, action=None, li
     """
     values.append(limit)
     return getprocess(sql, values)
+
+
+# Failed sign-ins have no staff_id yet, so they are matched on the username typed.
+_FAILED_SIGN_IN = ("login_failed", "login_throttled")
+
+
+def list_my_activity(staff_id, username, limit=10):
+    """What one person changed, plus failed sign-ins on their account. Views are left out."""
+    try:
+        limit = min(max(int(limit), 1), 50)
+    except (TypeError, ValueError):
+        limit = 10
+    return getprocess(
+        """
+        SELECT audit_id, created_at, action, resource, success
+        FROM audit_logs
+        WHERE (staff_id = ? AND method = 'POST' AND success = 1)
+           OR (username = ? AND action IN (?, ?))
+        ORDER BY audit_id DESC
+        LIMIT ?
+        """,
+        [staff_id, username, *_FAILED_SIGN_IN, limit],
+    )
