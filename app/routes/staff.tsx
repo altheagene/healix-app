@@ -7,6 +7,7 @@ import StaffDialog from "~/components/staffdialog"
 import ViewStaff, { fullName, lastSignIn } from "~/components/viewstaff"
 import { ROLES } from "../roles"
 import { telHref } from "../visitOutcomes"
+import { SkeletonList } from "~/components/skeleton"
 
 const ROLE_TONES: Record<string, string> = {
     Nurse: "bg-brand-50 text-brand-800 ring-brand-200/60",
@@ -25,6 +26,7 @@ export default function Staff() {
     const isAdmin = typeof window !== "undefined" && localStorage.getItem("admin") === "true"
     const myId = typeof window !== "undefined" ? Number(localStorage.getItem("userid")) : NaN
     const [staff, setStaff] = React.useState<any[]>([])
+    const [loaded, setLoaded] = React.useState(false)
     const [searchQuery, setSearchQuery] = React.useState("")
     const [roleFilter, setRoleFilter] = React.useState("")
     const [showActive, setShowActive] = React.useState(true)
@@ -36,7 +38,7 @@ export default function Staff() {
     const refetch = React.useCallback(() => {
         apiFetch(`/getstaffandcateg`)
             .then(res => res.json())
-            .then(data => setStaff(Array.isArray(data) ? data : []))
+            .then(data => { setStaff(Array.isArray(data) ? data : []); setLoaded(true) })
     }, [])
     React.useEffect(() => { refetch() }, [refetch])
 
@@ -162,7 +164,7 @@ export default function Staff() {
                         </label>
                     </div>
 
-                    {filteredStaff.length === 0 ? (
+                    {!loaded ? <SkeletonList rows={5} /> : filteredStaff.length === 0 ? (
                         <div className="px-5 py-12 text-center">
                             <i className="bi bi-people text-2xl text-sage-300" aria-hidden="true" />
                             <p className="m-0 mt-2 text-sm text-sage-400">{showActive ? "No staff match." : "No switched-off accounts."}</p>

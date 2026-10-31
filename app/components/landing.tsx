@@ -46,13 +46,48 @@ const STEPS = [
     { title: "Tell the parent", text: "Call from the visit and note it, so nobody wonders whether home was told." },
 ]
 
+/** Delay for one item in a staggered animation, read by the CSS as --d. */
+function delay(seconds: number) {
+    return { "--d": `${seconds}s` } as React.CSSProperties
+}
+
+/** Fades in each [data-reveal] element the first time it scrolls into view. */
+function useScrollReveal(root: React.RefObject<HTMLDivElement | null>) {
+    React.useEffect(() => {
+        const container = root.current
+        if (!container || typeof IntersectionObserver === "undefined") return
+        container.classList.add("reveal-ready")
+        const observer = new IntersectionObserver(entries => {
+            for (const entry of entries) {
+                if (!entry.isIntersecting) continue
+                entry.target.classList.add("is-visible")
+                observer.unobserve(entry.target)
+            }
+        }, { root: container, threshold: 0.15, rootMargin: "0px 0px -40px 0px" })
+        container.querySelectorAll("[data-reveal]").forEach(el => observer.observe(el))
+        return () => observer.disconnect()
+    }, [root])
+}
+
 export default function Landing({ onSignIn }: { onSignIn: () => void }) {
+    const scroller = React.useRef<HTMLDivElement>(null)
+    useScrollReveal(scroller)
+    // The bar gets a soft edge once the page has scrolled under it.
+    const [scrolled, setScrolled] = React.useState(false)
+    const [activeSection, setActiveSection] = React.useState("")
+
+    function onScroll(event: React.UIEvent<HTMLDivElement>) {
+        const container = event.currentTarget
+        setScrolled(container.scrollTop > 8)
+        setActiveSection(sectionInView(container))
+    }
+
     return (
         // The app pins <body> to the screen for its own layout, so this page scrolls itself.
-        <div className="h-full overflow-y-auto scroll-smooth bg-white font-sans text-sage-900">
+        <div ref={scroller} onScroll={onScroll} className="h-full overflow-y-auto scroll-smooth bg-white font-sans text-sage-900">
             <style>{"@media (prefers-reduced-motion: reduce) { .scroll-smooth { scroll-behavior: auto; } }"}</style>
-            <div className="overflow-hidden bg-white">
-                <Header onSignIn={onSignIn} />
+            <div className="overflow-x-clip bg-white">
+                <Header onSignIn={onSignIn} scrolled={scrolled} active={activeSection} />
                 <main>
                     <Hero onSignIn={onSignIn} />
                     <WhyHealix onSignIn={onSignIn} />
@@ -71,18 +106,39 @@ export default function Landing({ onSignIn }: { onSignIn: () => void }) {
 }
 
 
-function Header({ onSignIn }: { onSignIn: () => void }) {
-    const links = [["#features", "Features"], ["#how-it-works", "How it works"], ["#privacy", "Privacy"]]
+const NAV_LINKS = [["features", "Features"], ["how-it-works", "How it works"], ["privacy", "Privacy"]]
+
+/**
+ * The section whose top has passed just under the sticky bar, or "" while the hero is in view.
+ * At the very bottom the last section counts, even if it is too short to reach the bar.
+ */
+function sectionInView(container: HTMLElement) {
+    const line = container.getBoundingClientRect().top + 120
+    const atBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 4
+    let current = ""
+    for (const [id] of NAV_LINKS) {
+        const section = container.querySelector<HTMLElement>(`#${id}`)
+        if (section && (section.getBoundingClientRect().top <= line || atBottom)) current = id
+    }
+    return current
+}
+
+function Header({ onSignIn, scrolled, active }: { onSignIn: () => void; scrolled: boolean; active: string }) {
     return (
-        <header className="flex items-center justify-between gap-4 px-6 pb-2 pt-6 sm:px-10">
+        <header className={`rise sticky top-0 z-30 flex items-center justify-between gap-4 px-6 py-4 backdrop-blur-md transition-[background-color,box-shadow] duration-300 sm:px-10 ${scrolled ? "bg-white/85 shadow-[0_1px_0_var(--color-sage-100),0_8px_24px_-12px_rgb(11_61_58_/_0.18)]" : "bg-white/0 pt-6"}`}>
             <Logo />
             <nav aria-label="On this page" className="hidden items-center gap-6 text-sm md:flex">
-                {links.map(([href, text], i) => (
-                    <a key={href} href={href} className={`no-underline transition hover:text-sage-900 ${i === 0 ? "font-medium text-sage-900" : "text-sage-500"}`}>
-                        {i === 0 && <span className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full bg-sage-900 align-middle" aria-hidden="true" />}
-                        {text}
-                    </a>
-                ))}
+                {NAV_LINKS.map(([id, text]) => {
+                    const current = id === active
+                    return (
+                        <a key={id} href={`#${id}`} aria-current={current ? "location" : undefined}
+                            className={`inline-flex items-center no-underline transition-colors duration-300 hover:text-sage-900 ${current ? "font-medium text-sage-900" : "text-sage-500"}`}>
+                            <span aria-hidden="true"
+                                className={`inline-block h-1.5 rounded-full bg-sage-900 transition-all duration-300 ${current ? "mr-1.5 w-1.5 opacity-100" : "mr-0 w-0 opacity-0"}`} />
+                            {text}
+                        </a>
+                    )
+                })}
             </nav>
             <button type="button" onClick={onSignIn} className={limePill}>Sign in</button>
         </header>
@@ -93,24 +149,24 @@ function Hero({ onSignIn }: { onSignIn: () => void }) {
     return (
         <section aria-labelledby="hero-heading" className="grid grid-cols-1 gap-8 px-6 pb-12 pt-8 sm:px-10 lg:grid-cols-[1fr_1.05fr] lg:gap-10">
             <div className="flex flex-col">
-                <h1 id="hero-heading" className="m-0 text-[2.6rem] font-medium leading-[1.08] tracking-tight text-sage-900 sm:text-[3.4rem]">
+                <h1 id="hero-heading" style={delay(0.08)} className="rise m-0 text-[2.6rem] font-medium leading-[1.08] tracking-tight text-sage-900 sm:text-[3.4rem]">
                     Your school clinic, in one calm place
                 </h1>
-                <p className="m-0 mt-5 max-w-md text-[15px] leading-relaxed text-sage-600">
+                <p style={delay(0.18)} className="rise m-0 mt-5 max-w-md text-[15px] leading-relaxed text-sage-600">
                     Healix keeps every student visit, medicine and parent call on record, so the nurse can focus on the
                     student in front of them, not the paperwork behind them.
                 </p>
-                <div className="mt-7 flex flex-wrap gap-3">
+                <div style={delay(0.28)} className="rise mt-7 flex flex-wrap gap-3">
                     <button type="button" onClick={onSignIn} className={limePill}>Sign in to Healix</button>
                     <a href="#features" className={`${outlinePill} no-underline`}>Explore features</a>
                 </div>
 
                 <div className="mt-auto pt-12">
-                    <p className="m-0 mb-3 text-sm font-medium text-sage-900">Made for everyone<br />in the clinic</p>
+                    <p style={delay(0.38)} className="rise m-0 mb-3 text-sm font-medium text-sage-900">Made for everyone<br />in the clinic</p>
                     <ul className="m-0 grid list-none grid-cols-2 gap-2.5 p-0 sm:grid-cols-4">
                         {ROLES.map((role, i) => (
-                            <li key={role.title}
-                                className={`flex flex-col justify-between rounded-2xl p-3.5 transition ${i === 0 ? "bg-citron-200 sm:-translate-y-3" : "bg-sage-100"}`}>
+                            <li key={role.title} style={delay(0.45 + i * 0.08)}
+                                className={`rise flex flex-col justify-between rounded-2xl p-3.5 transition ${i === 0 ? "bg-citron-200 sm:-translate-y-3" : "bg-sage-100"}`}>
                                 <span className={`flex h-9 w-9 items-center justify-center rounded-full text-base ${i === 0 ? "bg-white text-brand-800" : "bg-white text-sage-700"}`} aria-hidden="true">
                                     <i className={`bi ${role.icon}`} />
                                 </span>
@@ -129,33 +185,34 @@ function Hero({ onSignIn }: { onSignIn: () => void }) {
 /** The lime panel: a live-looking clinic board, a floating notice, and the day's complaints. */
 function HeroVisual() {
     return (
-        <div aria-hidden="true" className="hero-visual relative overflow-hidden rounded-[28px] p-5 sm:min-h-[520px]"
+        <div aria-hidden="true" className="rise hero-visual relative overflow-hidden rounded-[28px] p-5 sm:min-h-[520px]"
             style={{
+                ...delay(0.15),
                 background:
                     "radial-gradient(circle at 20% 15%, rgba(255,255,255,0.55) 0 2px, transparent 3px) 0 0 / 22px 22px," +
                     "linear-gradient(160deg, var(--color-citron-200), var(--color-leaf-200))",
             }}>
             {/* Contour rings, like the topographic lines in the reference */}
-            <div className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full border border-white/50" />
+            <div className="float pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full border border-white/50" />
             <div className="pointer-events-none absolute -right-12 -top-12 h-56 w-56 rounded-full border border-white/50" />
-            <div className="pointer-events-none absolute -bottom-28 -left-20 h-72 w-72 rounded-full border border-white/40" />
+            <div className="float pointer-events-none absolute -bottom-28 -left-20 h-72 w-72 rounded-full border border-white/40" style={{ animationDelay: "2.5s" }} />
 
             <div className="relative h-full rounded-[22px] bg-white/45 p-5 backdrop-blur-[1px] sm:min-h-[480px]">
                 {/* Side rail of tools */}
-                <div className="absolute -left-2 top-16 flex flex-col gap-2 rounded-full bg-white p-1.5 shadow-card sm:-left-3">
+                <div style={delay(0.55)} className="pop absolute -left-2 top-16 flex flex-col gap-2 rounded-full bg-white p-1.5 shadow-card sm:-left-3">
                     {["bi-hospital", "bi-capsule", "bi-bar-chart-line"].map(icon => (
                         <span key={icon} className="flex h-8 w-8 items-center justify-center rounded-full text-sm text-sage-800"><i className={`bi ${icon}`} /></span>
                     ))}
                 </div>
 
                 {/* The clinic board */}
-                <div className="ml-8 max-w-[19rem] rounded-2xl bg-white p-4 shadow-card sm:ml-10">
+                <div style={delay(0.4)} className="rise ml-8 max-w-[19rem] rounded-2xl bg-white p-4 shadow-card sm:ml-10">
                     <div className="flex items-center justify-between">
-                        <p className="m-0 text-xs font-semibold text-sage-900"><span className="mr-1.5 inline-block h-2 w-2 rounded-full bg-leaf-500" />In the clinic now</p>
+                        <p className="m-0 text-xs font-semibold text-sage-900"><span className="live-dot mr-1.5 inline-block h-2 w-2 rounded-full bg-leaf-500" />In the clinic now</p>
                         <span className="rounded-full bg-sage-100 px-2 py-0.5 text-[10px] font-semibold text-sage-700">2</span>
                     </div>
-                    {[["AB", "Andrea B.", "Grade 5 · Headache", "12 min"], ["RM", "Rafael M.", "Grade 11 STEM · Fever", "28 min"]].map(([initials, name, detail, time]) => (
-                        <div key={name} className="mt-3 flex items-center gap-3 rounded-xl bg-sage-50 p-2.5">
+                    {[["AB", "Andrea B.", "Grade 5 · Headache", "12 min"], ["RM", "Rafael M.", "Grade 11 STEM · Fever", "28 min"]].map(([initials, name, detail, time], i) => (
+                        <div key={name} style={delay(0.6 + i * 0.12)} className="rise mt-3 flex items-center gap-3 rounded-xl bg-sage-50 p-2.5">
                             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-50 text-[11px] font-semibold text-brand-800">{initials}</span>
                             <span className="min-w-0 flex-1">
                                 <span className="block text-xs font-semibold text-sage-900">{name}</span>
@@ -171,7 +228,7 @@ function HeroVisual() {
                 </div>
 
                 {/* Floating notice, like the "Psychologist" card in the reference */}
-                <div className="relative ml-8 mt-4 w-56 rounded-2xl bg-white p-3.5 shadow-lg sm:absolute sm:right-5 sm:top-[44%] sm:ml-0 sm:mt-0">
+                <div style={delay(0.95)} className="pop-float relative ml-8 mt-4 w-56 rounded-2xl bg-white p-3.5 shadow-lg sm:absolute sm:right-5 sm:top-[44%] sm:ml-0 sm:mt-0">
                     <div className="flex items-center gap-2.5">
                         <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-leaf-100 text-leaf-700"><i className="bi bi-telephone-fill" /></span>
                         <span>
@@ -187,8 +244,8 @@ function HeroVisual() {
 
                 {/* Today's complaints, as the reference's cloud of tilted pills; in rows on phones */}
                 <div className="mt-6 flex flex-wrap gap-2.5 sm:mt-0 sm:block">
-                    {COMPLAINTS.map(([text, tilt, place]) => (
-                        <span key={text} className={`inline-block sm:absolute ${place} ${tilt} rounded-full bg-white px-4 py-2 text-xs font-medium text-sage-800 shadow-card sm:text-sm`}>
+                    {COMPLAINTS.map(([text, tilt, place], i) => (
+                        <span key={text} style={delay(1.1 + i * 0.1)} className={`pop-drift inline-block sm:absolute ${place} ${tilt} rounded-full bg-white px-4 py-2 text-xs font-medium text-sage-800 shadow-card sm:text-sm`}>
                             {text}
                         </span>
                     ))}
@@ -201,7 +258,7 @@ function HeroVisual() {
 function WhyHealix({ onSignIn }: { onSignIn: () => void }) {
     return (
         <section aria-labelledby="why-heading" className="bg-sage-100/70 px-6 py-14 sm:px-10">
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.2fr_1fr] lg:items-end">
+            <div data-reveal className="grid grid-cols-1 gap-6 lg:grid-cols-[1.2fr_1fr] lg:items-end">
                 <h2 id="why-heading" className="m-0 text-[2rem] font-medium leading-[1.12] tracking-tight sm:text-[2.4rem]">
                     <span className="mr-2 align-middle text-xs font-medium tracking-normal text-sage-500">Why Healix?</span>{" "}
                     Because every clinic visit should be on record
@@ -216,28 +273,28 @@ function WhyHealix({ onSignIn }: { onSignIn: () => void }) {
             </div>
 
             <div className="mt-10 grid grid-cols-1 gap-4 md:grid-cols-3">
-                <WhyCard title="Visits in seconds" icon="bi-lightning-charge"
+                <WhyCard index={0} title="Visits in seconds" icon="bi-lightning-charge"
                     text="Scan an ID, record what happened, save. Medicine comes off stock on its own, oldest batch first." />
-                <WhyCard title="Nobody falls through" icon="bi-telephone" highlight
+                <WhyCard index={1} title="Nobody falls through" icon="bi-telephone" highlight
                     text="Every student sent home or referred has who took them, and whether home was told, on record." />
-                <WhyCard title="Stock you can trust" icon="bi-capsule"
+                <WhyCard index={2} title="Stock you can trust" icon="bi-capsule"
                     text="Warnings before medicine expires, reorder levels per item, and a reason for every unit in or out." />
             </div>
         </section>
     )
 }
 
-function WhyCard({ title, text, icon, highlight }: { title: string; text: string; icon: string; highlight?: boolean }) {
+function WhyCard({ title, text, icon, highlight, index }: { title: string; text: string; icon: string; highlight?: boolean; index: number }) {
     return (
-        <article className={`relative flex min-h-[15rem] flex-col overflow-hidden rounded-[22px] p-5 ${highlight ? "" : "bg-white shadow-card"}`}
-            style={highlight ? { background: "linear-gradient(160deg, var(--color-citron-200), var(--color-leaf-300))" } : undefined}>
+        <article data-reveal className={`group relative flex min-h-[15rem] flex-col overflow-hidden rounded-[22px] p-5 ${highlight ? "" : "bg-white shadow-card"}`}
+            style={{ ...delay(index * 0.12), ...(highlight ? { background: "linear-gradient(160deg, var(--color-citron-200), var(--color-leaf-300))" } : {}) }}>
             <div className="flex items-start justify-between gap-3">
                 <h3 className={`m-0 text-base font-semibold ${highlight ? "rounded-full bg-white px-3.5 py-1.5 text-sm" : ""}`}>{title}</h3>
                 <span className={highlight ? "flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-white text-brand-900" : arrowChip} aria-hidden="true">
-                    <i className="bi bi-arrow-right" />
+                    <i className="bi bi-arrow-right inline-block transition-transform duration-300 group-hover:-rotate-45" />
                 </span>
             </div>
-            <i className={`bi ${icon} pointer-events-none absolute -bottom-6 -right-2 text-[8rem] leading-none ${highlight ? "text-white/45" : "text-sage-100"}`} aria-hidden="true" />
+            <i className={`bi ${icon} pointer-events-none transition-transform duration-500 group-hover:-rotate-6 group-hover:scale-105 absolute -bottom-6 -right-2 text-[8rem] leading-none ${highlight ? "text-white/45" : "text-sage-100"}`} aria-hidden="true" />
             <p className="relative m-0 mt-auto max-w-[17rem] pt-10 text-sm leading-relaxed text-sage-700">{text}</p>
         </article>
     )
@@ -245,16 +302,16 @@ function WhyCard({ title, text, icon, highlight }: { title: string; text: string
 
 function Features() {
     return (
-        <section id="features" aria-labelledby="features-heading" className="scroll-mt-6 px-6 py-16 sm:px-10">
-            <div className="mb-10 max-w-2xl">
+        <section id="features" aria-labelledby="features-heading" className="scroll-mt-20 px-6 py-16 sm:px-10">
+            <div data-reveal className="mb-10 max-w-2xl">
                 <p className="m-0 text-xs font-semibold uppercase tracking-wider text-brand-700">Features</p>
                 <h2 id="features-heading" className="m-0 mt-2 text-[2rem] font-medium leading-tight tracking-tight">Everything the clinic does in a day</h2>
                 <p className="m-0 mt-3 text-sm leading-relaxed text-sage-600">From the first headache of the morning to the report the principal asks for at the end of the month.</p>
             </div>
             <ul className="m-0 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-4">
-                {FEATURES.map(f => (
-                    <li key={f.title} className="rounded-[22px] border border-sage-100 bg-white p-5 shadow-card transition hover:-translate-y-0.5">
-                        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-citron-200 text-lg text-brand-900" aria-hidden="true">
+                {FEATURES.map((f, i) => (
+                    <li key={f.title} data-reveal style={delay((i % 4) * 0.08)} className="group rounded-[22px] border border-sage-100 bg-white p-5 shadow-card transition hover:-translate-y-0.5">
+                        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-citron-200 text-lg text-brand-900 transition duration-300 group-hover:scale-110 group-hover:bg-citron-300" aria-hidden="true">
                             <i className={`bi ${f.icon}`} />
                         </span>
                         <h3 className="m-0 mt-4 text-base font-semibold">{f.title}</h3>
@@ -268,8 +325,8 @@ function Features() {
 
 function HowItWorks() {
     return (
-        <section id="how-it-works" aria-labelledby="how-heading" className="scroll-mt-6 bg-sage-100/70 px-6 py-16 sm:px-10">
-            <div className="mb-10 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <section id="how-it-works" aria-labelledby="how-heading" className="scroll-mt-20 bg-sage-100/70 px-6 py-16 sm:px-10">
+            <div data-reveal className="mb-10 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                     <p className="m-0 text-xs font-semibold uppercase tracking-wider text-brand-700">How it works</p>
                     <h2 id="how-heading" className="m-0 mt-2 text-[2rem] font-medium leading-tight tracking-tight">One visit, start to finish</h2>
@@ -278,7 +335,7 @@ function HowItWorks() {
             </div>
             <ol className="m-0 grid list-none grid-cols-1 gap-4 p-0 md:grid-cols-4">
                 {STEPS.map((step, i) => (
-                    <li key={step.title} className="relative rounded-[22px] bg-white p-5 shadow-card">
+                    <li key={step.title} data-reveal style={delay(i * 0.12)} className="relative rounded-[22px] bg-white p-5 shadow-card">
                         <span className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold ${i === STEPS.length - 1 ? "bg-brand-800 text-white" : "bg-citron-300 text-brand-900"}`}>
                             {i + 1}
                         </span>
@@ -299,8 +356,8 @@ function Privacy() {
         ["bi-person-slash", "Accounts switch off", "When someone leaves, an admin switches their account off; their name stays on past visits."],
     ]
     return (
-        <section id="privacy" aria-labelledby="privacy-heading" className="scroll-mt-6 px-6 py-16 sm:px-10">
-            <div className="grid grid-cols-1 gap-8 overflow-hidden rounded-[28px] bg-brand-800 p-7 text-white sm:p-10 lg:grid-cols-[1fr_1.4fr]">
+        <section id="privacy" aria-labelledby="privacy-heading" className="scroll-mt-20 px-6 py-16 sm:px-10">
+            <div data-reveal className="grid grid-cols-1 gap-8 overflow-hidden rounded-[28px] bg-brand-800 p-7 text-white sm:p-10 lg:grid-cols-[1fr_1.4fr]">
                 <div>
                     <p className="m-0 text-xs font-semibold uppercase tracking-wider text-citron-300">Privacy</p>
                     <h2 id="privacy-heading" className="m-0 mt-2 text-[2rem] font-medium leading-tight tracking-tight">Health records are sensitive. Healix treats them that way.</h2>
@@ -323,14 +380,14 @@ function Privacy() {
 function Closing({ onSignIn }: { onSignIn: () => void }) {
     return (
         <section aria-labelledby="closing-heading" className="px-6 pb-14 sm:px-10">
-            <div className="flex flex-col items-start gap-5 rounded-[28px] p-8 sm:flex-row sm:items-center sm:justify-between sm:p-10"
+            <div data-reveal className="flex flex-col items-start gap-5 rounded-[28px] p-8 sm:flex-row sm:items-center sm:justify-between sm:p-10"
                 style={{ background: "linear-gradient(120deg, var(--color-citron-200), var(--color-leaf-200))" }}>
                 <div>
                     <h2 id="closing-heading" className="m-0 text-[1.75rem] font-medium leading-tight tracking-tight">Ready for today's first visit?</h2>
                     <p className="m-0 mt-2 text-sm text-sage-700">Sign in with the account your clinic admin gave you.</p>
                 </div>
-                <button type="button" onClick={onSignIn} className={`${pill} bg-brand-800 text-white hover:bg-brand-900`}>
-                    Sign in <i className="bi bi-arrow-right" aria-hidden="true" />
+                <button type="button" onClick={onSignIn} className={`${pill} group bg-brand-800 text-white hover:bg-brand-900`}>
+                    Sign in <i className="bi bi-arrow-right transition-transform group-hover:translate-x-1" aria-hidden="true" />
                 </button>
             </div>
         </section>

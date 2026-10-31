@@ -1,6 +1,14 @@
 import { API_BASE_URL } from "./config";
 
 export const API_ERROR_EVENT = "api-error";
+// Fired with the number of reads still on their way, for the loading bar.
+export const API_ACTIVITY_EVENT = "api-activity";
+let readsInFlight = 0;
+
+function trackRead(change: number) {
+  readsInFlight = Math.max(0, readsInFlight + change);
+  window.dispatchEvent(new CustomEvent(API_ACTIVITY_EVENT, { detail: readsInFlight }));
+}
 
 /**
  * Calls the API with the login token.
@@ -18,7 +26,9 @@ export async function apiFetch(path: string, options: RequestInit = {}): Promise
     headers.set("Authorization", `Bearer ${token}`);
   }
 
+  const isRead = !options.method || options.method.toUpperCase() === "GET";
   let response: Response;
+  if (isRead) trackRead(1);
   try {
     response = await fetch(`${API_BASE_URL}${path}`, {
       ...options,
@@ -26,6 +36,8 @@ export async function apiFetch(path: string, options: RequestInit = {}): Promise
     });
   } catch {
     return failed(options, 503, "Can't reach the clinic server. Check your connection and try again.");
+  } finally {
+    if (isRead) trackRead(-1);
   }
 
   if (response.status === 401 && path !== "/validateuser") {

@@ -7,6 +7,7 @@ import EditAppointment from '~/components/editappointment'
 import RowActions, { inlineActionClass, rowLinkClass } from '~/components/rowactions'
 import { notify } from '../notify'
 import { visitDateParts } from '../visitOutcomes'
+import { SkeletonRows } from '~/components/skeleton'
 
 export default function Appointments() {
     const [_width, setWidth] = React.useState(0)
@@ -22,6 +23,7 @@ export default function Appointments() {
     const [apptID, setApptId] = React.useState()
     const apptStatuses = ['All', 'Today', 'Upcoming', 'Completed', 'Cancelled']
     const [appointments, setAppointments] = React.useState<any[]>([])
+    const [loaded, setLoaded] = React.useState(false)
     const [searchQuery, setSearchQuery] = React.useState('')
     const [showEdit, setShowEdit] = React.useState(false)
     const [selectedDate, setSelectedDate] = React.useState(); // default to today
@@ -37,7 +39,7 @@ export default function Appointments() {
     function refetchAppts() {
         apiFetch(`/getallappointments`)
             .then(res => res.json())
-            .then(data => setAppointments(data))
+            .then(data => { setAppointments(data); setLoaded(true) })
     }
 
     async function setStatus(appt: any, status: 'Completed' | 'Cancelled') {
@@ -207,7 +209,7 @@ export default function Appointments() {
                                             </div>
                                         </td>
                                     </tr>
-                                )) : (
+                                )) : !loaded ? <SkeletonRows cols={6} /> : (
                                     <tr>
                                         <td colSpan={6} className="px-5 py-12 text-center">
                                             <i className="bi bi-calendar-x text-2xl text-sage-300" />

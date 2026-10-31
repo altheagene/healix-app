@@ -15,6 +15,7 @@ import EditRecord from '~/components/editrecord'
 import { VisitOutcomeDialog } from '~/components/visitoutcome'
 import { DISPOSITIONS, DISPOSITION_SHORT, DISPOSITION_TONES, NOTIFY_METHODS, visitDateParts } from '../visitOutcomes'
 import { describeLevel } from '../school'
+import { SkeletonRows } from '~/components/skeleton'
 
 export default function PatientDetails(){
     const role = localStorage.getItem('role');
@@ -349,7 +350,7 @@ export default function PatientDetails(){
                                                 ]} />
                                             </td>
                                         </tr>
-                                    )) : (
+                                    )) : clinicLogs === undefined ? <SkeletonRows cols={6} rows={3} /> : (
                                         <tr>
                                             <td colSpan={6} className="border-t border-sage-100 px-5 py-12 text-center">
                                                 <p className="text-sm text-sage-400">No clinic visits yet</p>

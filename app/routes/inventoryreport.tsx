@@ -3,6 +3,7 @@ import React from "react";
 import Pagination, { usePaged } from '~/components/pagination'
 import { REASONS, withUnit } from "../inventory";
 import { localDateTime, visitDateParts } from "../visitOutcomes";
+import { SkeletonRows } from "~/components/skeleton"
 
 interface Movement {
     inv_id: number
@@ -23,14 +24,16 @@ const today = () => localDateTime().slice(0, 10)
 export default function InventoryReport() {
     const [dateRange, setDateRange] = React.useState({ from_date: `${today().slice(0, 7)}-01`, to_date: today() })
     const [logs, setLogs] = React.useState<Movement[]>([])
+    const [loading, setLoading] = React.useState(true)
     const [reasonFilter, setReasonFilter] = React.useState("")
 
     React.useEffect(() => {
         if (!dateRange.from_date || !dateRange.to_date) return
         let stale = false
+        setLoading(true)
         apiFetch(`/getinvlogs?fromdate=${dateRange.from_date}&todate=${dateRange.to_date}`)
             .then(res => res.json())
-            .then(data => { if (!stale) setLogs(Array.isArray(data) ? data : []) })
+            .then(data => { if (!stale) { setLogs(Array.isArray(data) ? data : []); setLoading(false) } })
         return () => { stale = true }
     }, [dateRange])
 
@@ -103,7 +106,7 @@ export default function InventoryReport() {
                             </tr>
                         </thead>
                         <tbody>
-                            {shown.length === 0 ? (
+                            {loading ? <SkeletonRows cols={7} /> : shown.length === 0 ? (
                                 <tr><td colSpan={7} className="px-5 py-12 text-center text-sm text-sage-400">No stock movements in these dates.</td></tr>
                             ) : pagedLogs.map(log => {
                                 const when = visitDateParts(log.moved_at)

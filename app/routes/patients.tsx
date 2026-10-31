@@ -9,6 +9,7 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import RowActions, { rowLinkClass } from '~/components/rowactions'
 import { STAFF_ROLE_NAME } from '../roles'
 import { notify } from '../notify'
+import { SkeletonRows } from '~/components/skeleton'
 
 interface Patient {
     patient_id: string | number
@@ -84,6 +85,7 @@ export default function Patients() {
     const [currentPage, setCurrentPage] = React.useState(1)
     const [pageSize, setPageSize] = usePageSize('patients')
     const [result, setResult] = React.useState<SearchResult>(EMPTY_RESULT)
+    const [loaded, setLoaded] = React.useState(false)
     const [reloadKey, setReloadKey] = React.useState(0)
     const [isClinician, setIsClinician] = React.useState(false)
     React.useEffect(() => { setIsClinician(localStorage.getItem("role") !== STAFF_ROLE_NAME) }, [])
@@ -131,7 +133,7 @@ export default function Patients() {
         apiFetch(`/searchpatients?${params}`)
             .then(res => res.json())
             .then(data => {
-                if (!stale) setResult(data && Array.isArray(data.patients) ? data : EMPTY_RESULT)
+                if (!stale) { setResult(data && Array.isArray(data.patients) ? data : EMPTY_RESULT); setLoaded(true) }
             })
         return () => { stale = true }
     }, [query, currentPage, pageSize, filters, sort, reloadKey])
@@ -351,7 +353,8 @@ export default function Patients() {
                                     </td>
                                 </tr>
                             ))}
-                            {result.patients.length === 0 && (
+                            {!loaded && <SkeletonRows cols={8} />}
+                            {loaded && result.patients.length === 0 && (
                                 <tr>
                                     <td colSpan={8} className="px-5 py-8 text-center text-sm text-sage-400">
                                         No patients match that search.

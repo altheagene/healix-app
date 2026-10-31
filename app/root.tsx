@@ -81,9 +81,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 import './routepages.css'
 import 'bootstrap-icons/font/bootstrap-icons.css';
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
+import LoadingBar from "./components/loadingbar";
 export default function App() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [showNavbar, setShowNavbar] = React.useState(false);
   const [showLogoutModal, setShowLogoutModal] = React.useState(false);
   const [flashMessage, setFlashMessage] = React.useState("");
@@ -166,6 +168,7 @@ function logout() {
         </div>
       )}
       <Notices />
+      {validUser && <LoadingBar />}
       {flashMessage && (
         <div className="flash-message" role="status" aria-live="polite" style={{backgroundColor: validUser ? 'var(--color-leaf-600)' : 'var(--color-red-600)'}}>{flashMessage}</div>
       )}
@@ -179,7 +182,10 @@ function logout() {
               onLogout={() => setShowLogoutModal(true)}
             />
             <div className="min-w-0 flex-1 overflow-y-auto bg-white px-8 py-7">
-              <Outlet></Outlet>
+              {/* Keyed by path so each page fades in when you open it. */}
+              <div key={location.pathname} className="page-enter">
+                <Outlet />
+              </div>
             </div>
             {showLogoutModal && (
               <Modal title="Log out?" onClose={() => setShowLogoutModal(false)} width={400}>

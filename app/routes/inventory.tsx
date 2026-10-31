@@ -9,6 +9,7 @@ import { useNavigate } from "react-router";
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { DEFAULT_REORDER_LEVEL, canManageStock, expiryLabel, stockStatus, withUnit } from "../inventory";
 import { visitDateParts } from "../visitOutcomes";
+import { SkeletonRows } from "~/components/skeleton";
 
 interface AlertBatch {
   batch_id: number
@@ -34,6 +35,7 @@ export default function Inventory() {
   const canManage = canManageStock();
   const [showAddItem, setShowAddItem] = React.useState(false);
   const [supplies, setSupplies] = React.useState<any[]>([]);
+  const [loaded, setLoaded] = React.useState(false);
   const [alerts, setAlerts] = React.useState<Alerts>({ days: 60, expiring: [], to_dispose: [], reorder: [] });
   const [expiryDays, setExpiryDays] = React.useState(60);
   const [disposing, setDisposing] = React.useState<AlertBatch | null>(null);
@@ -46,7 +48,7 @@ export default function Inventory() {
   const refetchSupplies = React.useCallback(() => {
     apiFetch(`/getallsupplies`)
       .then(res => res.json())
-      .then(data => setSupplies(Array.isArray(data) ? data : []));
+      .then(data => { setSupplies(Array.isArray(data) ? data : []); setLoaded(true); });
   }, []);
 
   const refetchAlerts = React.useCallback(() => {
@@ -271,7 +273,7 @@ export default function Inventory() {
                       </td>
                     </tr>
                   )
-                }) : (
+                }) : !loaded ? <SkeletonRows cols={8} /> : (
                   <tr>
                     <td colSpan={8} className="px-5 py-12 text-center">
                       <i className="bi bi-box-seam text-2xl text-sage-300" aria-hidden="true" />

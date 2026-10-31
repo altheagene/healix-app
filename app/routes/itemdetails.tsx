@@ -12,6 +12,7 @@ import { useNavigate } from 'react-router';
 import DisposeBatch from '~/components/disposebatch';
 import { DEFAULT_REORDER_LEVEL, canManageStock, daysUntil, expiryLabel, stockStatus, withUnit } from '../inventory';
 import { visitDateParts } from '../visitOutcomes';
+import { SkeletonRows } from '~/components/skeleton'
 
 export default function ItemDetails(){
 
@@ -20,6 +21,7 @@ export default function ItemDetails(){
     const [itemDetails, setItemDetails] = React.useState<any>({});
     const [currentBatch, setCurrentBatch] = React.useState()
     const [batches, setBatches] = React.useState<any[]>([]);
+    const [loaded, setLoaded] = React.useState(false);
     const [showAddBatch, setShowAddBatch] = React.useState(false);
     const [showEditDetails, setShowEditDetails] = React.useState(false);
     const [showEditStock, setShowEditStock] = React.useState(false);
@@ -38,7 +40,7 @@ export default function ItemDetails(){
     React.useEffect(() => {
         apiFetch(`/getbatches?idnum=${id}`)
         .then(res => res.json())
-        .then(data => setBatches(data))
+        .then(data => { setBatches(data); setLoaded(true) })
     }, [])
 
     function refetchBatches(){
@@ -243,7 +245,7 @@ export default function ItemDetails(){
                                             )}
                                         </td>
                                     </tr>
-                                )) : (
+                                )) : !loaded ? <SkeletonRows cols={6} /> : (
                                     <tr>
                                         <td colSpan={6} className="px-5 py-12 text-center">
                                             <i className="bi bi-box-seam text-2xl text-sage-300" />
